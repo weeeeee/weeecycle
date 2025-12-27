@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Get on the Stand | Weeecycle.net</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { dark: '#050511', blue: '#0B0B3B', orange: '#FF8000', slate: '#1e293b', light: '#f8fafc' }
+                    },
+                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Roboto Condensed', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #050511;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #FF8000;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-brand-dark text-gray-200 font-body antialiased selection:bg-brand-orange selection:text-white pb-20 md:pb-0">
+
+    <nav
+        class="fixed top-0 w-full z-50 bg-brand-dark/95 backdrop-blur border-b border-brand-orange/20 shadow-xl transition-all duration-300">
+        <div class="container mx-auto px-4 h-20 flex items-center justify-between">
+            <a class="flex items-center gap-3 group" href="index.html">
+                <div class="h-12 w-12 relative overflow-hidden flex items-center justify-center">
+                    <img src="images/logo/FullLogo_Transparent_NoBuffer.png" alt="Weeecycle Icon"
+                        class="h-10 w-auto object-contain drop-shadow-[0_0_5px_rgba(255,128,0,0.5)]" />
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-display font-bold text-2xl tracking-widest text-white leading-none">WEEECYCLE<span
+                            class="text-brand-orange">.NET</span></span>
+                    <span
+                        class="font-body text-[10px] text-brand-orange uppercase tracking-[0.2em] leading-none">Recycle
+                        the Fun</span>
+                </div>
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="index.html#services">Services</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="index.html#garage">The Garage</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="index.html#shop">Shop My Bench</a>
+                <a class="bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase tracking-wider py-2 px-6 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50"
+                    href="#">Book Service</a>
+            </div>
+            <button class="md:hidden text-white hover:text-brand-orange transition"
+                onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"><span
+                    class="material-symbols-outlined text-4xl">menu</span></button>
+        </div>
+        <div class="hidden md:hidden bg-brand-dark border-t border-brand-orange/20 absolute w-full left-0 shadow-2xl"
+            id="mobile-menu">
+            <div class="flex flex-col p-4 space-y-4">
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="index.html#services"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Services</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="index.html#garage"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">The Garage</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="index.html#shop"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop My Bench</a>
+                <a class="text-brand-orange text-xl font-display font-bold uppercase tracking-wide" href="#"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Book Now</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="pt-32 pb-20 container mx-auto px-4">
+        <section class="relative bg-brand-dark" id="contact">
+            <div class="container mx-auto px-4 max-w-5xl">
+                <div class="grid lg:grid-cols-2 gap-12 items-start">
+                    <div class="hidden lg:block space-y-8 sticky top-32">
+                        <h2 class="font-display font-bold text-6xl text-white uppercase leading-none">Get on
+                            the<br /><span class="text-brand-orange">Stand.</span></h2>
+                        <p class="text-gray-400 text-lg">Fill out the intake form to get a quote and
+                            schedule your drop-off.</p>
+                        <div class="mt-8 pt-8 border-t border-gray-800">
+                            <div class="flex items-center gap-2 text-brand-orange mb-2 font-display text-xl uppercase">
+                                <span class="material-symbols-outlined">garage_home</span> The Garage</div>
+                            <p class="text-gray-400 text-sm">Lexington, KY<br />Visits by appointment only.</p>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+                        <div class="absolute top-0 left-0 h-1 bg-brand-orange transition-all duration-500"
+                            id="progressBar" style="width: 50%"></div>
+                        <form class="relative" id="intakeForm" onsubmit="event.preventDefault(); sendEmail();">
+                            <div class="form-step transition-all duration-500" id="step1">
+                                <h3
+                                    class="text-2xl font-display font-bold text-white mb-6 uppercase flex items-center gap-2">
+                                    <span
+                                        class="bg-brand-orange text-brand-dark w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
+                                    Rider Details
+                                </h3>
+                                <div class="space-y-4">
+                                    <div><label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Full
+                                            Name</label><input id="riderName"
+                                            class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition"
+                                            placeholder="Eddy Merckx" required type="text" /></div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div><label
+                                                class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Phone</label><input
+                                                id="riderPhone"
+                                                class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition"
+                                                placeholder="XXX-XXX-XXXX" required type="tel" /></div>
+                                        <div><label
+                                                class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Email</label><input
+                                                id="riderEmail"
+                                                class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition"
+                                                placeholder="enter email address" required type="email" /></div>
+                                    </div>
+                                </div>
+                                <button
+                                    class="mt-8 w-full bg-brand-orange text-white font-display font-bold text-xl uppercase py-3 rounded hover:bg-orange-600 transition shadow-lg"
+                                    onclick="changeStep(2)" type="button">Next: What's your Dream?</button>
+                            </div>
+
+                            <div class="form-step hidden opacity-0 transition-all duration-500 absolute top-0 w-full"
+                                id="step2">
+                                <h3
+                                    class="text-2xl font-display font-bold text-white mb-6 uppercase flex items-center gap-2">
+                                    <span
+                                        class="bg-brand-orange text-brand-dark w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
+                                    What's your Dream?
+                                </h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Brief
+                                            Summary</label>
+                                        <textarea id="dreamSummary"
+                                            class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition"
+                                            placeholder="Tell us briefly what you want in your dream build"
+                                            rows="4"></textarea>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4 mt-8"><button
+                                        class="w-1/3 bg-transparent border border-gray-600 text-gray-300 font-display font-bold text-xl uppercase py-3 rounded hover:border-white transition"
+                                        onclick="changeStep(1)" type="button">Back</button><button
+                                        class="w-2/3 bg-brand-orange text-white font-display font-bold text-xl uppercase py-3 rounded hover:bg-orange-600 transition shadow-lg"
+                                        type="submit">Build the Dream</button></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="bg-black border-t border-gray-900 py-12">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex flex-col items-center md:items-start">
+                <span class="font-display font-bold text-3xl tracking-widest text-white leading-none">WEEECYCLE<span
+                        class="text-brand-orange">.NET</span></span>
+                <span class="text-gray-500 text-xs uppercase tracking-[0.2em] mt-2">Building Speed. Fixing Fun.</span>
+            </div>
+            <div class="text-gray-600 text-xs uppercase tracking-wider">
+                &copy; 2025 Weeecycle. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Form Logic
+        let currentStep = 1;
+        function changeStep(step) {
+            document.querySelectorAll('.form-step').forEach(el => {
+                el.classList.add('hidden', 'opacity-0');
+                el.classList.remove('relative');
+                el.style.position = 'absolute';
+            });
+            const next = document.getElementById('step' + step);
+            next.classList.remove('hidden');
+            setTimeout(() => {
+                next.classList.remove('opacity-0');
+                next.style.position = 'relative';
+            }, 50);
+
+            // Update Progress Bar
+            const progress = document.getElementById('progressBar');
+            if (step === 1) progress.style.width = '50%';
+            if (step === 2) progress.style.width = '100%';
+        }
+
+        // Check for URL params to prefill service (kept for compatibility, though we jump to step 2 now)
+        window.onload = function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const service = urlParams.get('service');
+            if (service) {
+                // If service is passed, we could pre-fill something, but for now we just let them start at step 1
+                // or optionally jump to step 2 if we wanted, but rider details are always needed.
+            }
+        }
+
+        function sendEmail() {
+            const name = document.getElementById('riderName').value;
+            const phone = document.getElementById('riderPhone').value;
+            const email = document.getElementById('riderEmail').value;
+            const dream = document.getElementById('dreamSummary').value;
+
+            const subject = `Dream Build Request: ${name}`;
+            const body = `Name: ${name}%0D%0APhone: ${phone}%0D%0AEmail: ${email}%0D%0A%0D%0ADream Build Summary:%0D%0A${dream}`;
+
+            window.location.href = `mailto:steve@weeecycle.net?subject=${subject}&body=${body}`;
+        }
+    </script>
+</body>
+
+</html>

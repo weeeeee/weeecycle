@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Safety Check | Weeecycle.net</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { dark: '#050511', blue: '#0B0B3B', orange: '#FF8000', slate: '#1e293b', light: '#f8fafc' }
+                    },
+                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Roboto Condensed', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #050511;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #FF8000;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-brand-dark text-gray-200 font-body antialiased selection:bg-brand-orange selection:text-white pb-20 md:pb-0">
+
+    <nav
+        class="fixed top-0 w-full z-50 bg-brand-dark/95 backdrop-blur border-b border-brand-orange/20 shadow-xl transition-all duration-300">
+        <div class="container mx-auto px-4 h-20 flex items-center justify-between">
+            <a class="flex items-center gap-3 group" href="index.html">
+                <div class="h-12 w-12 relative overflow-hidden flex items-center justify-center">
+                    <img src="images/logo/FullLogo_Transparent_NoBuffer.png" alt="Weeecycle Icon"
+                        class="h-10 w-auto object-contain drop-shadow-[0_0_5px_rgba(255,128,0,0.5)]" />
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-display font-bold text-2xl tracking-widest text-white leading-none">WEEECYCLE<span
+                            class="text-brand-orange">.NET</span></span>
+                    <span
+                        class="font-body text-[10px] text-brand-orange uppercase tracking-[0.2em] leading-none">Recycle
+                        the Fun</span>
+                </div>
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="index.html#services">Services</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="index.html#garage">The Garage</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="index.html#shop">Shop My Bench</a>
+                <a class="bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase tracking-wider py-2 px-6 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50"
+                    href="intake.html">Book Service</a>
+            </div>
+            <button class="md:hidden text-white hover:text-brand-orange transition"
+                onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"><span
+                    class="material-symbols-outlined text-4xl">menu</span></button>
+        </div>
+        <div class="hidden md:hidden bg-brand-dark border-t border-brand-orange/20 absolute w-full left-0 shadow-2xl"
+            id="mobile-menu">
+            <div class="flex flex-col p-4 space-y-4">
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="index.html#services"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Services</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="index.html#garage"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">The Garage</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="index.html#shop"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop My Bench</a>
+                <a class="text-brand-orange text-xl font-display font-bold uppercase tracking-wide" href="intake.html"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Book Now</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="pt-32 pb-20 container mx-auto px-4 max-w-5xl">
+        <a href="index.html#services"
+            class="inline-flex items-center text-brand-orange mb-8 hover:text-white transition uppercase tracking-wider font-display font-bold">
+            <span class="material-symbols-outlined mr-2">arrow_back</span> Back to Services
+        </a>
+
+        <div class="grid md:grid-cols-2 gap-12 items-start">
+            <div class="relative rounded-xl overflow-hidden border border-gray-800 shadow-2xl group">
+                <!-- Placeholder Image for Safety Check -->
+                <img src="https://images.unsplash.com/photo-1505705694340-019e1e335916?q=80&w=2064&auto=format&fit=crop"
+                    alt="Safety Check"
+                    class="w-full h-auto object-cover transform group-hover:scale-105 transition duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                <div class="absolute bottom-6 left-6">
+                    <span
+                        class="bg-brand-orange text-brand-dark font-bold font-display px-3 py-1 text-lg rounded mb-2 inline-block">Lvl.
+                        0</span>
+                    <h2 class="font-display font-bold text-4xl text-white uppercase shadow-black drop-shadow-lg">Safety
+                        Check</h2>
+                </div>
+            </div>
+
+            <div class="space-y-10">
+                <div>
+                    <h1 class="font-display font-bold text-5xl md:text-6xl text-white uppercase tracking-tighter mb-6">
+                        Ride With<br /><span class="text-brand-orange">Confidence</span></h1>
+                    <p class="text-gray-300 text-lg leading-relaxed mb-4">
+                        Essential safety verification for peace of mind. A quick but thorough inspection to ensure your
+                        bike is safe to ride.
+                    </p>
+                </div>
+
+                <div class="space-y-8">
+                    <div
+                        class="bg-[#0B0B2B] border border-gray-800 p-6 rounded-lg hover:border-brand-orange transition duration-300">
+                        <h3
+                            class="font-display font-bold text-2xl text-white mb-4 uppercase border-b border-gray-700 pb-2">
+                            Inspection Points</h3>
+                        <ul class="space-y-3 text-gray-400">
+                            <li class="flex items-start gap-3">
+                                <span
+                                    class="material-symbols-outlined text-brand-orange text-xl mt-0.5">check_circle</span>
+                                <span>Check all bolts for proper torque.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span
+                                    class="material-symbols-outlined text-brand-orange text-xl mt-0.5">check_circle</span>
+                                <span>Inspect tire inflation and condition.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span
+                                    class="material-symbols-outlined text-brand-orange text-xl mt-0.5">check_circle</span>
+                                <span>Verify brake function and pad wear.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span
+                                    class="material-symbols-outlined text-brand-orange text-xl mt-0.5">check_circle</span>
+                                <span>Basic drivetrain safety check (chain wear, shifting).</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 pt-6">
+                    <a href="https://bikebook.co.uk/en-US/mechanic/weeecycle-net/book"
+                        class="flex-1 bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-2xl uppercase tracking-wider py-4 px-8 rounded text-center shadow-lg shadow-orange-900/50 transition transform hover:-translate-y-1">
+                        Book This Service
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-black border-t border-gray-900 py-12 mt-20">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex flex-col items-center md:items-start">
+                <span class="font-display font-bold text-3xl tracking-widest text-white leading-none">WEEECYCLE<span
+                        class="text-brand-orange">.NET</span></span>
+                <span class="text-gray-500 text-xs uppercase tracking-[0.2em] mt-2">Building Speed. Fixing Fun.</span>
+            </div>
+            <div class="text-gray-600 text-xs uppercase tracking-wider">
+                &copy; 2025 Weeecycle. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>
