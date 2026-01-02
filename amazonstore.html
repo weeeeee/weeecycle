@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Amazon Store | Weeecycle.net</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { dark: '#050511', blue: '#0B0B3B', orange: '#FF8000', slate: '#1e293b', light: '#f8fafc' }
+                    },
+                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Roboto Condensed', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #050511;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #FF8000;
+            border-radius: 4px;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(180deg, rgba(5, 5, 17, 0.3) 0%, rgba(5, 5, 17, 0.8) 70%, rgba(5, 5, 17, 1) 100%);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-brand-dark text-gray-200 font-body antialiased selection:bg-brand-orange selection:text-white pb-20 md:pb-0">
+
+    <nav
+        class="fixed top-0 w-full z-50 bg-brand-dark/95 backdrop-blur border-b border-brand-orange/20 shadow-xl transition-all duration-300">
+        <div class="container mx-auto px-4 h-20 flex items-center justify-between">
+            <a class="flex items-center gap-3 group" href="index.html">
+                <div class="h-12 w-12 relative overflow-hidden flex items-center justify-center">
+                    <img src="images/logo/FullLogo_Transparent_NoBuffer.png" alt="Weeecycle Icon"
+                        class="h-10 w-auto object-contain drop-shadow-[0_0_5px_rgba(255,128,0,0.5)]" />
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-display font-bold text-2xl tracking-widest text-white leading-none">WEEECYCLE<span
+                            class="text-brand-orange">.NET</span></span>
+                    <span
+                        class="font-body text-[10px] text-brand-orange uppercase tracking-[0.2em] leading-none">Recycle
+                        the Fun</span>
+                </div>
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="index.html#services">Services</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="https://weeecycle.substack.com" target="_blank">Substack</a>
+                <a class="font-display text-lg text-brand-orange transition uppercase tracking-wide"
+                    href="amazonstore.html">Amazon Store</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="index.html#shop">Shop My Bench</a>
+                <a class="bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase tracking-wider py-2 px-6 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50"
+                    href="intake.html">Book Service</a>
+                <div class="flex items-center gap-4 border-l border-gray-700 pl-6 ml-2">
+                    <a href="https://www.instagram.com/weeecycle/" target="_blank"
+                        class="text-gray-400 hover:text-brand-orange transition-colors"><i
+                            class="fab fa-instagram text-xl"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61584485203543" target="_blank"
+                        class="text-gray-400 hover:text-brand-orange transition-colors"><i
+                            class="fab fa-facebook text-xl"></i></a>
+                    <a href="https://www.youtube.com/@weeecycle" target="_blank"
+                        class="text-gray-400 hover:text-brand-orange transition-colors"><i
+                            class="fab fa-youtube text-xl"></i></a>
+                    <a href="https://www.tiktok.com/@weeecycling" target="_blank"
+                        class="text-gray-400 hover:text-brand-orange transition-colors"><i
+                            class="fab fa-tiktok text-xl"></i></a>
+                </div>
+            </div>
+            <button class="md:hidden text-white hover:text-brand-orange transition"
+                onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"><span
+                    class="material-symbols-outlined text-4xl">menu</span></button>
+        </div>
+        <div class="hidden md:hidden bg-brand-dark border-t border-brand-orange/20 absolute w-full left-0 shadow-2xl"
+            id="mobile-menu">
+            <div class="flex flex-col p-4 space-y-4">
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="index.html#services"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Services</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200"
+                    href="https://weeecycle.substack.com" target="_blank"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Substack</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="amazonstore.html"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Amazon Store</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="index.html#shop"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop My Bench</a>
+                <a class="text-brand-orange text-xl font-display font-bold uppercase tracking-wide" href="intake.html"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Book Now</a>
+                <div class="flex gap-6 pt-4 border-t border-gray-800">
+                    <a href="https://www.instagram.com/weeecycle/" target="_blank"
+                        class="text-gray-400 hover:text-brand-orange transition-colors"><i
+                            class="fab fa-instagram text-2xl"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61584485203543" target="_blank"
+                        class="text-gray-400 hover:text-brand-orange transition-colors"><i
+                            class="fab fa-facebook text-2xl"></i></a>
+                    <a href="https://www.youtube.com/@weeecycle" target="_blank"
+                        class="text-gray-400 hover:text-brand-orange transition-colors"><i
+                            class="fab fa-youtube text-2xl"></i></a>
+                    <a href="https://www.tiktok.com/@weeecycling" target="_blank"
+                        class="text-gray-400 hover:text-brand-orange transition-colors"><i
+                            class="fab fa-tiktok text-2xl"></i></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="relative h-[400px] flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 z-0"><img alt="Shop Background" class="w-full h-full object-cover opacity-60"
+                src="images/hero_gravel_realistic.png" />
+        </div>
+        <div class="absolute inset-0 z-10 hero-gradient"></div>
+        <div class="relative z-20 text-center px-4 max-w-4xl mx-auto mt-16">
+            <div class="inline-block mb-4 animate-bounce"><span
+                    class="material-symbols-outlined text-brand-orange text-5xl drop-shadow-lg">shopping_cart</span>
+            </div>
+            <h1
+                class="font-display font-bold text-6xl md:text-8xl uppercase leading-[0.85] tracking-tight text-white mb-6 drop-shadow-2xl">
+                Amazon<br /><span
+                    class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-orange-300">Store</span>
+            </h1>
+            <p class="font-body text-lg md:text-2xl text-gray-300 max-w-2xl mx-auto mb-10 font-light drop-shadow-md">
+                Tools, gear, and parts I trust for my builds. As an Amazon Associate I earn from qualifying purchases.
+            </p>
+        </div>
+    </header>
+
+    <section class="py-20 bg-brand-blue border-t border-white/5">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="font-display font-bold text-5xl text-brand-orange uppercase tracking-wide mb-2">My Picks</h2>
+                <div class="w-24 h-1 bg-brand-orange mx-auto rounded"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+                <!-- 20 Placeholder items -->
+                <!-- Item 1 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/park_tool_aws_11.png" class="object-contain h-full w-full"
+                            alt="Park Tool AWS-11">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Park Tool AWS-11
+                        Fold-Up Hex Wrench Set
+                    </h3>
+                    <a href="https://amzn.to/3YAITc1" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 2 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/bike_stand_vertical.png" class="object-contain h-full w-full" alt="Bike Stand">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Vertical Bike
+                        Stand
+                    </h3>
+                    <a href="https://amzn.to/44Od56U" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 3 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/vittoria_zaffiro_pro.png" class="object-contain h-full w-full"
+                            alt="Vittoria Zaffiro Pro">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Vittoria Zaffiro
+                        Pro Tire
+                    </h3>
+                    <a href="https://amzn.to/49cncDQ" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 4 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/ridenow_tpu_tubes.png" class="object-contain h-full w-full"
+                            alt="RideNow TPU Tubes">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">RideNow TPU
+                        Inner Tubes
+                    </h3>
+                    <a href="https://amzn.to/49gjARk" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 5 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/computer_mount.png" class="object-contain h-full w-full" alt="Computer Mount">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Out Front
+                        Computer Mount
+                    </h3>
+                    <a href="https://amzn.to/3LcukIq" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 6 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/floor_bike_rack.png" class="object-contain h-full w-full"
+                            alt="Floor Bike Rack">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Floor Bike
+                        Parking Rack
+                    </h3>
+                    <a href="https://amzn.to/48ZPfHU" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 7 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/bar_tape.png" class="object-contain h-full w-full" alt="Handlebar Tape">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Handlebar Tape
+                    </h3>
+                    <a href="https://amzn.to/4qyEp1t" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 8 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/heart_rate_monitor.png" class="object-contain h-full w-full"
+                            alt="Heart Rate Monitor">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Heart Rate
+                        Monitor Strap
+                    </h3>
+                    <a href="https://amzn.to/4aBSAhn" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 9 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/repair_book.png" class="object-contain h-full w-full"
+                            alt="Bicycle Repair Book">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Big Blue Book of
+                        Bicycle Repair
+                    </h3>
+                    <a href="https://amzn.to/45jhL4O" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 10 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/polylube_grease.png" class="object-contain h-full w-full"
+                            alt="Polylube Grease">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Park Tool
+                        Polylube 1000 Grease
+                    </h3>
+                    <a href="https://amzn.to/4q6DJ3C" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 11 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/top_tube_bag.png" class="object-contain h-full w-full" alt="Top Tube Bag">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Top Tube Phone
+                        Bag
+                    </h3>
+                    <a href="https://amzn.to/3MPKzM6" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 12 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/shimano_pedals.png" class="object-contain h-full w-full"
+                            alt="Shimano PD-EH500 Pedals">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Shimano PD-EH500
+                        Pedals
+                    </h3>
+                    <a href="https://amzn.to/4pkkKkT" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 13 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/electric_pump.png" class="object-contain h-full w-full"
+                            alt="Electric Bike Pump">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Electric Bike
+                        Pump
+                    </h3>
+                    <a href="https://amzn.to/490z5Ot" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 14 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/garmin_headlight.png" class="object-contain h-full w-full"
+                            alt="Garmin Varia Headlight">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Garmin Varia
+                        UT800 Headlight
+                    </h3>
+                    <a href="https://amzn.to/48ZPN0q" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 15 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/cable_cutters.png" class="object-contain h-full w-full" alt="Cable Cutters">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Park Tool CN-10
+                        Cable Cutter
+                    </h3>
+                    <a href="https://amzn.to/3LlshSo" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 16 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/carbon_handlebars.png" class="object-contain h-full w-full"
+                            alt="Carbon Handlebars">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Integrated
+                        Carbon Handlebar
+                    </h3>
+                    <a href="https://amzn.to/4q1Fi2G" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 17 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/squirt_chain_lube.png" class="object-contain h-full w-full" alt="Chain Lube">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Squirt Chain
+                        Lube
+                    </h3>
+                    <a href="https://amzn.to/49vUZZU" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 18 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/kmc_missing_link.png" class="object-contain h-full w-full" alt="Missing Link">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">KMC Missing Link
+                    </h3>
+                    <a href="https://amzn.to/3YgKdk4" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 19 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/shimano_cassette.png" class="object-contain h-full w-full"
+                            alt="Shimano Cassette">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Shimano 10-Speed
+                        Cassette
+                    </h3>
+                    <a href="https://amzn.to/4qvc38a" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+                <!-- Item 20 -->
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="images/superteam_wheels.png" class="object-contain h-full w-full"
+                            alt="Carbon Wheelset">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Superteam Carbon
+                        Wheelset
+                    </h3>
+                    <a href="https://amzn.to/4bc6S8H" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-black border-t border-gray-900 py-12" id="about">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex flex-col items-center md:items-start">
+                <span class="font-display font-bold text-3xl tracking-widest text-white leading-none">WEEECYCLE<span
+                        class="text-brand-orange">.NET</span></span>
+                <span class="text-gray-500 text-xs uppercase tracking-[0.2em] mt-2">Building Speed. Fixing Fun.</span>
+            </div>
+            <div class="text-gray-600 text-xs uppercase tracking-wider">
+                &copy; 2025 Weeecycle. All rights reserved.
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
