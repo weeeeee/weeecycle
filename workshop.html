@@ -727,6 +727,19 @@
             window.location.href = 'index.html';
         }
 
+        // REAL-TIME SYNC
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'new_service_request') {
+                checkNewSubmissions();
+                // Show notification
+                const toast = document.createElement('div');
+                toast.className = "fixed bottom-4 right-4 bg-brand-orange text-white px-6 py-4 rounded shadow-2xl z-50 text-xl font-bold uppercase tracking-wide animate-bounce";
+                toast.innerHTML = '<i class="fa-solid fa-bell mr-2"></i> New Job Received!';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 5000);
+            }
+        });
+
         // START
         init();
     </script>
