@@ -106,7 +106,7 @@
                 </div>
 
                 <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-8 shadow-2xl">
-                    <form name="contact" method="POST" data-netlify="true" class="space-y-6">
+                    <form id="contactForm" name="contact" method="POST" data-netlify="true" class="space-y-6">
                         <!-- Required for Netlify -->
                         <input type="hidden" name="form-name" value="contact" />
                         <input type="hidden" name="subject" value="New Service Request - Weeecycle.net" />
@@ -228,11 +228,6 @@
             const service = urlParams.get('service');
             if (service) {
                 const select = document.getElementById('service-menu');
-                // Create a map to handle slight differences in naming if necessary,
-                // or just iterate options to find a match.
-                // The values in options are "Safety Check", "The Tune-Up", etc.
-                // The URL params we plan to pass are "Safety Check", "The Tune-Up", etc.
-
                 for (let i = 0; i < select.options.length; i++) {
                     if (select.options[i].value === service) {
                         select.selectedIndex = i;
@@ -240,6 +235,29 @@
                     }
                 }
             }
+        });
+
+        // Intercept form submission to simulate database push
+        document.getElementById('contactForm').addEventListener('submit', function (e) {
+            // In a real app with Netlify forms, we might not want to prevent default if we want Netlify to catch it.
+            // But for this "simulation" dashboard to work on localhost/same-machine, we save to localStorage.
+
+            const formData = {
+                fullname: document.getElementById('fullname').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                service: document.getElementById('service-menu').value,
+                bike: document.getElementById('bike-model').value,
+                description: document.getElementById('description').value,
+                date: new Date().toISOString()
+            };
+
+            // Save to localStorage for workshop.html to pick up
+            localStorage.setItem('new_service_request', JSON.stringify(formData));
+
+            // We want the form to still actually submit to Netlify (or show a success page)
+            // So we don't preventDefault() here unless we are purely testing locally without a backend.
+            // For this user flow, we will let it continue, but the data is now "pushed" to the dashboard.
         });
     </script>
 </body>

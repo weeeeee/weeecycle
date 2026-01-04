@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Workshop Stock | Weeecycle.net</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { dark: '#050511', blue: '#0B0B3B', orange: '#FF8000', slate: '#1e293b', light: '#f8fafc' }
+                    },
+                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Roboto Condensed', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #050511;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #FF8000;
+            border-radius: 4px;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(180deg, rgba(5, 5, 17, 0.3) 0%, rgba(5, 5, 17, 0.8) 70%, rgba(5, 5, 17, 1) 100%);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-brand-dark text-gray-200 font-body antialiased selection:bg-brand-orange selection:text-white pb-20 md:pb-0">
+
+    <!-- Auth Check -->
+    <script>
+        if (localStorage.getItem('mechanic_auth') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+
+    <nav
+        class="fixed top-0 w-full z-50 bg-brand-dark/95 backdrop-blur border-b border-brand-orange/20 shadow-xl transition-all duration-300">
+        <div class="container mx-auto px-4 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="h-12 w-12 relative overflow-hidden flex items-center justify-center">
+                    <img src="images/logo/FullLogo_Transparent_NoBuffer.png" alt="Weeecycle Icon"
+                        class="h-10 w-auto object-contain drop-shadow-[0_0_5px_rgba(255,128,0,0.5)]" />
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-display font-bold text-2xl tracking-widest text-white leading-none">WORKSHOP<span
+                            class="text-brand-orange">.STOCK</span></span>
+                </div>
+            </div>
+            <div class="flex items-center gap-8">
+                <a class="bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase tracking-wider py-2 px-6 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50"
+                    href="workshop.html">Back to Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="relative h-[300px] flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 z-0"><img alt="Shop Background" class="w-full h-full object-cover opacity-60"
+                src="images/hero_gravel_realistic.png" />
+        </div>
+        <div class="absolute inset-0 z-10 hero-gradient"></div>
+        <div class="relative z-20 text-center px-4 max-w-4xl mx-auto mt-16">
+            <h1
+                class="font-display font-bold text-6xl md:text-7xl uppercase leading-[0.85] tracking-tight text-white mb-6 drop-shadow-2xl">
+                Internal<br /><span
+                    class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-orange-300">Stockroom</span>
+            </h1>
+            <p class="font-body text-lg text-gray-300 max-w-xl mx-auto font-light drop-shadow-md">
+                Quick re-order links for workshop essentials.
+            </p>
+        </div>
+    </header>
+
+    <section class="py-12 bg-brand-blue border-t border-white/5">
+        <div class="container mx-auto px-4">
+            <div id="stock-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+                <!-- Items populated by JS -->
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Seed Data (subset of amazon items for demo)
+        const initialStock = [
+            { id: 1, name: "Park Tool AWS-11", image: "images/park_tool_aws_11.png", link: "https://amzn.to/3YAITc1" },
+            { id: 2, name: "Vittoria Zaffiro Pro", image: "images/vittoria_zaffiro_pro.png", link: "https://amzn.to/49cncDQ" },
+            { id: 3, name: "RideNow TPU Tubes", image: "images/ridenow_tpu_tubes.png", link: "https://amzn.to/49gjARk" },
+            { id: 4, name: "Handlebar Tape", image: "images/bar_tape.png", link: "https://amzn.to/4qyEp1t" },
+            { id: 5, name: "Polylube 1000 Grease", image: "images/polylube_grease.png", link: "https://amzn.to/4q6DJ3C" },
+            { id: 6, name: "KMC Missing Link", image: "images/kmc_missing_link.png", link: "https://amzn.to/3YgKdk4" },
+            { id: 7, name: "Shimano Cassette", image: "images/shimano_cassette.png", link: "https://amzn.to/4qvc38a" },
+            { id: 8, name: "Squirt Chain Lube", image: "images/squirt_chain_lube.png", link: "https://amzn.to/49vUZZU" }
+        ];
+
+        // Init Storage
+        if (!localStorage.getItem('workshop_amazon_stock')) {
+            localStorage.setItem('workshop_amazon_stock', JSON.stringify(initialStock));
+        }
+
+        // Render
+        const grid = document.getElementById('stock-grid');
+        const items = JSON.parse(localStorage.getItem('workshop_amazon_stock')) || [];
+
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = "bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl relative";
+            div.innerHTML = `
+                <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                    <img src="${item.image}" class="object-contain h-full w-full" alt="${item.name}" onerror="this.src='https://placehold.co/400x400?text=No+Image'">
+                </div>
+                <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">${item.name}</h3>
+                <a href="${item.link}" target="_blank"
+                    class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Re-Order</a>
+                <button onclick="removeStockItem(${item.id})" class="absolute top-2 right-2 text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-trash"></i></button>
+            `;
+            grid.appendChild(div);
+        });
+
+        function removeStockItem(id) {
+            if (confirm('Remove this item from the Stockroom?')) {
+                const newItems = items.filter(i => i.id !== id);
+                localStorage.setItem('workshop_amazon_stock', JSON.stringify(newItems));
+                window.location.reload();
+            }
+        }
+    </script>
+
+</body>
+
+</html>

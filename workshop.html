@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workshop Dashboard | Weeecycle.net</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { dark: '#050511', blue: '#0B0B3B', orange: '#FF8000', green: '#10B981', red: '#EF4444' }
+                    },
+                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Roboto Condensed', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        .kanban-col {
+            min-height: 500px;
+        }
+
+        .dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+
+<body class="bg-brand-dark text-gray-200 font-body h-screen flex flex-col overflow-hidden">
+    <style>
+        .kanban-col {
+            min-height: 500px;
+        }
+
+        .dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        /* Calendar Styles */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .calendar-day {
+            min-height: 80px;
+            padding: 4px;
+            background: #151535;
+            border: 1px solid #1f2937;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            background: #1a1a40;
+            border-color: #FF8000;
+        }
+
+        .calendar-day.today {
+            border-color: #FF8000;
+            background: #1a1a3a;
+        }
+
+        .day-num {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .job-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #FF8000;
+            display: inline-block;
+            margin-right: 2px;
+        }
+    </style>
+
+    <!-- Auth Check -->
+    <script>
+        if (localStorage.getItem('mechanic_auth') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+
+    <!-- Top Nav -->
+    <header class="bg-[#0B0B2B] border-b border-gray-800 h-16 flex items-center justify-between px-6 shrink-0">
+        <div class="flex items-center gap-4">
+            <span class="font-display font-bold text-2xl text-white uppercase tracking-widest">Workshop<span
+                    class="text-brand-orange">.OS</span></span>
+        </div>
+        <div class="flex gap-4">
+            <button onclick="switchTab('dashboard')" id="btn-dashboard"
+                class="px-4 py-1 rounded bg-brand-orange text-white font-bold uppercase tracking-wider text-sm transition">Dashboard</button>
+            <button onclick="switchTab('jobs')" id="btn-jobs"
+                class="px-4 py-1 rounded hover:bg-gray-800 text-gray-400 font-bold uppercase tracking-wider text-sm transition">Job
+                Board</button>
+            <button onclick="switchTab('inventory')" id="btn-inventory"
+                class="px-4 py-1 rounded hover:bg-gray-800 text-gray-400 font-bold uppercase tracking-wider text-sm transition">Inventory</button>
+            <button onclick="logout()"
+                class="px-4 py-1 rounded hover:bg-red-900/30 text-red-400 font-bold uppercase tracking-wider text-sm transition border border-red-900/50 ml-4">Logout</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow overflow-hidden relative">
+
+        <!-- DASHBOARD VIEW -->
+        <div id="view-dashboard" class="absolute inset-0 p-6 overflow-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto h-full">
+
+                <!-- Left Column: Action Required & Recents -->
+                <div class="lg:col-span-1 space-y-8 flex flex-col">
+
+                    <!-- Action Required -->
+                    <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 flex-1 flex flex-col">
+                        <h2 class="font-display font-bold text-3xl text-white uppercase mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-brand-orange">notification_important</span>
+                            Action Required
+                        </h2>
+                        <div id="action-required-list" class="space-y-4 overflow-y-auto flex-1 pr-2 max-h-[400px]">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Recents -->
+                    <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 h-fit">
+                        <h2 class="font-display font-bold text-2xl text-white uppercase mb-4">Recent Activity</h2>
+                        <ul id="recents-list" class="space-y-3 text-sm text-gray-400">
+                            <!-- Populated by JS -->
+                        </ul>
+                    </div>
+
+                </div>
+
+                <!-- Right Column: Calendar & Hours -->
+                <div class="lg:col-span-2 bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 flex flex-col h-full">
+                    <div class="flex justify-between items-start mb-6">
+                        <h2 class="font-display font-bold text-3xl text-white uppercase">Shop Schedule</h2>
+                        <div class="text-right">
+                            <h3 class="font-bold text-brand-orange uppercase text-sm">Hours of Operation</h3>
+                            <p id="shop-hours" class="text-gray-400 text-sm whitespace-pre-line">Mon-Fri: 9am -
+                                5pm\nSat: 10am - 2pm\nSun: Closed</p>
+                            <button onclick="editShopHours()"
+                                class="text-xs text-gray-600 hover:text-white underline mt-1">Edit</button>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Controls -->
+                    <div class="flex justify-between items-center mb-4">
+                        <button onclick="changeMonth(-1)" class="text-gray-400 hover:text-white"><i
+                                class="fa-solid fa-chevron-left"></i></button>
+                        <h3 id="calendar-month-year" class="font-bold text-xl text-white uppercase">January 2026</h3>
+                        <button onclick="changeMonth(1)" class="text-gray-400 hover:text-white"><i
+                                class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+
+                    <!-- Calendar Grid -->
+                    <div class="grid grid-cols-7 gap-4 mb-2 text-center text-xs font-bold text-gray-500 uppercase">
+                        <div>Sun</div>
+                        <div>Mon</div>
+                        <div>Tue</div>
+                        <div>Wed</div>
+                        <div>Thu</div>
+                        <div>Fri</div>
+                        <div>Sat</div>
+                    </div>
+                    <div id="calendar-grid" class="calendar-grid flex-grow">
+                        <!-- Days populated by JS -->
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- JOB BOARD VIEW -->
+        <div id="view-jobs" class="hidden absolute inset-0 p-6 overflow-x-auto overflow-y-hidden flex gap-6">
+            <!-- Columns generated by JS -->
+            <div class="flex gap-6 h-full min-w-max" id="kanban-board">
+                <!-- Columns: Booked In, Waiting Approval, Waiting Parts, Working On, Bike Ready, Completed -->
+            </div>
+        </div>
+
+        <!-- INVENTORY VIEW -->
+        <div id="view-inventory" class="hidden absolute inset-0 p-6 overflow-auto bg-brand-dark">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+
+                <!-- My Bench Inventory -->
+                <div class="lg:col-span-2 bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 h-fit">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="font-display font-bold text-3xl text-white uppercase">My Bench Stock</h2>
+                        <button onclick="addItem()"
+                            class="bg-brand-orange text-white px-3 py-1 rounded text-sm uppercase font-bold hover:bg-orange-600 transition">+
+                            Add Item</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-gray-400">
+                            <thead class="bg-gray-900 text-gray-200 uppercase font-display text-lg">
+                                <tr>
+                                    <th class="p-3 rounded-tl-lg">Item Name</th>
+                                    <th class="p-3">Qty</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 rounded-tr-lg text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-table-body" class="divide-y divide-gray-800">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Amazon Restock -->
+                <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 h-fit">
+                    <h2 class="font-display font-bold text-3xl text-white uppercase mb-6">Quick Restock</h2>
+                    <div class="space-y-4">
+                        <a href="https://amzn.to/4bc5L8S" target="_blank"
+                            class="block p-4 border border-gray-700 rounded hover:border-brand-orange transition group bg-[#151535]">
+                            <div class="flex items-center gap-4">
+                                <div class="bg-white p-2 rounded w-12 h-12 flex items-center justify-center"><img
+                                        src="images/Tri-Flow-Lube.png" class="max-h-full"></div>
+                                <div>
+                                    <div class="font-bold text-white uppercase group-hover:text-brand-orange">Tri-Flow
+                                        Lube</div>
+                                    <div class="text-xs text-gray-500">Premium Lubricant</div>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="https://amzn.to/4qckoy1" target="_blank"
+                            class="block p-4 border border-gray-700 rounded hover:border-brand-orange transition group bg-[#151535]">
+                            <div class="flex items-center gap-4">
+                                <div class="bg-white p-2 rounded w-12 h-12 flex items-center justify-center"><img
+                                        src="images/orange bartape.png" class="max-h-full"></div>
+                                <div>
+                                    <div class="font-bold text-white uppercase group-hover:text-brand-orange">Orange Bar
+                                        Tape</div>
+                                    <div class="text-xs text-gray-500">Grip & Style</div>
+                                </div>
+                            </div>
+                        </a>
+                        <button onclick="addAmazonItem()"
+                            class="w-full py-2 border border-gray-600 text-gray-400 hover:text-brand-orange hover:border-brand-orange transition uppercase font-bold text-xs rounded mb-4">+
+                            Add Amazon Product</button>
+                        <button onclick="window.open('stock.html', '_blank')"
+                            class="w-full py-3 border border-dashed border-gray-600 text-gray-400 hover:text-white hover:border-brand-orange transition uppercase font-bold text-sm rounded mt-4">Browse
+                            Stockroom</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modals (Hidden by default) -->
+    <!-- Add Job Modal could go here -->
+
+    <script>
+        // --- DATA & STATE ---
+        const COLUMNS = [
+            { id: 'booked', title: 'Booked In', color: 'border-l-4 border-gray-400' },
+            { id: 'approval', title: 'Waiting Approval', color: 'border-l-4 border-yellow-500' },
+            { id: 'parts', title: 'Waiting Parts', color: 'border-l-4 border-blue-500' },
+            { id: 'working', title: 'Working On', color: 'border-l-4 border-brand-orange' },
+            { id: 'ready', title: 'Bike Ready', color: 'border-l-4 border-green-500' },
+            { id: 'completed', title: 'Completed', color: 'border-l-4 border-gray-700 opacity-60' }
+        ];
+
+        // Seed data if empty
+        if (!localStorage.getItem('workshop_inventory')) {
+            const initialInventory = [
+                { id: 1, name: 'Shift Cable (Stainless)', qty: 15, min: 5 },
+                { id: 2, name: 'Brake Cable (Road)', qty: 8, min: 5 },
+                { id: 3, name: '700c Inner Tube', qty: 23, min: 10 },
+                { id: 4, name: 'Disc Brake Pads (SRAM)', qty: 2, min: 4 }
+            ];
+            localStorage.setItem('workshop_inventory', JSON.stringify(initialInventory));
+        }
+
+        // Seed jobs if empty (Demo Data)
+        if (!localStorage.getItem('workshop_jobs')) {
+            const initialJobs = [
+                {
+                    id: '1701',
+                    status: 'booked',
+                    customer: 'Demo User',
+                    bike: 'Cannondale Synapse',
+                    service: 'The Tune-Up',
+                    date: new Date().toISOString()
+                },
+                {
+                    id: '1702',
+                    status: 'working',
+                    customer: 'Sarah Connor',
+                    bike: 'Terminator T-800',
+                    service: 'Safety Check',
+                    date: new Date(Date.now() - 86400000).toISOString()
+                }
+            ];
+            localStorage.setItem('workshop_jobs', JSON.stringify(initialJobs));
+        }
+
+        // --- APP LOGIC ---
+
+        function init() {
+            renderDashboard();
+            renderKanban();
+            renderInventory();
+            checkNewSubmissions();
+        }
+
+        // --- DASHBOARD LOGIC ---
+
+        function renderDashboard() {
+            renderActionRequired();
+            renderRecents();
+            renderCalendar();
+            renderShopHours();
+        }
+
+        function renderActionRequired() {
+            const list = document.getElementById('action-required-list');
+            list.innerHTML = '';
+            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+
+            // Filter Booked In
+            const bookedJobs = jobs.filter(j => j.status === 'booked');
+
+            if (bookedJobs.length === 0) {
+                list.innerHTML = '<div class="text-gray-500 italic text-center py-4">No pending actions. Good job!</div>';
+                return;
+            }
+
+            bookedJobs.forEach(job => {
+                const div = document.createElement('div');
+                div.className = "bg-brand-dark p-4 rounded border border-gray-700 hover:border-brand-orange cursor-pointer transition group";
+                div.onclick = () => { switchTab('jobs'); }; // Go to board
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <h4 class="font-bold text-white text-lg">${job.customer}</h4>
+                        <span class="text-xs bg-brand-orange px-2 py-1 rounded text-white font-bold uppercase">Booked In</span>
+                    </div>
+                    <p class="text-sm text-gray-400">${job.bike} - ${job.service}</p>
+                    <div class="mt-2 text-xs text-brand-orange flex items-center gap-1 group-hover:underline">
+                        Tap to view on board <i class="fa-solid fa-arrow-right"></i>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function renderRecents() {
+            const list = document.getElementById('recents-list');
+            list.innerHTML = '';
+            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+
+            // Sort by Date Descending
+            jobs.sort((a, b) => new Date(b.date) - new Date(a.date));
+            const recents = jobs.slice(0, 5);
+
+            recents.forEach(job => {
+                const li = document.createElement('li');
+                li.className = "flex justify-between items-center border-b border-gray-800 pb-2";
+                li.innerHTML = `
+                    <div>
+                        <div class="text-white font-bold">${job.customer}</div>
+                        <div class="text-xs text-gray-500">${new Date(job.date).toLocaleDateString()}</div>
+                    </div>
+                    <span class="text-xs uppercase px-2 py-0.5 rounded bg-gray-800 text-gray-400 border border-gray-700">${job.status}</span>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        // CALENDAR
+        let currentDate = new Date();
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            const monthTitle = document.getElementById('calendar-month-year');
+            grid.innerHTML = '';
+
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+
+            monthTitle.textContent = `${monthNames[month]} ${year}`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Get jobs for dots
+            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+
+            // Empty slots for previous month
+            for (let i = 0; i < firstDay; i++) {
+                const empty = document.createElement('div');
+                empty.className = "calendar-day opacity-20 bg-transparent border-none";
+                grid.appendChild(empty);
+            }
+
+            // Days
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = "calendar-day cursor-pointer flex flex-col justify-end items-start";
+
+                // Highlight Today
+                const today = new Date();
+                if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                    dayDiv.classList.add('today');
+                }
+
+                // Check for jobs on this day
+                const checkDate = new Date(year, month, i).toLocaleDateString();
+                const daysJobs = jobs.filter(j => new Date(j.date).toLocaleDateString() === checkDate);
+
+                let dotsHtml = '';
+                daysJobs.slice(0, 5).forEach(j => {
+                    dotsHtml += `<div class="job-dot" title="${j.customer}"></div>`;
+                });
+                if (daysJobs.length > 5) dotsHtml += `<span class="text-[8px] text-gray-500">+${daysJobs.length - 5}</span>`;
+
+                dayDiv.innerHTML = `<span class="day-num">${i}</span><div class="flex flex-wrap gap-1 p-1 w-full">${dotsHtml}</div>`;
+
+                // Click to see jobs
+                dayDiv.onclick = () => {
+                    if (daysJobs.length > 0) {
+                        alert(`Jobs on ${monthNames[month]} ${i}:\n` + daysJobs.map(j => `- ${j.customer} (${j.status})`).join('\n'));
+                    }
+                };
+
+                grid.appendChild(dayDiv);
+            }
+        }
+
+        function changeMonth(dir) {
+            currentDate.setMonth(currentDate.getMonth() + dir);
+            renderCalendar();
+        }
+
+        // SHOP HOURS
+        function renderShopHours() {
+            const hours = localStorage.getItem('workshop_hours') || "Mon-Fri: 9am - 5pm\nSat: 10am - 2pm\nSun: Closed";
+            document.getElementById('shop-hours').textContent = hours;
+        }
+
+        function editShopHours() {
+            const current = document.getElementById('shop-hours').textContent;
+            const newHours = prompt("Edit Shop Hours:", current);
+            if (newHours) {
+                localStorage.setItem('workshop_hours', newHours);
+                renderShopHours();
+            }
+        }
+
+        function checkNewSubmissions() {
+            // Check if there's a new submission from contact.html in localStorage
+            const newJob = localStorage.getItem('new_service_request');
+            if (newJob) {
+                const jobData = JSON.parse(newJob);
+                addJobCard(jobData);
+                localStorage.removeItem('new_service_request'); // Clear it so it doesn't duplicate
+            }
+        }
+
+        // KANBAN
+        function renderKanban() {
+            const board = document.getElementById('kanban-board');
+            board.innerHTML = '';
+
+            // Get Jobs
+            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+
+            COLUMNS.forEach(col => {
+                const colDiv = document.createElement('div');
+                colDiv.className = 'w-80 bg-[#151535] rounded-xl flex flex-col flex-shrink-0 h-full max-h-full shadow-xl border border-gray-800';
+                colDiv.innerHTML = `
+                    <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-[#0B0B2B] rounded-t-xl ${col.color}">
+                        <h3 class="font-display font-bold text-xl uppercase tracking-wider text-gray-200">${col.title}</h3>
+                        <span class="text-xs bg-gray-800 px-2 py-1 rounded text-gray-400 count-badge">0</span>
+                    </div>
+                    <div class="p-2 overflow-y-auto flex-grow kanban-col space-y-2 relative" 
+                         id="col-${col.id}" 
+                         ondrop="drop(event)" 
+                         ondragover="allowDrop(event)">
+                    </div>
+                `;
+                board.appendChild(colDiv);
+
+                // Populate Cards
+                const colJobs = jobs.filter(j => j.status === col.id);
+                const container = colDiv.querySelector(`#col-${col.id}`);
+                colDiv.querySelector('.count-badge').textContent = colJobs.length;
+
+                colJobs.forEach(job => {
+                    const card = createCardElement(job);
+                    container.appendChild(card);
+                });
+            });
+        }
+
+        function createCardElement(job) {
+            const div = document.createElement('div');
+            div.className = 'bg-brand-dark p-4 rounded border border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-brand-orange transition group relative';
+            div.draggable = true;
+            div.id = `job-${job.id}`;
+            div.ondragstart = drag;
+
+            div.innerHTML = `
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-mono text-gray-500">#${job.id.substring(0, 4)}</span>
+                    <span class="text-[10px] bg-gray-800 px-1 rounded text-brand-orange uppercase tracking-wide">${job.service}</span>
+                </div>
+                <h4 class="font-bold text-white text-lg leading-tight mb-1">${job.customer}</h4>
+                <p class="text-xs text-gray-400 mb-3">${job.bike}</p>
+                <div class="flex justify-between items-center pt-2 border-t border-gray-800 mt-2">
+                     <div class="text-[10px] text-gray-500">${new Date(job.date).toLocaleDateString()}</div>
+                     <button onclick="deleteJob('${job.id}')" class="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `;
+            return div;
+        }
+
+        function addJobCard(data) {
+            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+            const newJob = {
+                id: Date.now().toString(),
+                status: 'booked',
+                customer: data.fullname,
+                bike: data.bike,
+                service: data.service,
+                date: new Date().toISOString()
+            };
+            jobs.push(newJob);
+            localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+            renderKanban();
+        }
+
+        // DRAG AND DROP
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+            ev.target.classList.add('dragging');
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text");
+            const card = document.getElementById(data);
+            card.classList.remove('dragging');
+
+            // Find drop target (handle dropping on child elements)
+            let targetCol = ev.target;
+            while (!targetCol.classList.contains('kanban-col')) {
+                targetCol = targetCol.parentElement;
+                if (!targetCol) return;
+            }
+
+            targetCol.appendChild(card);
+
+            // Update State
+            const newStatus = targetCol.id.replace('col-', '');
+            const jobId = data.replace('job-', '');
+
+            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+            const jobIndex = jobs.findIndex(j => j.id === jobId);
+            if (jobIndex > -1) {
+                jobs[jobIndex].status = newStatus;
+                localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+                renderKanban(); // Re-render to update counts
+            }
+        }
+
+        function deleteJob(id) {
+            if (confirm('Archive this job record?')) {
+                let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+                jobs = jobs.filter(j => j.id !== id);
+                localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+                renderKanban();
+            }
+        }
+
+        // INVENTORY
+        function renderInventory() {
+            const tbody = document.getElementById('inventory-table-body');
+            tbody.innerHTML = '';
+            const items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
+
+            items.forEach(item => {
+                const tr = document.createElement('tr');
+                const isLow = item.qty <= item.min;
+                tr.className = "hover:bg-white/5 transition";
+                tr.innerHTML = `
+                    <td class="p-3 font-medium text-white">${item.name}</td>
+                    <td class="p-3">
+                        <div class="flex items-center gap-2">
+                             <button onclick="updateQty(${item.id}, -1)" class="w-6 h-6 bg-gray-800 hover:bg-gray-700 rounded text-xs">-</button>
+                             <span class="w-8 text-center">${item.qty}</span>
+                             <button onclick="updateQty(${item.id}, 1)" class="w-6 h-6 bg-gray-800 hover:bg-gray-700 rounded text-xs">+</button>
+                        </div>
+                    </td>
+                    <td class="p-3">
+                        ${isLow
+                        ? '<span class="text-red-500 text-xs font-bold uppercase tracking-wider bg-red-900/20 px-2 py-1 rounded">Low Stock</span>'
+                        : '<span class="text-green-500 text-xs font-bold uppercase tracking-wider bg-green-900/20 px-2 py-1 rounded">In Stock</span>'}
+                    </td>
+                    <td class="p-3 text-right">
+                         <button onclick="removeItem(${item.id})" class="text-gray-600 hover:text-red-500 text-sm"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateQty(id, change) {
+            let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
+            const idx = items.findIndex(i => i.id === id);
+            if (idx > -1) {
+                items[idx].qty = Math.max(0, items[idx].qty + change);
+                localStorage.setItem('workshop_inventory', JSON.stringify(items));
+                renderInventory();
+            }
+        }
+
+        function addItem() {
+            const name = prompt("Item Name:");
+            if (!name) return;
+            const qty = parseInt(prompt("Current Quantity:", "1") || "0");
+            const min = parseInt(prompt("Low Stock Warning Level:", "5") || "5");
+
+            let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
+            items.push({ id: Date.now(), name, qty, min });
+            localStorage.setItem('workshop_inventory', JSON.stringify(items));
+            renderInventory();
+        }
+
+        function removeItem(id) {
+            if (confirm('Delete item from inventory?')) {
+                let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
+                items = items.filter(i => i.id !== id);
+                localStorage.setItem('workshop_inventory', JSON.stringify(items));
+                renderInventory();
+            }
+        }
+
+        // NAVIGATION
+        function switchTab(tab) {
+            const dashView = document.getElementById('view-dashboard');
+            const jobView = document.getElementById('view-jobs');
+            const invView = document.getElementById('view-inventory');
+
+            const dashBtn = document.getElementById('btn-dashboard');
+            const jobBtn = document.getElementById('btn-jobs');
+            const invBtn = document.getElementById('btn-inventory');
+
+            // Hide All
+            dashView.classList.add('hidden');
+            jobView.classList.add('hidden');
+            invView.classList.add('hidden');
+
+            // Reset Buttons
+            const inactiveClass = "px-4 py-1 rounded hover:bg-gray-800 text-gray-400 font-bold uppercase tracking-wider text-sm transition";
+            const activeClass = "px-4 py-1 rounded bg-brand-orange text-white font-bold uppercase tracking-wider text-sm transition";
+
+            dashBtn.className = inactiveClass;
+            jobBtn.className = inactiveClass;
+            invBtn.className = inactiveClass;
+
+            if (tab === 'dashboard') {
+                dashView.classList.remove('hidden');
+                dashBtn.className = activeClass;
+                renderDashboard(); // Refresh data
+            } else if (tab === 'jobs') {
+                jobView.classList.remove('hidden');
+                jobBtn.className = activeClass;
+                renderKanban(); // Refresh data
+            } else if (tab === 'inventory') {
+                invView.classList.remove('hidden');
+                invBtn.className = activeClass;
+                renderInventory(); // Refresh data
+            }
+        }
+
+        function addAmazonItem() {
+            const name = prompt("Product Name:");
+            if (!name) return;
+            const link = prompt("Amazon Link (Affiliate URL):");
+            if (!link) return;
+            const image = prompt("Image URL (Right click image on Amazon -> Copy Image Address):");
+
+            let stock = JSON.parse(localStorage.getItem('workshop_amazon_stock')) || [];
+            const newId = stock.length > 0 ? Math.max(...stock.map(s => s.id)) + 1 : 1;
+
+            stock.push({
+                id: newId,
+                name: name,
+                link: link,
+                image: image || "https://placehold.co/400x400?text=No+Image"
+            });
+
+            localStorage.setItem('workshop_amazon_stock', JSON.stringify(stock));
+            alert("Item added to Workshop Stockroom!");
+        }
+
+        function logout() {
+            localStorage.removeItem('mechanic_auth');
+            window.location.href = 'index.html';
+        }
+
+        // START
+        init();
+    </script>
+</body>
+
+</html>

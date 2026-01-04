@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mechanic Login | Weeecycle.net</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&display=swap"
+        rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { dark: '#050511', blue: '#0B0B3B', orange: '#FF8000' }
+                    },
+                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Roboto Condensed', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-brand-dark h-screen flex items-center justify-center font-body">
+
+    <div class="bg-[#0B0B2B] p-8 rounded-xl shadow-2xl border border-gray-800 w-full max-w-md">
+        <div class="text-center mb-8">
+            <div class="h-12 w-12 mx-auto relative overflow-hidden flex items-center justify-center mb-4">
+                <img src="images/logo/FullLogo_Transparent_NoBuffer.png" alt="Weeecycle Icon"
+                    class="h-10 w-auto object-contain drop-shadow-[0_0_5px_rgba(255,128,0,0.5)]" />
+            </div>
+            <h1 class="font-display font-bold text-4xl text-white uppercase tracking-widest">Mechanic Access</h1>
+            <p class="text-gray-400 text-sm uppercase tracking-wide mt-2">Authorized Personnel Only</p>
+        </div>
+
+        <form id="loginForm" class="space-y-6">
+            <div>
+                <label
+                    class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Passcode</label>
+                <input type="password" id="password" required
+                    class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition text-center tracking-[0.5em] text-xl"
+                    placeholder="••••">
+            </div>
+            <div id="errorMsg" class="text-red-500 text-center text-sm hidden">Access Denied</div>
+            <button type="submit"
+                class="w-full bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-xl uppercase tracking-wider py-3 rounded transition shadow-lg shadow-orange-900/50">
+                Unlock Workshop
+            </button>
+        </form>
+        <div class="mt-6 text-center">
+            <a href="index.html" class="text-gray-500 text-sm hover:text-white transition">Return to Site</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pass = document.getElementById('password').value;
+            // Simple client-side check. 
+            // In a real app, this would be server-side.
+            if (pass === 'WrenchTime') {
+                localStorage.setItem('mechanic_auth', 'true');
+                window.location.href = 'workshop.html';
+            } else {
+                document.getElementById('errorMsg').classList.remove('hidden');
+                document.getElementById('password').value = '';
+                document.getElementById('password').focus();
+            }
+        });
+    </script>
+</body>
+
+</html>
