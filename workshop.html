@@ -12,6 +12,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
         rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -36,7 +38,7 @@
     </style>
 </head>
 
-<body class="bg-brand-dark text-gray-200 font-body h-screen flex flex-col overflow-hidden">
+<body class="bg-black text-gray-200 font-body antialiased flex h-screen overflow-hidden">
     <style>
         .kanban-col {
             min-height: 500px;
@@ -98,27 +100,64 @@
         }
     </script>
 
-    <!-- Top Nav -->
-    <header class="bg-[#0B0B2B] border-b border-gray-800 h-16 flex items-center justify-between px-6 shrink-0">
-        <div class="flex items-center gap-4">
-            <span class="font-display font-bold text-2xl text-white uppercase tracking-widest">Workshop<span
-                    class="text-brand-orange">.OS</span></span>
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-[#050511] border-r border-gray-800 flex flex-col flex-shrink-0 z-40">
+        <!-- Brand -->
+        <div class="h-20 flex flex-col justify-center px-6 border-b border-gray-800">
+            <div class="flex flex-col">
+                <span class="font-display font-bold text-2xl tracking-widest text-white leading-none">WEEECYCLE<span
+                        class="text-brand-orange">.NET</span></span>
+                <span class="font-body text-[10px] text-brand-orange uppercase tracking-[0.2em]">Mechanic Portal</span>
+            </div>
+            <div id="api-status"
+                class="mt-2 text-xs font-bold text-gray-600 flex items-center gap-1 uppercase tracking-wider">
+                <div class="w-2 h-2 bg-gray-600 rounded-full"></div> Connecting...
+            </div>
         </div>
-        <div class="flex gap-4">
-            <button onclick="switchTab('dashboard')" id="btn-dashboard"
-                class="px-4 py-1 rounded bg-brand-orange text-white font-bold uppercase tracking-wider text-sm transition">Dashboard</button>
-            <button onclick="switchTab('jobs')" id="btn-jobs"
-                class="px-4 py-1 rounded hover:bg-gray-800 text-gray-400 font-bold uppercase tracking-wider text-sm transition">Job
-                Board</button>
-            <button onclick="switchTab('inventory')" id="btn-inventory"
-                class="px-4 py-1 rounded hover:bg-gray-800 text-gray-400 font-bold uppercase tracking-wider text-sm transition">Inventory</button>
-            <button onclick="logout()"
-                class="px-4 py-1 rounded hover:bg-red-900/30 text-red-400 font-bold uppercase tracking-wider text-sm transition border border-red-900/50 ml-4">Logout</button>
-        </div>
-    </header>
 
-    <!-- Main Content -->
-    <main class="flex-grow overflow-hidden relative">
+        <!-- Navigation -->
+        <nav class="flex-1 flex flex-col p-4 gap-2 overflow-y-auto">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard"
+                class="nav-item active flex items-center gap-3 px-4 py-3 rounded-lg bg-brand-orange text-white hover:bg-orange-600 transition text-left">
+                <i class="fa-solid fa-gauge-high w-6 text-center"></i>
+                <span class="font-display font-bold uppercase tracking-wide">Dashboard</span>
+            </button>
+            <button onclick="switchTab('jobs')" id="nav-jobs"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition text-left">
+                <i class="fa-solid fa-list-check w-6 text-center"></i>
+                <span class="font-display font-bold uppercase tracking-wide">Job Board</span>
+            </button>
+            <button onclick="switchTab('inventory')" id="nav-inventory"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition text-left">
+                <i class="fa-solid fa-boxes-stacked w-6 text-center"></i>
+                <span class="font-display font-bold uppercase tracking-wide">Inventory</span>
+            </button>
+            <button onclick="switchTab('contacts')" id="nav-contacts"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition text-left">
+                <i class="fa-solid fa-address-book w-6 text-center"></i>
+                <span class="font-display font-bold uppercase tracking-wide">Contacts</span>
+            </button>
+        </nav>
+
+        <!-- User / Logout -->
+        <div class="p-4 border-t border-gray-800">
+            <div class="flex items-center gap-3 px-4 py-3 mb-2">
+                <div class="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center font-bold">
+                    M</div>
+                <div>
+                    <div class="text-sm font-bold text-white">Mechanic</div>
+                    <div class="text-xs text-brand-orange">Online</div>
+                </div>
+            </div>
+            <button onclick="logout()"
+                class="w-full flex items-center gap-3 px-4 py-2 rounded text-red-400 hover:bg-red-500/10 transition text-sm uppercase font-bold">
+                <i class="fa-solid fa-right-from-bracket w-6 text-center"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 relative overflow-hidden bg-black h-full">
 
         <!-- DASHBOARD VIEW -->
         <div id="view-dashboard" class="absolute inset-0 p-6 overflow-auto">
@@ -265,10 +304,129 @@
             </div>
         </div>
 
-    </main>
+        </div>
 
-    <!-- Modals (Hidden by default) -->
-    <!-- Add Job Modal could go here -->
+        <!-- CONTACTS VIEW -->
+        <div id="view-contacts" class="hidden absolute inset-0 p-8 overflow-auto bg-brand-dark">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="font-display font-bold text-4xl text-white uppercase">Contacts</h2>
+                    <div class="relative">
+                        <i
+                            class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                        <input type="text" id="contact-search" placeholder="Search customers..."
+                            onkeyup="renderContacts()"
+                            class="bg-[#050511] border border-gray-700 text-white pl-10 pr-4 py-2 rounded w-64 focus:border-brand-orange focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead
+                            class="bg-[#151535] text-brand-orange font-bold uppercase text-sm border-b border-gray-700">
+                            <tr>
+                                <th class="p-4">Customer Name</th>
+                                <th class="p-4">Email</th>
+                                <th class="p-4">Phone</th>
+                                <th class="p-4">Total Jobs</th>
+                                <th class="p-4">Last Seen</th>
+                                <th class="p-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contacts-table-body" class="text-gray-300 divide-y divide-gray-800">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        </div> <!-- End Absolute Wrapper -->
+    </main> <!-- End Main -->
+
+    <!-- Modals -->
+    <!-- JOB HISTORY MODAL -->
+    <dialog id="job-history-modal"
+        class="bg-[#151535] text-white rounded-xl shadow-2xl p-0 w-full max-w-2xl backdrop:bg-black/80">
+        <div class="flex justify-between items-center p-6 border-b border-gray-700">
+            <h3 class="font-display font-bold text-2xl uppercase tracking-wider text-white"><span
+                    id="history-customer-name" class="text-brand-orange"></span> History</h3>
+            <button onclick="document.getElementById('job-history-modal').close()"
+                class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+
+        <div class="p-6 overflow-y-auto max-h-[60vh] space-y-4" id="history-list">
+            <!-- Populated via JS -->
+        </div>
+    </dialog>
+
+    <!-- existing edit modal -->
+    <dialog id="edit-contact-modal"
+        class="bg-[#0B0B2B] text-white rounded-xl shadow-2xl p-0 w-full max-w-lg backdrop:bg-black/80 border border-gray-700">
+        <div class="p-6 border-b border-gray-700 flex justify-between items-center bg-[#151535]">
+            <h3 class="font-display font-bold text-2xl uppercase">Edit Contact</h3>
+            <button onclick="document.getElementById('edit-contact-modal').close()"
+                class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <div class="p-6 space-y-4">
+            <input type="hidden" id="edit-contact-id">
+            <div>
+                <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Name</label>
+                <input type="text" id="edit-contact-name"
+                    class="w-full bg-[#050511] border border-gray-700 rounded px-3 py-2 text-white focus:border-brand-orange focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Email</label>
+                <input type="text" id="edit-contact-email"
+                    class="w-full bg-[#050511] border border-gray-700 rounded px-3 py-2 text-white focus:border-brand-orange focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Phone</label>
+                <input type="text" id="edit-contact-phone"
+                    class="w-full bg-[#050511] border border-gray-700 rounded px-3 py-2 text-white focus:border-brand-orange focus:outline-none">
+            </div>
+        </div>
+        <div class="p-6 border-t border-gray-700 flex justify-end gap-3 bg-[#151535]">
+            <button onclick="document.getElementById('edit-contact-modal').close()"
+                class="text-gray-400 hover:text-white font-bold uppercase text-sm px-4 py-2">Cancel</button>
+            <button onclick="saveContact()"
+                class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase px-6 py-2 rounded transition">Save
+                Changes</button>
+        </div>
+    </dialog>
+
+    <dialog id="job-sheet-modal"
+        class="bg-[#0B0B2B] text-white rounded-xl shadow-2xl p-0 w-full max-w-4xl backdrop:bg-black/80 border border-gray-700">
+        <div class="flex h-[80vh] flex-col">
+            <!-- Header -->
+            <div class="p-6 border-b border-gray-700 flex justify-between items-start bg-[#151535]">
+                <div>
+                    <h2 id="modal-customer" class="font-display font-bold text-3xl uppercase text-white">Customer Name
+                    </h2>
+                    <div class="flex gap-4 mt-2 text-sm text-gray-400">
+                        <span id="modal-bike"><i class="fa-solid fa-bicycle mr-1"></i> Bike Model</span>
+                        <span id="modal-service" class="text-brand-orange font-bold uppercase"><i
+                                class="fa-solid fa-screwdriver-wrench mr-1"></i> Service Type</span>
+                    </div>
+                </div>
+                <button onclick="closeJobSheet()"
+                    class="text-gray-400 hover:text-white px-3 py-1 rounded hover:bg-white/10 transition"><i
+                        class="fa-solid fa-xmark text-2xl"></i></button>
+            </div>
+
+            <!-- Body -->
+            <div id="modal-checklist" class="flex-grow overflow-y-auto p-8 space-y-8">
+                <!-- Checklist items injected here -->
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 border-t border-gray-700 bg-[#151535] flex justify-end">
+                <button onclick="closeJobSheet()"
+                    class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase py-2 px-6 rounded transition">Save
+                    & Close</button>
+            </div>
+        </div>
+    </dialog>
 
     <script>
         // --- DATA & STATE ---
@@ -280,6 +438,171 @@
             { id: 'ready', title: 'Bike Ready', color: 'border-l-4 border-green-500' },
             { id: 'completed', title: 'Completed', color: 'border-l-4 border-gray-700 opacity-60' }
         ];
+
+        // CHECKLIST DATA
+        const SERVICE_CHECKLISTS = {
+            "Safety Check": {
+                "Frame/Fork": [
+                    "Inspect frame for damage/wear including dropouts, main tubes, seat clamp area, bottle cage and accessory mounting points",
+                    "Inspect fork for damage/wear including dropouts, main tubes, crown, steerer tube and accessory mounting points"
+                ],
+                "Handlebar/Headset/Stem": [
+                    "Inspect headset for wear/corrosion",
+                    "Inspect handlebar for wear/damage",
+                    "Inspect stem for wear, verify straight",
+                    "Inspect handlebar tape/grips for wear/damage"
+                ],
+                "Wheels/Tires": [
+                    "Inspect spokes and rim for wear/damage",
+                    "Inspect tires for condition and wear"
+                ],
+                "Brakes": [
+                    "Inspect condition of hose/cable",
+                    "Inspect caliper",
+                    "Inspect brake rotor for wear/damage/torque"
+                ],
+                "Bottom Bracket/Cranks": [
+                    "Inspect chain rings/crank arms/spindle for wear/damage"
+                ],
+                "Pedals": [
+                    "Inspect pedal body for wear/damage"
+                ],
+                "Drivetrain/Gears": [
+                    "Inspect chain for wear/damage",
+                    "Inspect front derailleur",
+                    "Inspect rear derailleur",
+                    "Inspect cassette for wear/damage and torque"
+                ],
+                "Saddle": [
+                    "Check saddle for wear/damage",
+                    "Inspect seat post and clamp",
+                    "Insect saddle rails/clamps"
+                ],
+                "Accessories": [
+                    "Ensure any accessories are safe/secure"
+                ]
+            },
+            "The Tune-Up": {
+                "Frame/Fork": [
+                    "Inspect frame for damage/wear including dropouts, main tubes, seat clamp area, bottle cage and accessory mounting points",
+                    "Inspect fork for damage/wear including dropouts, main tubes, crown, steerer tube and accessory mounting points",
+                    "<b>Inspect / adjust suspension linkages (if required)</b>",
+                    "<b>Suspension forks, clean/inspect seals and upper tubes. Check for function</b>"
+                ],
+                "Handlebar/Headset/Stem": [
+                    "Inspect headset for wear/corrosion, <b>adjust</b>",
+                    "Inspect handlebar for wear/damage <b>adjust</b>",
+                    "Inspect stem for wear, <b>straight the stem</b>",
+                    "Inspect handlebar tape/grips for wear/damage",
+                    "<b>Change handlebar tape (if damage, purchase extra)</b>"
+                ],
+                "Wheels/Tires": [
+                    "Inspect spokes and rim for wear/damage, <b>change spokes (if necessary, material extra cost)</b>",
+                    "Inspect tires for condition and wear",
+                    "Inspect tubeless system, top-up or replace consumables as appropriate"
+                ],
+                "Brakes": [
+                    "Inspect condition of hose/cable, <b>change</b>",
+                    "Inspect caliper for correct function including clean/lube pistons",
+                    "Inspect brake rotor for wear/damage/torque",
+                    "<b>Inspect condition of lever, including main body, blades and position. Adjust if required.</b>",
+                    "<b>Adjust brake, ensure correct function including no rub and appropriate bite-point</b>"
+                ],
+                "Bottom Bracket/Cranks": [
+                    "Inspect chain rings/crank arms/spindle for wear/damage",
+                    "Inspect bottom bracket torque, ensure free rotation of bearings"
+                ],
+                "Pedals": [
+                    "Inspect pedal body for wear/damage",
+                    "<b>Ensure smooth rotation of pedal bearings and check for play</b>"
+                ],
+                "Drivetrain/Gears": [
+                    "Inspect chain for wear/damage, <b>lubricate</b>",
+                    "Inspect front derailleur",
+                    "Inspect rear derailleur",
+                    "<b>Index front derailleur</b>",
+                    "<b>Index rear derailleur</b>",
+                    "Inspect cassette for wear/damage and torque",
+                    "<b>Ensure derailleur hanger is straight and secure</b>",
+                    "<b>Set front derailleur position/height</b>"
+                ],
+                "Saddle": [
+                    "Check saddle for wear/damage",
+                    "Inspect seat post and clamp",
+                    "Insect saddle rails/clamps",
+                    "<b>Grease grip as appropriate</b>"
+                ],
+                "Accessories": [
+                    "Ensure any accessories are safe/secure"
+                ]
+            },
+            "Overhaul": {
+                "Frame/Fork": [
+                    "Inspect frame for damage/wear including dropouts, main tubes, seat clamp area, bottle cage and accessory mounting points",
+                    "Inspect fork for damage/wear including dropouts, main tubes, crown, steerer tube and accessory mounting points",
+                    "Inspect / adjust suspension linkages (if required)",
+                    "Suspension forks, clean/inspect seals and upper tubes. Check for function"
+                ],
+                "Handlebar/Headset/Stem": [
+                    "Inspect headset for wear/corrosion, adjust",
+                    "Inspect handlebar for wear/damage adjust",
+                    "Inspect stem for wear, straight the stem",
+                    "Inspect handlebar tape/grips for wear/damage",
+                    "Change handlebar tape (if damage, purchase extra)"
+                ],
+                "Wheels/Tires": [
+                    "Inspect spokes and rim for wear/damage, change spokes (if necessary, material extra cost)",
+                    "Inspect tires for condition and wear",
+                    "Inspect tubeless system, top-up or replace consumables as appropriate"
+                ],
+                "Brakes": [
+                    "Inspect condition of hose/cable, change",
+                    "Inspect caliper for correct function including clean/lube pistons",
+                    "Inspect brake rotor for wear/damage/torque",
+                    "Inspect condition of lever, including main body, blades and position. Adjust if required.",
+                    "Adjust brake, ensure correct function including no rub and appropriate bite-point"
+                ],
+                "Bottom Bracket/Cranks": [
+                    "Inspect chain rings/crank arms/spindle for wear/damage",
+                    "Inspect bottom bracket torque, ensure free rotation of bearings"
+                ],
+                "Pedals": [
+                    "Inspect pedal body for wear/damage",
+                    "Ensure smooth rotation of pedal bearings and check for play"
+                ],
+                "Drivetrain/Gears": [
+                    "Inspect chain for wear/damage, lubricate",
+                    "Inspect front derailleur",
+                    "Inspect rear derailleur",
+                    "Index front derailleur",
+                    "Index rear derailleur",
+                    "Inspect cassette for wear/damage and torque",
+                    "Ensure derailleur hanger is straight and secure",
+                    "Set front derailleur position/height"
+                ],
+                "Saddle": [
+                    "Check saddle for wear/damage",
+                    "Inspect seat post and clamp",
+                    "Insect saddle rails/clamps",
+                    "Grease/fiber grip as appropriate"
+                ]
+            },
+            "Dream Build": {
+                "Build List": [
+                    "Frame", "Fork", "Handlebar", "Headset", "Stem", "Wheelset",
+                    "Tires", "Brakes", "Brake Pad", "Bottom Bracket", "Crank",
+                    "Chainring(s)", "Front Derailleur", "Rear Derailleur", "Cassette",
+                    "Pedals", "Seat post", "Saddle"
+                ]
+            },
+            "A La Carte": {
+                "Services": [
+                    "Gear Indexing", "Tubeless Tire setup", "Tire tubed setup", "Pedal Install",
+                    "Brake adjustments", "Shift Adjustments", "Disassemble/Assemble bike for shipping",
+                    "Chain Installation", "Bike Assembly from box (Childs bike)", "Bike Assembly from box (Adults bike)"
+                ]
+            }
+        };
 
         // Seed data if empty
         if (!localStorage.getItem('workshop_inventory')) {
@@ -349,7 +672,7 @@
             bookedJobs.forEach(job => {
                 const div = document.createElement('div');
                 div.className = "bg-brand-dark p-4 rounded border border-gray-700 hover:border-brand-orange cursor-pointer transition group";
-                div.onclick = () => { switchTab('jobs'); }; // Go to board
+                div.onclick = () => { openJobSheet(job.id); }; // Open Job Sheet
                 div.innerHTML = `
                     <div class="flex justify-between items-start">
                         <h4 class="font-bold text-white text-lg">${job.customer}</h4>
@@ -357,7 +680,7 @@
                     </div>
                     <p class="text-sm text-gray-400">${job.bike} - ${job.service}</p>
                     <div class="mt-2 text-xs text-brand-orange flex items-center gap-1 group-hover:underline">
-                        Tap to view on board <i class="fa-solid fa-arrow-right"></i>
+                        Tap to open Job Sheet <i class="fa-solid fa-file-invoice"></i>
                     </div>
                 `;
                 list.appendChild(div);
@@ -522,6 +845,11 @@
             div.draggable = true;
             div.id = `job-${job.id}`;
             div.ondragstart = drag;
+            // Add click listener (ignore if clicking delete button)
+            div.onclick = (e) => {
+                if (e.target.closest('button')) return;
+                openJobSheet(job.id);
+            };
 
             div.innerHTML = `
                 <div class="flex justify-between items-start mb-2">
@@ -544,12 +872,29 @@
                 id: Date.now().toString(),
                 status: 'booked',
                 customer: data.fullname,
+                email: data.email, // Save email
+                phone: data.phone, // Save phone
                 bike: data.bike,
                 service: data.service,
                 date: new Date().toISOString()
             };
             jobs.push(newJob);
             localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+
+            // Sync Contact to API (Non-blocking)
+            fetchContacts().then(contacts => {
+                const existing = contacts.find(c => c.name === data.fullname);
+                const contactPayload = {
+                    id: existing ? existing.id : Date.now().toString(),
+                    name: data.fullname,
+                    email: data.email || (existing ? existing.email : ''),
+                    phone: data.phone || (existing ? existing.phone : ''),
+                    lastSeen: newJob.date,
+                    count: (existing ? existing.job_count : 0) + 1
+                };
+                saveContactAPI(contactPayload);
+            });
+
             renderKanban();
         }
 
@@ -663,41 +1008,219 @@
             }
         }
 
+        // CONTACTS LOGIC
+
+        // API HELPERS
+        const API_URL = 'http://localhost:3000/api';
+
+        async function fetchContacts() {
+            const statusIndicator = document.getElementById('api-status');
+            try {
+                const res = await fetch(`${API_URL}/contacts`);
+                if (!res.ok) throw new Error('API Error');
+
+                if (statusIndicator) {
+                    statusIndicator.className = "mt-2 text-xs font-bold text-green-400 flex items-center gap-1 uppercase tracking-wider";
+                    statusIndicator.innerHTML = '<div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div> Secure Link Active';
+                }
+
+                return await res.json();
+            } catch (e) {
+                console.error("API Error:", e);
+                if (statusIndicator) {
+                    statusIndicator.className = "mt-2 text-xs font-bold text-red-500 flex items-center gap-1 uppercase tracking-wider";
+                    statusIndicator.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Server Offline';
+                }
+                return [];
+            }
+        }
+
+
+        async function saveContactAPI(contact) {
+            try {
+                console.log("Saving contact...", contact);
+                await fetch(`${API_URL}/contacts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(contact)
+                });
+            } catch (e) {
+                console.error("Save Error:", e);
+            }
+        }
+
+        async function deleteContactAPI(id) {
+            try {
+                await fetch(`${API_URL}/contacts/${id}`, { method: 'DELETE' });
+            } catch (e) {
+                console.error("Delete Error:", e);
+            }
+        }
+
+        // Global cache for editing
+        let _cachedContacts = [];
+
+        // CONTACTS LOGIC
+        async function renderContacts() {
+            const tbody = document.getElementById('contacts-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr class="animate-pulse"><td colspan="6" class="p-4 text-center text-gray-500">Loading secure data...</td></tr>';
+
+            const searchInput = document.getElementById('contact-search');
+            const search = searchInput ? searchInput.value.toLowerCase() : '';
+
+            // Fetch from API
+            _cachedContacts = await fetchContacts();
+
+            // AUTO-MIGRATION: If Server is empty but we have local jobs, upload them!
+            if (_cachedContacts.length === 0) {
+                const localJobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+                if (localJobs.length > 0) {
+                    console.log("Migrating local contacts to secure server...");
+                    tbody.innerHTML = '<tr class="animate-pulse"><td colspan="6" class="p-4 text-center text-brand-orange">Migrating your contacts to the secure database...</td></tr>';
+
+                    const map = {};
+                    localJobs.forEach(job => {
+                        if (!map[job.customer]) {
+                            map[job.customer] = {
+                                name: job.customer,
+                                email: job.email || '',
+                                phone: job.phone || '',
+                                lastSeen: job.date,
+                                count: 1
+                            };
+                        } else {
+                            map[job.customer].count++;
+                            if (new Date(job.date) > new Date(map[job.customer].lastSeen)) {
+                                map[job.customer].lastSeen = job.date;
+                            }
+                        }
+                    });
+
+                    // Upload all
+                    const migrationPromises = Object.values(map).map(c => saveContactAPI({
+                        id: Date.now() + Math.random().toString(), // New ID for DB
+                        ...c
+                    }));
+
+                    await Promise.all(migrationPromises);
+
+                    // Re-fetch after migration
+                    _cachedContacts = await fetchContacts();
+                }
+            }
+
+            const contacts = _cachedContacts;
+
+            // Jobs for counts (still local for now)
+            const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+
+            tbody.innerHTML = ''; // Clear loading
+
+            if (contacts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-500 italic">No contacts found in secure storage.</td></tr>';
+                return;
+            }
+
+            // Sort by name
+            contacts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+            contacts.filter(c => (c.name || '').toLowerCase().includes(search) || (c.email || '').toLowerCase().includes(search))
+                .forEach(c => {
+                    const count = c.job_count || jobs.filter(j => j.customer === c.name).length;
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-white/5 transition group border-b border-gray-800/50";
+                    tr.innerHTML = `
+                        <td class="p-4 font-bold text-white">${c.name}</td>
+                        <td class="p-4 text-sm text-gray-400">${c.email || '—'}</td>
+                        <td class="p-4 text-sm text-gray-400">${c.phone || '—'}</td>
+                        <td class="p-4 text-sm"><span class="bg-gray-800 px-2 py-1 rounded text-white font-bold">${count}</span></td>
+                        <td class="p-4 text-sm text-gray-400">${c.last_seen ? new Date(c.last_seen).toLocaleDateString() : '—'}</td>
+                        <td class="p-4 text-right flex justify-end gap-2">
+                             <!-- Buttons visible always for clarity, or on group hover -->
+                            <button onclick="viewContactHistory('${c.id}', '${c.name.replace(/'/g, "\\'")}')" title="Job History" class="text-brand-orange hover:text-white bg-gray-800 hover:bg-brand-orange p-2 rounded transition"><i class="fa-solid fa-clock-rotate-left"></i></button>
+                            <button onclick="editContact('${c.id}')" title="Edit Contact" class="text-gray-400 hover:text-brand-orange bg-gray-800 hover:bg-white p-2 rounded transition"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="deleteContact('${c.id}')" title="Delete Contact" class="text-gray-400 hover:text-red-500 bg-gray-800 hover:bg-white p-2 rounded transition"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+        }
+
+        async function editContact(id) {
+            // Find in cache
+            const contact = _cachedContacts.find(c => c.id === id);
+            if (!contact) return;
+
+            document.getElementById('edit-contact-id').value = contact.id;
+            document.getElementById('edit-contact-name').value = contact.name;
+            document.getElementById('edit-contact-email').value = contact.email;
+            document.getElementById('edit-contact-phone').value = contact.phone;
+
+            document.getElementById('edit-contact-modal').showModal();
+        }
+
+        async function saveContact() {
+            const id = document.getElementById('edit-contact-id').value;
+            const name = document.getElementById('edit-contact-name').value;
+            const email = document.getElementById('edit-contact-email').value;
+            const phone = document.getElementById('edit-contact-phone').value;
+
+            // Optimistic UI update
+            await saveContactAPI({
+                id,
+                name,
+                email,
+                phone,
+                lastSeen: new Date().toISOString()
+            });
+
+            document.getElementById('edit-contact-modal').close();
+            await renderContacts(); // Refresh
+        }
+
+        async function deleteContact(id) {
+            if (!confirm("Permenantly delete this encrypted contact?")) return;
+            await deleteContactAPI(id);
+            await renderContacts();
+        }
+
         // NAVIGATION
+        // TABS
         function switchTab(tab) {
-            const dashView = document.getElementById('view-dashboard');
-            const jobView = document.getElementById('view-jobs');
-            const invView = document.getElementById('view-inventory');
+            // Hide all views
+            ['dashboard', 'jobs', 'inventory', 'contacts'].forEach(t => {
+                const view = document.getElementById(`view-${t}`);
+                if (view) view.classList.add('hidden');
 
-            const dashBtn = document.getElementById('btn-dashboard');
-            const jobBtn = document.getElementById('btn-jobs');
-            const invBtn = document.getElementById('btn-inventory');
+                const nav = document.getElementById(`nav-${t}`);
+                if (nav) {
+                    // Reset to inactive state (text-gray-400)
+                    nav.classList.remove('bg-brand-orange', 'text-white', 'hover:bg-orange-600');
+                    nav.classList.add('text-gray-400', 'hover:text-white', 'hover:bg-white/5');
+                }
+            });
 
-            // Hide All
-            dashView.classList.add('hidden');
-            jobView.classList.add('hidden');
-            invView.classList.add('hidden');
+            // Show selected
+            const activeView = document.getElementById(`view-${tab}`);
+            if (activeView) activeView.classList.remove('hidden');
 
-            // Reset Buttons
-            const inactiveClass = "px-4 py-1 rounded hover:bg-gray-800 text-gray-400 font-bold uppercase tracking-wider text-sm transition";
-            const activeClass = "px-4 py-1 rounded bg-brand-orange text-white font-bold uppercase tracking-wider text-sm transition";
-
-            dashBtn.className = inactiveClass;
-            jobBtn.className = inactiveClass;
-            invBtn.className = inactiveClass;
+            const activeNav = document.getElementById(`nav-${tab}`);
+            if (activeNav) {
+                // Set to active state (brand orange)
+                activeNav.classList.remove('text-gray-400', 'hover:text-white', 'hover:bg-white/5');
+                activeNav.classList.add('bg-brand-orange', 'text-white', 'hover:bg-orange-600');
+            }
 
             if (tab === 'dashboard') {
-                dashView.classList.remove('hidden');
-                dashBtn.className = activeClass;
-                renderDashboard(); // Refresh data
+                renderDashboard();
             } else if (tab === 'jobs') {
-                jobView.classList.remove('hidden');
-                jobBtn.className = activeClass;
-                renderKanban(); // Refresh data
+                renderKanban();
             } else if (tab === 'inventory') {
-                invView.classList.remove('hidden');
-                invBtn.className = activeClass;
-                renderInventory(); // Refresh data
+                renderInventory();
+            } else if (tab === 'contacts') {
+                renderContacts();
             }
         }
 
@@ -727,6 +1250,93 @@
             window.location.href = 'index.html';
         }
 
+        // JOB SHEET LOGIC
+        function openJobSheet(jobId) {
+            const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+            const job = jobs.find(j => j.id === jobId);
+            if (!job) return;
+
+            document.getElementById('modal-customer').textContent = job.customer;
+            document.getElementById('modal-bike').innerHTML = `<i class="fa-solid fa-bicycle mr-1"></i> ${job.bike}`;
+            document.getElementById('modal-service').innerHTML = `<i class="fa-solid fa-screwdriver-wrench mr-1"></i> ${job.service}`;
+
+            renderChecklist(job);
+            document.getElementById('job-sheet-modal').showModal();
+        }
+
+        function closeJobSheet() {
+            document.getElementById('job-sheet-modal').close();
+        }
+
+        function renderChecklist(job) {
+            const container = document.getElementById('modal-checklist');
+            container.innerHTML = '';
+
+            // Normalize service name to match keys
+            let serviceKey = job.service;
+            // Handle matching "The Tune-Up" vs "Tune-Up" if needed, currently keys match
+
+            const checklist = SERVICE_CHECKLISTS[serviceKey] || SERVICE_CHECKLISTS["Safety Check"]; // Fallback
+            const savedState = job.checklist || {}; // { "uniqueItemString": true/false }
+
+            if (!checklist) {
+                container.innerHTML = '<div class="text-gray-500">No checklist available for this service type.</div>';
+                return;
+            }
+
+            // Loop categories
+            for (const [category, items] of Object.entries(checklist)) {
+                const catDiv = document.createElement('div');
+                catDiv.className = "checklist-category";
+
+                catDiv.innerHTML = `<h3 class="font-display font-bold text-xl text-gray-300 uppercase mb-3 border-b border-gray-700 pb-1">${category}</h3>`;
+
+                const ul = document.createElement('ul');
+                ul.className = "space-y-3";
+
+                items.forEach(itemHtml => {
+                    // Create unique ID for state saving (simple hash or string)
+                    const itemId = `${category}-${itemHtml}`.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+                    const isChecked = savedState[itemId] || false;
+
+                    const li = document.createElement('li');
+                    li.className = "flex items-start gap-3 p-3 rounded hover:bg-white/5 transition cursor-pointer";
+                    li.onclick = (e) => {
+                        // Prevent triggering if clicked on link (if any)
+                        if (e.target.tagName === 'INPUT') return;
+                        const cb = li.querySelector('input');
+                        cb.checked = !cb.checked;
+                        toggleCheckItem(job.id, itemId, cb.checked);
+                    };
+
+                    li.innerHTML = `
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} 
+                            onchange="toggleCheckItem('${job.id}', '${itemId}', this.checked)"
+                            class="mt-1 w-5 h-5 text-brand-orange rounded bg-gray-700 border-gray-600 focus:ring-brand-orange">
+                        <div class="text-sm text-gray-300 leading-relaxed select-none ${isChecked ? 'line-through opacity-50' : ''}">${itemHtml}</div>
+                    `;
+                    ul.appendChild(li);
+                });
+
+                catDiv.appendChild(ul);
+                container.appendChild(catDiv);
+            }
+        }
+
+        function toggleCheckItem(jobId, itemId, isChecked) {
+            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+            const idx = jobs.findIndex(j => j.id === jobId);
+            if (idx > -1) {
+                if (!jobs[idx].checklist) jobs[idx].checklist = {};
+                jobs[idx].checklist[itemId] = isChecked;
+                localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+
+                // Re-render only style updates if needed, or simple class toggle
+                // For now, re-rendering might be heavy, so let's just toggle classes (optional)
+                renderChecklist(jobs[idx]); // Re-render to show line-through
+            }
+        }
+
         // REAL-TIME SYNC
         window.addEventListener('storage', (e) => {
             if (e.key === 'new_service_request') {
@@ -739,6 +1349,153 @@
                 setTimeout(() => toast.remove(), 5000);
             }
         });
+
+        // JOB HISTORY LOGIC
+        // JOB HISTORY LOGIC //
+        function viewContactHistory(contactId, contactName) {
+            const modal = document.getElementById('job-history-modal');
+            const list = document.getElementById('history-list');
+            document.getElementById('history-customer-name').textContent = contactName;
+
+            // Get Jobs
+            const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+            const customerJobs = jobs.filter(j => j.customer === contactName).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            list.innerHTML = '';
+            if (customerJobs.length === 0) {
+                list.innerHTML = '<div class="text-gray-500 text-center italic">No job history found.</div>';
+            } else {
+                customerJobs.forEach(job => {
+                    const completedItems = getReadableChecklist(job);
+                    const completionCount = completedItems.length;
+
+                    const div = document.createElement('div');
+                    div.className = "bg-[#0B0B2B] p-4 rounded-lg border border-gray-700 flex flex-col gap-3";
+                    div.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-bold text-lg text-white">${job.service}</div>
+                                <div class="text-sm text-gray-400">${job.bike} &bull; ${new Date(job.date).toLocaleDateString()}</div>
+                            </div>
+                            <span class="px-2 py-1 rounded text-xs font-bold uppercase ${job.status === 'completed' ? 'bg-green-900 text-green-300' : 'bg-gray-700 text-gray-300'}">${job.status.replace('-', ' ')}</span>
+                        </div>
+                        
+                        <div class="text-sm text-gray-300 bg-black/20 p-2 rounded">
+                            <i class="fa-solid fa-list-check mr-1 text-brand-orange"></i> ${completionCount} items completed
+                        </div>
+
+                        <div class="flex gap-2 mt-2">
+                             <a href="mailto:${job.email || ''}?subject=Service Report: ${job.bike}&body=${generateReportBody(job, completedItems, '%0D%0A')}" 
+                                class="flex-1 bg-gray-700 hover:bg-gray-600 text-white text-center py-2 rounded transition text-sm font-bold uppercase tracking-wide">
+                                <i class="fa-solid fa-envelope mr-2"></i> Email
+                             </a>
+                             <a href="sms:${job.phone || ''}?body=${generateReportBody(job, completedItems, '%0D%0A')}%0D%0A%0D%0AReply STOP to unsubscribe." 
+                                class="flex-1 bg-gray-700 hover:bg-gray-600 text-white text-center py-2 rounded transition text-sm font-bold uppercase tracking-wide">
+                                <i class="fa-solid fa-comment-sms mr-2"></i> SMS
+                             </a>
+                             <button onclick="downloadPDF('${job.id}')" 
+                                class="flex-1 bg-brand-orange hover:bg-orange-600 text-white text-center py-2 rounded transition text-sm font-bold uppercase tracking-wide shadow-lg shadow-orange-900/40">
+                                <i class="fa-solid fa-file-pdf mr-2"></i> Download PDF
+                             </button>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            }
+
+            modal.showModal();
+        }
+
+        // Helper to get READABLE text from messed up IDs
+        function getReadableChecklist(job) {
+            const checklistIds = job.checklist || {};
+            const activeIds = Object.entries(checklistIds).filter(([k, v]) => v).map(([k]) => k);
+
+            // Build Lookup Map
+            const idMap = {};
+            if (typeof SERVICE_CHECKLISTS !== 'undefined') {
+                Object.entries(SERVICE_CHECKLISTS).forEach(([serviceName, categories]) => {
+                    Object.entries(categories).forEach(([category, items]) => {
+                        items.forEach(item => {
+                            const cleanCat = category.replace(/[^a-zA-Z0-9]/g, '');
+                            const cleanItemText = item.replace(/<[^>]*>/g, '');
+                            const cleanItem = cleanItemText.replace(/[^a-zA-Z0-9]/g, '');
+                            const id = cleanCat + cleanItem;
+                            idMap[id] = cleanItemText;
+                        });
+                    });
+                });
+            }
+
+            return activeIds.map(id => {
+                if (idMap[id]) return idMap[id];
+                // Fallback
+                let readable = id.replace(/([A-Z])/g, ' $1').trim();
+                readable = readable.replace(/^(Frame Fork|Handlebar Headset Stem|Brakes|Drivetrain|Wheels Tires)/, '');
+                return readable.trim();
+            });
+        }
+
+        function generateReportBody(job, completedItems, newline) {
+            const firstName = job.customer ? job.customer.split(' ')[0] : 'Customer';
+            // Add [x] checkbox for text/email
+            const itemsList = completedItems.map(k => "[x] " + k).join(newline);
+            const body = `Hi ${firstName},${newline}${newline}Here is the service report for your ${job.bike}.${newline}${newline}Service: ${job.service}${newline}Date: ${new Date(job.date).toLocaleDateString()}${newline}${newline}Completed Checks:${newline}${itemsList || 'No specific checks recorded.'}${newline}${newline}Your bike is ready properly maintained!${newline}${newline}- Weeecycle Workshop`;
+            return encodeURIComponent(body);
+        }
+
+        function downloadPDF(jobId) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+            const job = jobs.find(j => j.id === jobId);
+            if (!job) return;
+
+            // Header
+            doc.setFontSize(22);
+            doc.setTextColor(255, 137, 27); // Brand Orange
+            doc.text("WEEECYCLE WORKSHOP", 20, 20);
+
+            doc.setFontSize(16);
+            doc.setTextColor(0, 0, 0);
+            doc.text("Service Report", 20, 30);
+
+            doc.setLineWidth(0.5);
+            doc.line(20, 35, 190, 35);
+
+            // Details
+            doc.setFontSize(12);
+            doc.text(`Customer: ${job.customer}`, 20, 45);
+            doc.text(`Bike: ${job.bike}`, 20, 52);
+            doc.text(`Service: ${job.service}`, 20, 59);
+            doc.text(`Date: ${new Date(job.date).toLocaleDateString()}`, 140, 45);
+
+            // Checklist
+            doc.setFontSize(14);
+            doc.text("Completed Checks:", 20, 75);
+
+            doc.setFontSize(10);
+            let y = 85;
+            const completedItems = getReadableChecklist(job);
+
+            completedItems.forEach(item => {
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                }
+                doc.text(`• ${item}`, 25, y);
+                y += 7;
+            });
+
+            // Footer
+            const pageHeight = doc.internal.pageSize.height;
+            doc.setFontSize(10);
+            doc.setTextColor(150);
+            doc.text("Thank you for choosing Weeecycle!", 20, pageHeight - 20);
+
+            doc.save(`Service_Report_${job.customer.split(' ')[0]}_${new Date().toISOString().split('T')[0]}.pdf`);
+        }
 
         // START
         init();
