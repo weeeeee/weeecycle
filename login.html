@@ -56,12 +56,24 @@
 
     <script>
         const form = document.getElementById('loginForm');
-        form.addEventListener('submit', (e) => {
+
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
+
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const pass = document.getElementById('password').value;
-            // Simple client-side check. 
-            // In a real app, this would be server-side.
-            if (pass === 'WrenchTime') {
+            const hash = await sha256(pass);
+
+            // Hash of 'WrenchTime'
+            const correctHash = "b1b36019bedd7ad9cc4287e26af41e133cc5eaf60bf67842321ac3745e5d5505";
+
+            if (hash === correctHash) {
                 localStorage.setItem('mechanic_auth', 'true');
                 window.location.href = 'workshop.html';
             } else {
