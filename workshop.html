@@ -361,6 +361,53 @@
     </dialog>
 
     <!-- existing edit modal -->
+    <dialog id="new-job-modal"
+        class="bg-[#1a1a3d] text-white rounded-lg shadow-2xl p-0 backdrop:bg-black/80 w-full max-w-md border border-gray-700">
+        <div class="bg-[#0B0B2B] p-4 border-b border-gray-700 flex justify-between items-center">
+            <h2 class="font-display font-bold text-2xl uppercase tracking-wider text-green-500"><i
+                    class="fa-solid fa-plus-circle mr-2"></i> New Job</h2>
+            <button onclick="document.getElementById('new-job-modal').close()"
+                class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="p-6 space-y-4">
+            <input type="hidden" id="new-job-contact-id">
+            <input type="hidden" id="new-job-email">
+            <input type="hidden" id="new-job-phone">
+
+            <div>
+                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Customer</label>
+                <input type="text" id="new-job-name" readonly
+                    class="w-full bg-[#0B0B2B] text-gray-300 rounded border border-gray-700 p-2 focus:outline-none cursor-not-allowed">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Bike Model</label>
+                <input type="text" id="new-job-bike"
+                    class="w-full bg-[#0B0B2B] text-white rounded border border-gray-700 p-2 focus:border-green-500 focus:outline-none placeholder-gray-600"
+                    placeholder="e.g. Trek Domane">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Service Type</label>
+                <select id="new-job-service"
+                    class="w-full bg-[#0B0B2B] text-white rounded border border-gray-700 p-2 focus:border-green-500 focus:outline-none">
+                    <option value="Safety Check">Safety Check ($50)</option>
+                    <option value="The Tune-Up">The Tune-Up ($90)</option>
+                    <option value="Overhaul">Overhaul ($180)</option>
+                    <option value="Dream Build">Dream Build ($300)</option>
+                    <option value="A La Carte">A La Carte (Varies)</option>
+                </select>
+            </div>
+        </div>
+        <div class="p-4 bg-[#0B0B2B] border-t border-gray-700 flex justify-end gap-2">
+            <button onclick="document.getElementById('new-job-modal').close()"
+                class="px-4 py-2 text-gray-400 hover:text-white font-bold transition">Cancel</button>
+            <button onclick="confirmNewJob()"
+                class="bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded font-bold uppercase tracking-wider transition shadow-lg shadow-green-900/50">Book
+                In</button>
+        </div>
+    </dialog>
+
     <dialog id="edit-contact-modal"
         class="bg-[#0B0B2B] text-white rounded-xl shadow-2xl p-0 w-full max-w-lg backdrop:bg-black/80 border border-gray-700">
         <div class="p-6 border-b border-gray-700 flex justify-between items-center bg-[#151535]">
@@ -946,34 +993,79 @@
         }
 
         // INVENTORY
-        function renderInventory() {
-            const tbody = document.getElementById('inventory-table-body');
-            tbody.innerHTML = '';
-            const items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
+        const INVENTORY_CATEGORIES = [
+            "Wheelset/Tires",
+            "Handlebars/Steering",
+            "Fork/Frame",
+            "Saddle/Post",
+            "Bottom Bracket/Crankset",
+            "Mech",
+            "Chain/Cassette",
+            "Other"
+        ];
 
-            items.forEach(item => {
-                const tr = document.createElement('tr');
-                const isLow = item.qty <= item.min;
-                tr.className = "hover:bg-white/5 transition";
-                tr.innerHTML = `
-                    <td class="p-3 font-medium text-white">${item.name}</td>
-                    <td class="p-3">
-                        <div class="flex items-center gap-2">
-                             <button onclick="updateQty(${item.id}, -1)" class="w-6 h-6 bg-gray-800 hover:bg-gray-700 rounded text-xs">-</button>
-                             <span class="w-8 text-center">${item.qty}</span>
-                             <button onclick="updateQty(${item.id}, 1)" class="w-6 h-6 bg-gray-800 hover:bg-gray-700 rounded text-xs">+</button>
-                        </div>
-                    </td>
-                    <td class="p-3">
-                        ${isLow
-                        ? '<span class="text-red-500 text-xs font-bold uppercase tracking-wider bg-red-900/20 px-2 py-1 rounded">Low Stock</span>'
-                        : '<span class="text-green-500 text-xs font-bold uppercase tracking-wider bg-green-900/20 px-2 py-1 rounded">In Stock</span>'}
-                    </td>
-                    <td class="p-3 text-right">
-                         <button onclick="removeItem(${item.id})" class="text-gray-600 hover:text-red-500 text-sm"><i class="fa-solid fa-trash"></i></button>
+        function renderInventory() {
+            const container = document.getElementById('inventory-table-body');
+            container.innerHTML = '';
+            let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
+
+            // Ensure every item has a category
+            items = items.map(i => ({ ...i, category: i.category || 'Other' }));
+
+            INVENTORY_CATEGORIES.forEach(cat => {
+                const catItems = items.filter(i => i.category === cat);
+                // Show header request
+
+                const isCollapsed = localStorage.getItem(`cat_collapsed_${cat}`) === 'true';
+
+                // Header Row
+                const headerTr = document.createElement('tr');
+                headerTr.className = "bg-[#151535] cursor-pointer hover:bg-[#1a1a45] text-left";
+                headerTr.onclick = () => {
+                    localStorage.setItem(`cat_collapsed_${cat}`, !isCollapsed);
+                    renderInventory();
+                };
+
+                headerTr.innerHTML = `
+                    <td colspan="4" class="p-3 font-bold text-gray-200 uppercase tracking-wider text-xs">
+                        <i class="fa-solid fa-chevron-${isCollapsed ? 'right' : 'down'} mr-2 w-4"></i> ${cat} <span class="text-gray-500 ml-2">(${catItems.length})</span>
                     </td>
                 `;
-                tbody.appendChild(tr);
+                container.appendChild(headerTr);
+
+                if (!isCollapsed) {
+                    catItems.forEach((item) => {
+                        const tr = document.createElement('tr');
+                        const isLow = item.qty <= item.min;
+                        tr.className = "hover:bg-white/5 transition border-b border-gray-800/30 text-sm";
+                        tr.innerHTML = `
+                            <td class="p-3 font-medium text-white pl-8 border-l-2 border-transparent hover:border-brand-orange">
+                                ${item.name}
+                            </td>
+                            <td class="p-3">
+                                <div class="flex items-center gap-2">
+                                     <button onclick="updateQty(${item.id}, -1)" class="w-6 h-6 bg-gray-800 hover:bg-gray-700 rounded text-xs">-</button>
+                                     <span class="w-8 text-center">${item.qty}</span>
+                                     <button onclick="updateQty(${item.id}, 1)" class="w-6 h-6 bg-gray-800 hover:bg-gray-700 rounded text-xs">+</button>
+                                </div>
+                            </td>
+                            <td class="p-3">
+                                ${isLow
+                                ? '<span class="text-red-500 text-[10px] font-bold uppercase tracking-wider bg-red-900/20 px-2 py-1 rounded">Low</span>'
+                                : '<span class="text-green-500 text-[10px] font-bold uppercase tracking-wider bg-green-900/20 px-2 py-1 rounded">OK</span>'}
+                            </td>
+                            <td class="p-3 text-right flex justify-end items-center gap-1">
+                                 <div class="flex flex-col mr-3 text-gray-600">
+                                    <button onclick="moveItem(${item.id}, -1)" class="hover:text-white text-[10px]" title="Move Up"><i class="fa-solid fa-chevron-up"></i></button>
+                                    <button onclick="moveItem(${item.id}, 1)" class="hover:text-white text-[10px]" title="Move Down"><i class="fa-solid fa-chevron-down"></i></button>
+                                 </div>
+                                 <button onclick="editItem(${item.id})" title="Edit" class="text-gray-500 hover:text-brand-orange p-1"><i class="fa-solid fa-pen"></i></button>
+                                 <button onclick="removeItem(${item.id})" title="Delete" class="text-gray-500 hover:text-red-500 p-1"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        `;
+                        container.appendChild(tr);
+                    });
+                }
             });
         }
 
@@ -987,14 +1079,97 @@
             }
         }
 
+        // Helper to prompt category
+        function promptCategory(current) {
+            let num = prompt(
+                `Select Category(Enter Number): \n` +
+                INVENTORY_CATEGORIES.map((c, i) => `${i + 1}. ${c} `).join('\n'),
+                current ? (INVENTORY_CATEGORIES.indexOf(current) + 1) : "8"
+            );
+            if (!num) return null;
+            const idx = parseInt(num) - 1;
+            if (idx >= 0 && idx < INVENTORY_CATEGORIES.length) return INVENTORY_CATEGORIES[idx];
+            return "Other";
+        }
+
         function addItem() {
             const name = prompt("Item Name:");
             if (!name) return;
             const qty = parseInt(prompt("Current Quantity:", "1") || "0");
             const min = parseInt(prompt("Low Stock Warning Level:", "5") || "5");
+            const category = promptCategory("Other");
+            if (!category) return;
 
             let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
-            items.push({ id: Date.now(), name, qty, min });
+            items.push({ id: Date.now(), name, qty, min, category });
+            localStorage.setItem('workshop_inventory', JSON.stringify(items));
+            renderInventory();
+        }
+
+        function editItem(id) {
+            let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
+            const idx = items.findIndex(i => i.id === id);
+            if (idx === -1) return;
+
+            const existingName = items[idx].name;
+            const existingQty = items[idx].qty;
+            const existingMin = items[idx].min || 5;
+            const existingCat = items[idx].category || "Other";
+
+            const name = prompt("Edit Item Name:", existingName);
+            if (name === null) return;
+
+            const qtyStr = prompt("Edit Quantity:", existingQty);
+            if (qtyStr === null) return;
+            const qty = parseInt(qtyStr || "0");
+
+            const minStr = prompt("Low Stock Warning Level:", existingMin);
+            if (minStr === null) return;
+            const min = parseInt(minStr || "5");
+
+            const category = promptCategory(existingCat);
+            if (!category) return;
+
+            items[idx] = { ...items[idx], name, qty, min, category };
+            localStorage.setItem('workshop_inventory', JSON.stringify(items));
+            renderInventory();
+        }
+
+        function moveItem(id, direction) {
+            // Reordering logic: We need to swap the item with its neighbor *within the same category* in the main list.
+            // This is tricky because the main list might not be sorted by category. 
+            // Better approach: Sort the main list by category first? 
+            // Or just swap indexes if they are adjacent? 
+            // "Reorder" implies persistent order. Array order defines display order.
+            // If we group by category in render, the array order MATTERS primarily within the category subset.
+
+            let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
+            const idx = items.findIndex(i => i.id === id);
+            if (idx === -1) return;
+
+            const item = items[idx];
+            // Get all items of this category
+            const catItems = items.map((it, index) => ({ ...it, originalIndex: index })).filter(it => (it.category || 'Other') === (item.category || 'Other'));
+
+            // Find position of current item in the category subset
+            const subIdx = catItems.findIndex(it => it.id === id);
+
+            if (direction === -1 && subIdx > 0) {
+                // Move Up
+                const neighbor = catItems[subIdx - 1];
+                // Swap in master list
+                const temp = items[neighbor.originalIndex];
+                items[neighbor.originalIndex] = items[idx];
+                items[idx] = temp;
+            } else if (direction === 1 && subIdx < catItems.length - 1) {
+                // Move Down
+                const neighbor = catItems[subIdx + 1];
+                // Swap in master list
+                const temp = items[neighbor.originalIndex];
+                items[neighbor.originalIndex] = items[idx];
+                items[idx] = temp;
+            }
+
             localStorage.setItem('workshop_inventory', JSON.stringify(items));
             renderInventory();
         }
@@ -1139,6 +1314,7 @@
                         <td class="p-4 text-sm text-gray-400">${c.last_seen ? new Date(c.last_seen).toLocaleDateString() : '—'}</td>
                         <td class="p-4 text-right flex justify-end gap-2">
                              <!-- Buttons visible always for clarity, or on group hover -->
+                            <button onclick="startNewJob('${c.id}')" title="New Job" class="text-green-500 hover:text-white bg-gray-800 hover:bg-green-600 p-2 rounded transition"><i class="fa-solid fa-plus"></i></button>
                             <button onclick="viewContactHistory('${c.id}', '${c.name.replace(/'/g, "\\'")}')" title="Job History" class="text-brand-orange hover:text-white bg-gray-800 hover:bg-brand-orange p-2 rounded transition"><i class="fa-solid fa-clock-rotate-left"></i></button>
                             <button onclick="editContact('${c.id}')" title="Edit Contact" class="text-gray-400 hover:text-brand-orange bg-gray-800 hover:bg-white p-2 rounded transition"><i class="fa-solid fa-pen-to-square"></i></button>
                             <button onclick="deleteContact('${c.id}')" title="Delete Contact" class="text-gray-400 hover:text-red-500 bg-gray-800 hover:bg-white p-2 rounded transition"><i class="fa-solid fa-trash"></i></button>
@@ -1184,6 +1360,59 @@
             if (!confirm("Permenantly delete this encrypted contact?")) return;
             await deleteContactAPI(id);
             await renderContacts();
+        }
+
+        // REPEAT CUSTOMER JOB LOGIC
+        function startNewJob(contactId) {
+            const contact = _cachedContacts.find(c => c.id === contactId);
+            if (!contact) return;
+
+            document.getElementById('new-job-contact-id').value = contact.id;
+            document.getElementById('new-job-name').value = contact.name;
+            document.getElementById('new-job-email').value = contact.email || '';
+            document.getElementById('new-job-phone').value = contact.phone || '';
+
+            // Try to pre-fill bike from last job if possible? 
+            // For now just leave bike empty or let them type it.
+            document.getElementById('new-job-bike').value = '';
+
+            document.getElementById('new-job-modal').showModal();
+        }
+
+        function confirmNewJob() {
+            const name = document.getElementById('new-job-name').value;
+            const email = document.getElementById('new-job-email').value;
+            const phone = document.getElementById('new-job-phone').value;
+            const bike = document.getElementById('new-job-bike').value;
+            const service = document.getElementById('new-job-service').value;
+
+            if (!bike) {
+                alert("Please enter the Bike Model.");
+                return;
+            }
+
+            // Construct Data Object compatible with addJobCard
+            const jobData = {
+                fullname: name,
+                email: email,
+                phone: phone,
+                bike: bike,
+                service: service
+            };
+
+            addJobCard(jobData);
+            document.getElementById('new-job-modal').close();
+
+            // Switch to Dashboard or Jobs view to see it?
+            // User probably wants to see it added.
+            switchTab('dashboard');
+
+            // Show toast
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-4 right-4 bg-green-600 text-white px-6 py-4 rounded shadow-2xl z-50 text-xl font-bold uppercase tracking-wide animate-bounce";
+            toast.innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i> Job Booked!';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
 
         // NAVIGATION
