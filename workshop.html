@@ -1101,26 +1101,37 @@
 
                 function createCardElement(job) {
                     const div = document.createElement('div');
-                    div.className = 'bg-brand-dark p-4 rounded border border-gray-700 shadow-sm cursor-grab active:cursor-grabbing hover:border-brand-orange transition group relative';
+                    // Use hex color to ensure visibility
+                    div.className = 'bg-[#151525] p-4 rounded-xl border border-gray-700 shadow-lg cursor-grab active:cursor-grabbing hover:border-brand-orange transition group relative flex flex-col gap-2';
                     div.draggable = true;
-                    div.id = `job-${job.id}`;
+                    // Ensure ID is string
+                    const safeId = String(job.id || Date.now());
+                    div.id = `job-${safeId}`;
                     div.ondragstart = drag;
-                    // Add click listener (ignore if clicking delete button)
+
                     div.onclick = (e) => {
                         if (e.target.closest('button')) return;
                         openJobSheet(job.id);
                     };
 
+                    const displayId = safeId.length >= 4 ? safeId.substring(safeId.length - 4) : safeId;
+                    const customerName = job.customer || job.name || 'Unknown Customer';
+                    const serviceName = job.service || 'Service';
+                    const bikeName = job.bike || 'Bike Model';
+                    const dateStr = job.date ? new Date(job.date).toLocaleDateString() : 'No Date';
+
                     div.innerHTML = `
-                <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-mono text-gray-500">#${job.id.substring(0, 4)}</span>
-                    <span class="text-[10px] bg-gray-800 px-1 rounded text-brand-orange uppercase tracking-wide">${job.service}</span>
+                <div class="flex justify-between items-start">
+                    <span class="text-xs font-mono text-gray-500">#${displayId}</span>
+                    <span class="text-[10px] bg-gray-800 px-2 py-0.5 rounded text-brand-orange uppercase tracking-wide font-bold">${serviceName}</span>
                 </div>
-                <h4 class="font-bold text-white text-lg leading-tight mb-1">${job.customer}</h4>
-                <p class="text-xs text-gray-400 mb-3">${job.bike}</p>
-                <div class="flex justify-between items-center pt-2 border-t border-gray-800 mt-2">
-                     <div class="text-[10px] text-gray-500">${new Date(job.date).toLocaleDateString()}</div>
-                     <button onclick="deleteJob('${job.id}')" class="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-trash"></i></button>
+                <div class="flex-grow">
+                    <h4 class="font-bold text-white text-lg leading-tight mb-0.5">${customerName}</h4>
+                    <p class="text-xs text-gray-400 font-medium">${bikeName}</p>
+                </div>
+                <div class="flex justify-between items-center pt-2 border-t border-gray-800/50 mt-1">
+                     <div class="text-[10px] text-gray-500 font-bold uppercase"><i class="fa-regular fa-calendar mr-1"></i> ${dateStr}</div>
+                     <button onclick="deleteJob('${String(job.id)}')" class="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition px-2"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `;
                     return div;
