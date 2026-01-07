@@ -809,7 +809,7 @@
             renderActionRequired();
             renderRecents();
             renderAgenda();
-            // renderChart(); // Removed
+            renderChart();
             renderShopHours();
         }
 
@@ -1011,9 +1011,117 @@
         }
 
         // SHOP HOURS
-        function renderShopHours() {
-            const hours = localStorage.getItem('workshop_hours') || "Mon-Fri: 9am - 5pm\nSat: 10am - 2pm\nSun: Closed";
-            document.getElementById('shop-hours').textContent = hours;
+        function renderChart() {
+            const ctx = document.getElementById('jobsChart');
+            if (!ctx) return;
+
+            const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+
+            // Filter: Active Only (not completed)
+            const activeJobs = jobs.filter(j => j.status !== 'completed');
+
+            // Aggregation
+            const counts = {
+                'Active': 0,
+                'Booked': 0,
+                'Ready': 0
+            };
+            // Or breakdown by Service Type for ACTIVE jobs? 
+            // "how many active bikes are in service currently with a pie chart"
+            // Usually implies breakdown by status or service. Let's do Service breakdown of ACTIVE jobs.
+
+            const serviceCounts = {
+                'Safety Check': 0,
+                'The Tune-Up': 0,
+                'Overhaul': 0,
+                'Dream Build': 0,
+                'A La Carte': 0
+            };
+
+            activeJobs.forEach(j => {
+                const s = (j.service || '').toLowerCase();
+                if (s.includes('safety')) serviceCounts['Safety Check']++;
+                else if (s.includes('tune')) serviceCounts['The Tune-Up']++;
+                else if (s.includes('overhaul')) serviceCounts['Overhaul']++;
+                else if (s.includes('dream')) serviceCounts['Dream Build']++;
+                else serviceCounts['A La Carte']++;
+            });
+
+            const total = activeJobs.length;
+
+            if (_jobsChart) {
+                _jobsChart.destroy();
+                _jobsChart = null;
+            }
+
+            if (total === 0) {
+                const data = {
+                    labels: ['No Active Jobs'],
+                    datasets: [{
+                        data: [1],
+                        backgroundColor: ['#1f2937'],
+                        borderWidth: 0
+                    }]
+                };
+                _jobsChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        events: [],
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                        cutout: '70%'
+                    }
+                });
+                return;
+            }
+
+            const data = {
+                labels: Object.keys(serviceCounts),
+                datasets: [{
+                    data: Object.values(serviceCounts),
+                    backgroundColor: [
+                        '#3b82f6', // Safety
+                        '#22c55e', // TuneUp
+                        '#eab308', // Overhaul
+                        '#f97316', // Dream
+                        '#a855f7'  // AlaCarte
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            };
+
+            _jobsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: '#9ca3af',
+                                boxWidth: 12,
+                                font: { size: 10, family: "'Roboto Condensed', sans-serif" }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: `${total} Bikes In Shop`,
+                            color: 'white',
+                            position: 'bottom',
+                            font: { family: "'Teko', sans-serif", size: 16 }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        }
+        const hours = localStorage.getItem('workshop_hours') || "Mon-Fri: 9am - 5pm\nSat: 10am - 2pm\nSun: Closed";
+        document.getElementById('shop-hours').textContent = hours;
         }
 
         function editShopHours() {
