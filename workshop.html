@@ -149,10 +149,17 @@
                     <div class="text-xs text-brand-orange">Online</div>
                 </div>
             </div>
-            <button onclick="logout()"
-                class="w-full flex items-center gap-3 px-4 py-2 rounded text-red-400 hover:bg-red-500/10 transition text-sm uppercase font-bold">
-                <i class="fa-solid fa-right-from-bracket w-6 text-center"></i> Logout
-            </button>
+            <!-- Bottom Actions -->
+            <div class="mt-auto pt-6 border-t border-gray-800 space-y-2">
+                <button onclick="document.getElementById('settings-modal').showModal()"
+                    class="w-full flex items-center gap-3 px-4 py-2 rounded text-gray-400 hover:text-white hover:bg-white/5 transition text-sm uppercase font-bold">
+                    <i class="fa-solid fa-cog w-6 text-center"></i> Settings
+                </button>
+                <button onclick="logout()"
+                    class="w-full flex items-center gap-3 px-4 py-2 rounded text-red-400 hover:bg-red-500/10 transition text-sm uppercase font-bold">
+                    <i class="fa-solid fa-right-from-bracket w-6 text-center"></i> Logout
+                </button>
+            </div>
         </div>
     </aside>
 
@@ -318,6 +325,10 @@
                             onkeyup="renderContacts()"
                             class="bg-[#050511] border border-gray-700 text-white pl-10 pr-4 py-2 rounded w-64 focus:border-brand-orange focus:outline-none">
                     </div>
+                    <button onclick="openAddContactModal()"
+                        class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-4 py-2 rounded transition flex items-center gap-2 ml-4">
+                        <i class="fa-solid fa-user-plus"></i> Add Contact
+                    </button>
                 </div>
 
                 <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl overflow-hidden">
@@ -1724,6 +1735,88 @@
             doc.text("Thank you for choosing Weeecycle!", 20, pageHeight - 20);
 
             doc.save(`Service_Report_${job.customer.split(' ')[0]}_${new Date().toISOString().split('T')[0]}.pdf`);
+        }
+
+        // SETTINGS & AUTH LOGIC
+        async function changePassword() {
+            const currentPass = document.getElementById('current-password').value;
+            const newPass = document.getElementById('new-password').value;
+            const msg = document.getElementById('password-msg');
+
+            msg.className = "text-center text-sm hidden";
+
+            if (!currentPass || !newPass) {
+                msg.textContent = "Please fill in all fields.";
+                msg.classList.remove('hidden');
+                msg.classList.add('text-red-500');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/auth/password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ currentPassword: currentPass, newPassword: newPass })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    msg.textContent = "Password updated successfully!";
+                    msg.classList.remove('hidden');
+                    msg.classList.add('text-green-500');
+                    document.getElementById('current-password').value = '';
+                    document.getElementById('new-password').value = '';
+                    setTimeout(() => document.getElementById('settings-modal').close(), 1500);
+                } else {
+                    msg.textContent = data.error || "Update failed";
+                    msg.classList.remove('hidden');
+                    msg.classList.add('text-red-500');
+                }
+            } catch (e) {
+                msg.textContent = "Server Connection Error";
+                msg.classList.remove('hidden');
+                msg.classList.add('text-red-500');
+            }
+        }
+
+        // MANUAL ADD CONTACT
+        function openAddContactModal() {
+            document.getElementById('add-contact-name').value = '';
+            document.getElementById('add-contact-email').value = '';
+            document.getElementById('add-contact-phone').value = '';
+            document.getElementById('add-contact-modal').showModal();
+        }
+
+        async function saveNewContact() {
+            const name = document.getElementById('add-contact-name').value;
+            const email = document.getElementById('add-contact-email').value;
+            const phone = document.getElementById('add-contact-phone').value;
+
+            if (!name) {
+                alert("Name is required");
+                return;
+            }
+
+            const newContact = {
+                id: Date.now().toString(),
+                name: name,
+                email: email,
+                phone: phone,
+                lastSeen: new Date().toISOString().split('T')[0],
+                count: 0
+            };
+
+            await saveContactAPI(newContact);
+            document.getElementById('add-contact-modal').close();
+
+            // Show toast
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg z-50 animate-bounce';
+            toast.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Contact Added';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+
+            renderContacts();
         }
 
         // START
