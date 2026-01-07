@@ -486,6 +486,78 @@
         </div>
     </dialog>
 
+    <!-- Settings Modal -->
+    <dialog id="settings-modal"
+        class="bg-[#151525] text-white p-0 rounded-xl shadow-2xl backdrop:bg-black/80 w-full max-w-md border border-gray-700">
+        <div class="border-b border-gray-700 p-4 flex justify-between items-center bg-[#0f0f1f]">
+            <h3 class="font-display font-bold text-xl uppercase tracking-wider text-brand-orange"><i
+                    class="fa-solid fa-cog mr-2"></i> Settings</h3>
+            <button onclick="document.getElementById('settings-modal').close()"
+                class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <div class="p-6 space-y-6">
+            <h4 class="font-bold text-lg border-b border-gray-700 pb-2">Change Password</h4>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Current
+                        Password</label>
+                    <input type="password" id="current-password"
+                        class="w-full bg-[#0a0a1a] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">New
+                        Password</label>
+                    <input type="password" id="new-password"
+                        class="w-full bg-[#0a0a1a] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
+                </div>
+            </div>
+            <div id="password-msg" class="text-center text-sm hidden"></div>
+        </div>
+        <div class="bg-[#0f0f1f] p-4 flex justify-end gap-2 rounded-b-xl border-t border-gray-700">
+            <button onclick="changePassword()"
+                class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-6 py-2 rounded transition">Update
+                Password</button>
+        </div>
+    </dialog>
+
+    <!-- Add Contact Modal -->
+    <dialog id="add-contact-modal"
+        class="bg-[#151525] text-white p-0 rounded-xl shadow-2xl backdrop:bg-black/80 w-full max-w-md border border-gray-700">
+        <div class="border-b border-gray-700 p-4 flex justify-between items-center bg-[#0f0f1f]">
+            <h3 class="font-display font-bold text-xl uppercase tracking-wider text-brand-orange"><i
+                    class="fa-solid fa-user-plus mr-2"></i> Add Customer</h3>
+            <button onclick="document.getElementById('add-contact-modal').close()"
+                class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Full Name</label>
+                <input type="text" id="add-contact-name"
+                    class="w-full bg-[#0a0a1a] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none"
+                    placeholder="e.g. John Doe">
+            </div>
+            <div>
+                <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Email</label>
+                <input type="email" id="add-contact-email"
+                    class="w-full bg-[#0a0a1a] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none"
+                    placeholder="john@example.com">
+            </div>
+            <div>
+                <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Phone</label>
+                <input type="tel" id="add-contact-phone"
+                    class="w-full bg-[#0a0a1a] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none"
+                    placeholder="(555) 123-4567">
+            </div>
+        </div>
+        <div class="bg-[#0f0f1f] p-4 flex justify-end gap-2 rounded-b-xl border-t border-gray-700">
+            <button onclick="document.getElementById('add-contact-modal').close()"
+                class="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
+            <button onclick="saveNewContact()"
+                class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-6 py-2 rounded transition">Save
+                Contact</button>
+        </div>
+    </dialog>
+
     <script>
         // --- DATA & STATE ---
         const COLUMNS = [
