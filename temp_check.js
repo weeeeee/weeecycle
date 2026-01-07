@@ -1,20 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workshop Dashboard | Weeecycle.net</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&display=swap"
-        rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
-        rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script>
         tailwind.config = {
             theme: {
                 extend: {
@@ -814,8 +797,7 @@
         function renderDashboard() {
             renderActionRequired();
             renderRecents();
-            renderAgenda();
-            renderChart();
+            renderCalendar();
             renderShopHours();
         }
 
@@ -833,11 +815,9 @@
             }
 
             bookedJobs.forEach(job => {
-                // Use createCardElement to ensure consistency? No, action required is different style.
-                // Keep existing logic but maybe fix click?
                 const div = document.createElement('div');
-                div.className = "bg-brand-dark p-4 rounded-xl border border-gray-700 hover:border-brand-orange cursor-pointer transition group";
-                div.onclick = () => { openJobSheet(job.id); };
+                div.className = "bg-brand-dark p-4 rounded border border-gray-700 hover:border-brand-orange cursor-pointer transition group";
+                div.onclick = () => { openJobSheet(job.id); }; // Open Job Sheet
                 div.innerHTML = `
                     <div class="flex justify-between items-start">
                         <h4 class="font-bold text-white text-lg">${job.customer}</h4>
@@ -863,7 +843,7 @@
 
             recents.forEach(job => {
                 const li = document.createElement('li');
-                li.className = "flex justify-between items-center border-b border-gray-800/50 pb-2 last:border-0";
+                li.className = "flex justify-between items-center border-b border-gray-800 pb-2";
                 li.innerHTML = `
                     <div>
                         <div class="text-white font-bold">${job.customer}</div>
@@ -875,58 +855,83 @@
             });
         }
 
-        // --- DASHBOARD ANALYTICS & AGENDA ---
-        let _currentAgendaDate = new Date();
-        let _jobsChart = null;
+        // CALENDAR
+        let currentDate = new Date();
 
-        function renderAgenda() {
-            const list = document.getElementById('agenda-list');
-            const dateLabel = document.getElementById('agenda-date');
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            const monthTitle = document.getElementById('calendar-month-year');
+            grid.innerHTML = '';
 
-            // Format Date Label
-            const options = { weekday: 'long', month: 'short', day: 'numeric' };
-            dateLabel.textContent = _currentAgendaDate.toLocaleDateString(undefined, options);
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
 
-            // Filter Jobs
-            // Note: Our jobs store 'date' string (YYYY-MM-DD). We compare localized strings or raw? 
-            // The job.date comes from new Date().toISOString().split('T')[0] in confirmNewJob.
-            // So we should compare YYYY-MM-DDstrings.
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
 
-            // Adjust current agenda date to YYYY-MM-DD local
-            // This is a bit tricky with timezones. Let's use the simple string approach.
-            const y = _currentAgendaDate.getFullYear();
-            const m = String(_currentAgendaDate.getMonth() + 1).padStart(2, '0');
-            const d = String(_currentAgendaDate.getDate()).padStart(2, '0');
-            const queryDate = `${y}-${m}-${d}`;
+            monthTitle.textContent = `${monthNames[month]} ${year}`;
 
-            const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
-            const daysJobs = jobs.filter(j => j.date === queryDate);
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            list.innerHTML = '';
-            if (daysJobs.length === 0) {
-                list.innerHTML = `
+            // Get jobs for dots
+            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+
+            // Empty slots for previous month
+            for (let i = 0; i < firstDay; i++) {
+                const empty = document.createElement('div');
+                // --- DASHBOARD ANALYTICS & AGENDA ---
+                let _currentAgendaDate = new Date();
+                let _jobsChart = null;
+
+                function renderAgenda() {
+                    const list = document.getElementById('agenda-list');
+                    const dateLabel = document.getElementById('agenda-date');
+
+                    // Format Date Label
+                    const options = { weekday: 'long', month: 'short', day: 'numeric' };
+                    dateLabel.textContent = _currentAgendaDate.toLocaleDateString(undefined, options);
+
+                    // Filter Jobs
+                    // Note: Our jobs store 'date' string (YYYY-MM-DD). We compare localized strings or raw? 
+                    // The job.date comes from new Date().toISOString().split('T')[0] in confirmNewJob.
+                    // So we should compare YYYY-MM-DDstrings.
+
+                    // Adjust current agenda date to YYYY-MM-DD local
+                    // This is a bit tricky with timezones. Let's use the simple string approach.
+                    const y = _currentAgendaDate.getFullYear();
+                    const m = String(_currentAgendaDate.getMonth() + 1).padStart(2, '0');
+                    const d = String(_currentAgendaDate.getDate()).padStart(2, '0');
+                    const queryDate = `${y}-${m}-${d}`;
+
+                    const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+                    const daysJobs = jobs.filter(j => j.date === queryDate);
+
+                    list.innerHTML = '';
+                    if (daysJobs.length === 0) {
+                        list.innerHTML = `
                     <div class="h-full flex flex-col items-center justify-center text-gray-500 opacity-50 min-h-[150px]">
                         <i class="fa-solid fa-calendar-xmark text-4xl mb-2"></i>
                         <p class="uppercase font-bold tracking-widest text-sm">No Jobs</p>
                     </div>
                 `;
-            } else {
-                daysJobs.forEach(job => {
-                    const colors = {
-                        'booked': 'border-gray-400',
-                        'working': 'border-brand-orange',
-                        'ready': 'border-green-500',
-                        'completed': 'border-gray-800'
-                    };
-                    const color = colors[job.status] || 'border-blue-500';
+                    } else {
+                        daysJobs.forEach(job => {
+                            const colors = {
+                                'booked': 'border-gray-400',
+                                'working': 'border-brand-orange',
+                                'ready': 'border-green-500',
+                                'completed': 'border-gray-800'
+                            };
+                            const color = colors[job.status] || 'border-blue-500';
 
-                    const div = document.createElement('div');
-                    div.className = `bg-[#151535] p-3 rounded border-l-4 ${color} border-y border-r border-gray-800 flex justify-between items-center group cursor-pointer hover:bg-white/5 transition`;
+                            const div = document.createElement('div');
+                            div.className = `bg-[#151535] p-3 rounded border-l-4 ${color} border-y border-r border-gray-800 flex justify-between items-center group cursor-pointer hover:bg-white/5 transition`;
 
-                    // Simple view or edit?
-                    // div.onclick = () => ... 
+                            // Simple view or edit?
+                            // div.onclick = () => ... 
 
-                    div.innerHTML = `
+                            div.innerHTML = `
                         <div>
                             <h4 class="font-bold text-white text-sm">${job.customer}</h4>
                             <p class="text-xs text-gray-400">${job.bike} • <span class="text-brand-orange">${job.service}</span></p>
@@ -935,124 +940,124 @@
                             <span class="text-[10px] uppercase font-bold text-gray-500 tracking-wider">${job.status.replace('_', ' ')}</span>
                         </div>
                     `;
-                    list.appendChild(div);
-                });
-            }
-        }
-
-        function changeDay(delta) {
-            _currentAgendaDate.setDate(_currentAgendaDate.getDate() + delta);
-            renderAgenda();
-        }
-
-        function resetDay() {
-            _currentAgendaDate = new Date();
-            renderAgenda();
-        }
-
-        function renderChart() {
-            const ctx = document.getElementById('jobsChart');
-            if (!ctx) return;
-
-            const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
-
-            // Aggregation: Count ALL jobs (past and present)
-            const counts = {
-                'Safety Check': 0,
-                'The Tune-Up': 0,
-                'Overhaul': 0,
-                'Dream Build': 0,
-                'A La Carte': 0
-            };
-
-            jobs.forEach(j => {
-                if (counts[j.service] !== undefined) {
-                    counts[j.service]++;
-                } else {
-                    counts['A La Carte']++;
+                            list.appendChild(div);
+                        });
+                    }
                 }
-            });
 
-            // If no data, show placeholder? ChartJS handles all 0s okay usually (blank)
+                function changeDay(delta) {
+                    _currentAgendaDate.setDate(_currentAgendaDate.getDate() + delta);
+                    renderAgenda();
+                }
 
-            const data = {
-                labels: Object.keys(counts),
-                datasets: [{
-                    data: Object.values(counts),
-                    backgroundColor: [
-                        '#3b82f6', // Safety (Blue)
-                        '#22c55e', // TuneUp (Green)
-                        '#eab308', // Overhaul (Yellow)
-                        '#f97316', // Dream (Orange)
-                        '#a855f7'  // AlaCarte (Purple)
-                    ],
-                    borderWidth: 0,
-                    hoverOffset: 4
-                }]
-            };
+                function resetDay() {
+                    _currentAgendaDate = new Date();
+                    renderAgenda();
+                }
 
-            if (_jobsChart) {
-                _jobsChart.destroy();
-            }
+                function renderChart() {
+                    const ctx = document.getElementById('jobsChart');
+                    if (!ctx) return;
 
-            _jobsChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: data,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                color: '#9ca3af',
-                                boxWidth: 12,
-                                font: { size: 10, family: "'Roboto Condensed', sans-serif" }
-                            }
+                    const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+
+                    // Aggregation: Count ALL jobs (past and present)
+                    const counts = {
+                        'Safety Check': 0,
+                        'The Tune-Up': 0,
+                        'Overhaul': 0,
+                        'Dream Build': 0,
+                        'A La Carte': 0
+                    };
+
+                    jobs.forEach(j => {
+                        if (counts[j.service] !== undefined) {
+                            counts[j.service]++;
+                        } else {
+                            counts['A La Carte']++;
                         }
-                    },
-                    cutout: '70%'
+                    });
+
+                    // If no data, show placeholder? ChartJS handles all 0s okay usually (blank)
+
+                    const data = {
+                        labels: Object.keys(counts),
+                        datasets: [{
+                            data: Object.values(counts),
+                            backgroundColor: [
+                                '#3b82f6', // Safety (Blue)
+                                '#22c55e', // TuneUp (Green)
+                                '#eab308', // Overhaul (Yellow)
+                                '#f97316', // Dream (Orange)
+                                '#a855f7'  // AlaCarte (Purple)
+                            ],
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    };
+
+                    if (_jobsChart) {
+                        _jobsChart.destroy();
+                    }
+
+                    _jobsChart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                    labels: {
+                                        color: '#9ca3af',
+                                        boxWidth: 12,
+                                        font: { size: 10, family: "'Roboto Condensed', sans-serif" }
+                                    }
+                                }
+                            },
+                            cutout: '70%'
+                        }
+                    });
                 }
-            });
-        }
 
-        // SHOP HOURS
-        function renderShopHours() {
-            const hours = localStorage.getItem('workshop_hours') || "Mon-Fri: 9am - 5pm\nSat: 10am - 2pm\nSun: Closed";
-            document.getElementById('shop-hours').textContent = hours;
-        }
+                // SHOP HOURS
+                function renderShopHours() {
+                    const hours = localStorage.getItem('workshop_hours') || "Mon-Fri: 9am - 5pm\nSat: 10am - 2pm\nSun: Closed";
+                    document.getElementById('shop-hours').textContent = hours;
+                }
 
-        function editShopHours() {
-            const current = document.getElementById('shop-hours').textContent;
-            const newHours = prompt("Edit Shop Hours:", current);
-            if (newHours) {
-                localStorage.setItem('workshop_hours', newHours);
-                renderShopHours();
-            }
-        }
+                function editShopHours() {
+                    const current = document.getElementById('shop-hours').textContent;
+                    const newHours = prompt("Edit Shop Hours:", current);
+                    if (newHours) {
+                        localStorage.setItem('workshop_hours', newHours);
+                        renderShopHours();
+                    }
+                }
 
-        function checkNewSubmissions() {
-            // Check if there's a new submission from contact.html in localStorage
-            const newJob = localStorage.getItem('new_service_request');
-            if (newJob) {
-                const jobData = JSON.parse(newJob);
-                addJobCard(jobData);
-                localStorage.removeItem('new_service_request'); // Clear it so it doesn't duplicate
-            }
-        }
+                function checkNewSubmissions() {
+                    // Check if there's a new submission from contact.html in localStorage
+                    const newJob = localStorage.getItem('new_service_request');
+                    if (newJob) {
+                        const jobData = JSON.parse(newJob);
+                        addJobCard(jobData);
+                        localStorage.removeItem('new_service_request'); // Clear it so it doesn't duplicate
+                    }
+                }
 
-        // KANBAN
-        function renderKanban() {
-            const board = document.getElementById('kanban-board');
-            board.innerHTML = '';
+                // KANBAN
+                function renderKanban() {
+                    const board = document.getElementById('kanban-board');
+                    board.innerHTML = '';
 
-            // Get Jobs
-            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+                    // Get Jobs
+                    let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
 
-            COLUMNS.forEach(col => {
-                const colDiv = document.createElement('div');
-                colDiv.className = 'w-80 bg-[#151535] rounded-xl flex flex-col flex-shrink-0 h-full max-h-full shadow-xl border border-gray-800';
-                colDiv.innerHTML = `
+                    COLUMNS.forEach(col => {
+                        const colDiv = document.createElement('div');
+                        colDiv.className = 'w-80 bg-[#151535] rounded-xl flex flex-col flex-shrink-0 h-full max-h-full shadow-xl border border-gray-800';
+                        colDiv.innerHTML = `
                     <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-[#0B0B2B] rounded-t-xl ${col.color}">
                         <h3 class="font-display font-bold text-xl uppercase tracking-wider text-gray-200">${col.title}</h3>
                         <span class="text-xs bg-gray-800 px-2 py-1 rounded text-gray-400 count-badge">0</span>
@@ -1063,42 +1068,42 @@
                          ondragover="allowDrop(event)">
                     </div>
                 `;
-                board.appendChild(colDiv);
+                        board.appendChild(colDiv);
 
-                // Populate Cards
-                const colJobs = jobs.filter(j => j.status === col.id);
-                const container = colDiv.querySelector(`#col-${col.id}`);
-                colDiv.querySelector('.count-badge').textContent = colJobs.length;
+                        // Populate Cards
+                        const colJobs = jobs.filter(j => j.status === col.id);
+                        const container = colDiv.querySelector(`#col-${col.id}`);
+                        colDiv.querySelector('.count-badge').textContent = colJobs.length;
 
-                colJobs.forEach(job => {
-                    const card = createCardElement(job);
-                    container.appendChild(card);
-                });
-            });
-        }
+                        colJobs.forEach(job => {
+                            const card = createCardElement(job);
+                            container.appendChild(card);
+                        });
+                    });
+                }
 
-        function createCardElement(job) {
-            const div = document.createElement('div');
-            // Use hex color to ensure visibility
-            div.className = 'bg-[#151525] p-4 rounded-xl border border-gray-700 shadow-lg cursor-grab active:cursor-grabbing hover:border-brand-orange transition group relative flex flex-col gap-2';
-            div.draggable = true;
-            // Ensure ID is string
-            const safeId = String(job.id || Date.now());
-            div.id = `job-${safeId}`;
-            div.ondragstart = drag;
+                function createCardElement(job) {
+                    const div = document.createElement('div');
+                    // Use hex color to ensure visibility
+                    div.className = 'bg-[#151525] p-4 rounded-xl border border-gray-700 shadow-lg cursor-grab active:cursor-grabbing hover:border-brand-orange transition group relative flex flex-col gap-2';
+                    div.draggable = true;
+                    // Ensure ID is string
+                    const safeId = String(job.id || Date.now());
+                    div.id = `job-${safeId}`;
+                    div.ondragstart = drag;
 
-            div.onclick = (e) => {
-                if (e.target.closest('button')) return;
-                openJobSheet(job.id);
-            };
+                    div.onclick = (e) => {
+                        if (e.target.closest('button')) return;
+                        openJobSheet(job.id);
+                    };
 
-            const displayId = safeId.length >= 4 ? safeId.substring(safeId.length - 4) : safeId;
-            const customerName = job.customer || job.name || 'Unknown Customer';
-            const serviceName = job.service || 'Service';
-            const bikeName = job.bike || 'Bike Model';
-            const dateStr = job.date ? new Date(job.date).toLocaleDateString() : 'No Date';
+                    const displayId = safeId.length >= 4 ? safeId.substring(safeId.length - 4) : safeId;
+                    const customerName = job.customer || job.name || 'Unknown Customer';
+                    const serviceName = job.service || 'Service';
+                    const bikeName = job.bike || 'Bike Model';
+                    const dateStr = job.date ? new Date(job.date).toLocaleDateString() : 'No Date';
 
-            div.innerHTML = `
+                    div.innerHTML = `
                 <div class="flex justify-between items-start">
                     <span class="text-xs font-mono text-gray-500">#${displayId}</span>
                     <span class="text-[10px] bg-gray-800 px-2 py-0.5 rounded text-brand-orange uppercase tracking-wide font-bold">${serviceName}</span>
@@ -1112,135 +1117,135 @@
                      <button onclick="deleteJob('${String(job.id)}')" class="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition px-2"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `;
-            return div;
-        }
+                    return div;
+                }
 
-        function addJobCard(data) {
-            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
-            const newJob = {
-                id: Date.now().toString(),
-                status: 'booked',
-                customer: data.fullname,
-                email: data.email, // Save email
-                phone: data.phone, // Save phone
-                bike: data.bike,
-                service: data.service,
-                date: new Date().toISOString()
-            };
-            jobs.push(newJob);
-            localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+                function addJobCard(data) {
+                    let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+                    const newJob = {
+                        id: Date.now().toString(),
+                        status: 'booked',
+                        customer: data.fullname,
+                        email: data.email, // Save email
+                        phone: data.phone, // Save phone
+                        bike: data.bike,
+                        service: data.service,
+                        date: new Date().toISOString()
+                    };
+                    jobs.push(newJob);
+                    localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
 
-            // Sync Contact to API (Non-blocking)
-            fetchContacts().then(contacts => {
-                const existing = contacts.find(c => c.name === data.fullname);
-                const contactPayload = {
-                    id: existing ? existing.id : Date.now().toString(),
-                    name: data.fullname,
-                    email: data.email || (existing ? existing.email : ''),
-                    phone: data.phone || (existing ? existing.phone : ''),
-                    lastSeen: newJob.date,
-                    count: (existing ? existing.job_count : 0) + 1
-                };
-                saveContactAPI(contactPayload);
-            });
+                    // Sync Contact to API (Non-blocking)
+                    fetchContacts().then(contacts => {
+                        const existing = contacts.find(c => c.name === data.fullname);
+                        const contactPayload = {
+                            id: existing ? existing.id : Date.now().toString(),
+                            name: data.fullname,
+                            email: data.email || (existing ? existing.email : ''),
+                            phone: data.phone || (existing ? existing.phone : ''),
+                            lastSeen: newJob.date,
+                            count: (existing ? existing.job_count : 0) + 1
+                        };
+                        saveContactAPI(contactPayload);
+                    });
 
-            renderKanban();
-        }
+                    renderKanban();
+                }
 
-        // DRAG AND DROP
-        function allowDrop(ev) {
-            ev.preventDefault();
-        }
+                // DRAG AND DROP
+                function allowDrop(ev) {
+                    ev.preventDefault();
+                }
 
-        function drag(ev) {
-            ev.dataTransfer.setData("text", ev.target.id);
-            ev.target.classList.add('dragging');
-        }
+                function drag(ev) {
+                    ev.dataTransfer.setData("text", ev.target.id);
+                    ev.target.classList.add('dragging');
+                }
 
-        function drop(ev) {
-            ev.preventDefault();
-            const data = ev.dataTransfer.getData("text");
-            const card = document.getElementById(data);
-            card.classList.remove('dragging');
+                function drop(ev) {
+                    ev.preventDefault();
+                    const data = ev.dataTransfer.getData("text");
+                    const card = document.getElementById(data);
+                    card.classList.remove('dragging');
 
-            // Find drop target (handle dropping on child elements)
-            let targetCol = ev.target;
-            while (!targetCol.classList.contains('kanban-col')) {
-                targetCol = targetCol.parentElement;
-                if (!targetCol) return;
-            }
+                    // Find drop target (handle dropping on child elements)
+                    let targetCol = ev.target;
+                    while (!targetCol.classList.contains('kanban-col')) {
+                        targetCol = targetCol.parentElement;
+                        if (!targetCol) return;
+                    }
 
-            targetCol.appendChild(card);
+                    targetCol.appendChild(card);
 
-            // Update State
-            const newStatus = targetCol.id.replace('col-', '');
-            const jobId = data.replace('job-', '');
+                    // Update State
+                    const newStatus = targetCol.id.replace('col-', '');
+                    const jobId = data.replace('job-', '');
 
-            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
-            const jobIndex = jobs.findIndex(j => j.id === jobId);
-            if (jobIndex > -1) {
-                jobs[jobIndex].status = newStatus;
-                localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
-                renderKanban(); // Re-render to update counts
-            }
-        }
+                    let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+                    const jobIndex = jobs.findIndex(j => j.id === jobId);
+                    if (jobIndex > -1) {
+                        jobs[jobIndex].status = newStatus;
+                        localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+                        renderKanban(); // Re-render to update counts
+                    }
+                }
 
-        function deleteJob(id) {
-            if (confirm('Archive this job record?')) {
-                let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
-                jobs = jobs.filter(j => j.id !== id);
-                localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
-                renderKanban();
-            }
-        }
+                function deleteJob(id) {
+                    if (confirm('Archive this job record?')) {
+                        let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+                        jobs = jobs.filter(j => j.id !== id);
+                        localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+                        renderKanban();
+                    }
+                }
 
-        // INVENTORY
-        const INVENTORY_CATEGORIES = [
-            "Wheelset/Tires",
-            "Handlebars/Steering",
-            "Fork/Frame",
-            "Saddle/Post",
-            "Bottom Bracket/Crankset",
-            "Mech",
-            "Chain/Cassette",
-            "Other"
-        ];
+                // INVENTORY
+                const INVENTORY_CATEGORIES = [
+                    "Wheelset/Tires",
+                    "Handlebars/Steering",
+                    "Fork/Frame",
+                    "Saddle/Post",
+                    "Bottom Bracket/Crankset",
+                    "Mech",
+                    "Chain/Cassette",
+                    "Other"
+                ];
 
-        function renderInventory() {
-            const container = document.getElementById('inventory-table-body');
-            container.innerHTML = '';
-            let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
+                function renderInventory() {
+                    const container = document.getElementById('inventory-table-body');
+                    container.innerHTML = '';
+                    let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
 
-            // Ensure every item has a category
-            items = items.map(i => ({ ...i, category: i.category || 'Other' }));
+                    // Ensure every item has a category
+                    items = items.map(i => ({ ...i, category: i.category || 'Other' }));
 
-            INVENTORY_CATEGORIES.forEach(cat => {
-                const catItems = items.filter(i => i.category === cat);
-                // Show header request
+                    INVENTORY_CATEGORIES.forEach(cat => {
+                        const catItems = items.filter(i => i.category === cat);
+                        // Show header request
 
-                const isCollapsed = localStorage.getItem(`cat_collapsed_${cat}`) === 'true';
+                        const isCollapsed = localStorage.getItem(`cat_collapsed_${cat}`) === 'true';
 
-                // Header Row
-                const headerTr = document.createElement('tr');
-                headerTr.className = "bg-[#151535] cursor-pointer hover:bg-[#1a1a45] text-left";
-                headerTr.onclick = () => {
-                    localStorage.setItem(`cat_collapsed_${cat}`, !isCollapsed);
-                    renderInventory();
-                };
+                        // Header Row
+                        const headerTr = document.createElement('tr');
+                        headerTr.className = "bg-[#151535] cursor-pointer hover:bg-[#1a1a45] text-left";
+                        headerTr.onclick = () => {
+                            localStorage.setItem(`cat_collapsed_${cat}`, !isCollapsed);
+                            renderInventory();
+                        };
 
-                headerTr.innerHTML = `
+                        headerTr.innerHTML = `
                     <td colspan="4" class="p-3 font-bold text-gray-200 uppercase tracking-wider text-xs">
                         <i class="fa-solid fa-chevron-${isCollapsed ? 'right' : 'down'} mr-2 w-4"></i> ${cat} <span class="text-gray-500 ml-2">(${catItems.length})</span>
                     </td>
                 `;
-                container.appendChild(headerTr);
+                        container.appendChild(headerTr);
 
-                if (!isCollapsed) {
-                    catItems.forEach((item) => {
-                        const tr = document.createElement('tr');
-                        const isLow = item.qty <= item.min;
-                        tr.className = "hover:bg-white/5 transition border-b border-gray-800/30 text-sm";
-                        tr.innerHTML = `
+                        if (!isCollapsed) {
+                            catItems.forEach((item) => {
+                                const tr = document.createElement('tr');
+                                const isLow = item.qty <= item.min;
+                                tr.className = "hover:bg-white/5 transition border-b border-gray-800/30 text-sm";
+                                tr.innerHTML = `
                             <td class="p-3 font-medium text-white pl-8 border-l-2 border-transparent hover:border-brand-orange">
                                 ${item.name}
                             </td>
@@ -1253,8 +1258,8 @@
                             </td>
                             <td class="p-3">
                                 ${isLow
-                                ? '<span class="text-red-500 text-[10px] font-bold uppercase tracking-wider bg-red-900/20 px-2 py-1 rounded">Low</span>'
-                                : '<span class="text-green-500 text-[10px] font-bold uppercase tracking-wider bg-green-900/20 px-2 py-1 rounded">OK</span>'}
+                                        ? '<span class="text-red-500 text-[10px] font-bold uppercase tracking-wider bg-red-900/20 px-2 py-1 rounded">Low</span>'
+                                        : '<span class="text-green-500 text-[10px] font-bold uppercase tracking-wider bg-green-900/20 px-2 py-1 rounded">OK</span>'}
                             </td>
                             <td class="p-3 text-right flex justify-end items-center gap-1">
                                  <div class="flex flex-col mr-3 text-gray-600">
@@ -1265,250 +1270,250 @@
                                  <button onclick="removeItem(${item.id})" title="Delete" class="text-gray-500 hover:text-red-500 p-1"><i class="fa-solid fa-trash"></i></button>
                             </td>
                         `;
-                        container.appendChild(tr);
-                    });
-                }
-            });
-        }
-
-        function updateQty(id, change) {
-            let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
-            const idx = items.findIndex(i => i.id === id);
-            if (idx > -1) {
-                items[idx].qty = Math.max(0, items[idx].qty + change);
-                localStorage.setItem('workshop_inventory', JSON.stringify(items));
-                renderInventory();
-            }
-        }
-
-        // Helper to prompt category
-        function promptCategory(current) {
-            let num = prompt(
-                `Select Category(Enter Number): \n` +
-                INVENTORY_CATEGORIES.map((c, i) => `${i + 1}. ${c} `).join('\n'),
-                current ? (INVENTORY_CATEGORIES.indexOf(current) + 1) : "8"
-            );
-            if (!num) return null;
-            const idx = parseInt(num) - 1;
-            if (idx >= 0 && idx < INVENTORY_CATEGORIES.length) return INVENTORY_CATEGORIES[idx];
-            return "Other";
-        }
-
-        function addItem() {
-            const name = prompt("Item Name:");
-            if (!name) return;
-            const qty = parseInt(prompt("Current Quantity:", "1") || "0");
-            const min = parseInt(prompt("Low Stock Warning Level:", "5") || "5");
-            const category = promptCategory("Other");
-            if (!category) return;
-
-            let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
-            items.push({ id: Date.now(), name, qty, min, category });
-            localStorage.setItem('workshop_inventory', JSON.stringify(items));
-            renderInventory();
-        }
-
-        function editItem(id) {
-            let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
-            const idx = items.findIndex(i => i.id === id);
-            if (idx === -1) return;
-
-            const existingName = items[idx].name;
-            const existingQty = items[idx].qty;
-            const existingMin = items[idx].min || 5;
-            const existingCat = items[idx].category || "Other";
-
-            const name = prompt("Edit Item Name:", existingName);
-            if (name === null) return;
-
-            const qtyStr = prompt("Edit Quantity:", existingQty);
-            if (qtyStr === null) return;
-            const qty = parseInt(qtyStr || "0");
-
-            const minStr = prompt("Low Stock Warning Level:", existingMin);
-            if (minStr === null) return;
-            const min = parseInt(minStr || "5");
-
-            const category = promptCategory(existingCat);
-            if (!category) return;
-
-            items[idx] = { ...items[idx], name, qty, min, category };
-            localStorage.setItem('workshop_inventory', JSON.stringify(items));
-            renderInventory();
-        }
-
-        function moveItem(id, direction) {
-            // Reordering logic: We need to swap the item with its neighbor *within the same category* in the main list.
-            // This is tricky because the main list might not be sorted by category. 
-            // Better approach: Sort the main list by category first? 
-            // Or just swap indexes if they are adjacent? 
-            // "Reorder" implies persistent order. Array order defines display order.
-            // If we group by category in render, the array order MATTERS primarily within the category subset.
-
-            let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
-            const idx = items.findIndex(i => i.id === id);
-            if (idx === -1) return;
-
-            const item = items[idx];
-            // Get all items of this category
-            const catItems = items.map((it, index) => ({ ...it, originalIndex: index })).filter(it => (it.category || 'Other') === (item.category || 'Other'));
-
-            // Find position of current item in the category subset
-            const subIdx = catItems.findIndex(it => it.id === id);
-
-            if (direction === -1 && subIdx > 0) {
-                // Move Up
-                const neighbor = catItems[subIdx - 1];
-                // Swap in master list
-                const temp = items[neighbor.originalIndex];
-                items[neighbor.originalIndex] = items[idx];
-                items[idx] = temp;
-            } else if (direction === 1 && subIdx < catItems.length - 1) {
-                // Move Down
-                const neighbor = catItems[subIdx + 1];
-                // Swap in master list
-                const temp = items[neighbor.originalIndex];
-                items[neighbor.originalIndex] = items[idx];
-                items[idx] = temp;
-            }
-
-            localStorage.setItem('workshop_inventory', JSON.stringify(items));
-            renderInventory();
-        }
-
-        function removeItem(id) {
-            if (confirm('Delete item from inventory?')) {
-                let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
-                items = items.filter(i => i.id !== id);
-                localStorage.setItem('workshop_inventory', JSON.stringify(items));
-                renderInventory();
-            }
-        }
-
-        // CONTACTS LOGIC
-
-        // API HELPERS
-        const API_URL = 'http://localhost:3000/api';
-
-        async function fetchContacts() {
-            const statusIndicator = document.getElementById('api-status');
-            try {
-                const res = await fetch(`${API_URL}/contacts`);
-                if (!res.ok) throw new Error('API Error');
-
-                if (statusIndicator) {
-                    statusIndicator.className = "mt-2 text-xs font-bold text-green-400 flex items-center gap-1 uppercase tracking-wider";
-                    statusIndicator.innerHTML = '<div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div> Secure Link Active';
-                }
-
-                return await res.json();
-            } catch (e) {
-                console.error("API Error:", e);
-                if (statusIndicator) {
-                    statusIndicator.className = "mt-2 text-xs font-bold text-red-500 flex items-center gap-1 uppercase tracking-wider";
-                    statusIndicator.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Server Offline';
-                }
-                return [];
-            }
-        }
-
-
-        async function saveContactAPI(contact) {
-            try {
-                console.log("Saving contact...", contact);
-                await fetch(`${API_URL}/contacts`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(contact)
-                });
-            } catch (e) {
-                console.error("Save Error:", e);
-            }
-        }
-
-        async function deleteContactAPI(id) {
-            try {
-                await fetch(`${API_URL}/contacts/${id}`, { method: 'DELETE' });
-            } catch (e) {
-                console.error("Delete Error:", e);
-            }
-        }
-
-        // Global cache for editing
-        let _cachedContacts = [];
-
-        // CONTACTS LOGIC
-        async function renderContacts() {
-            const tbody = document.getElementById('contacts-table-body');
-            if (!tbody) return;
-            tbody.innerHTML = '<tr class="animate-pulse"><td colspan="6" class="p-4 text-center text-gray-500">Loading secure data...</td></tr>';
-
-            const searchInput = document.getElementById('contact-search');
-            const search = searchInput ? searchInput.value.toLowerCase() : '';
-
-            // Fetch from API
-            _cachedContacts = await fetchContacts();
-
-            // AUTO-MIGRATION: If Server is empty but we have local jobs, upload them!
-            if (_cachedContacts.length === 0) {
-                const localJobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
-                if (localJobs.length > 0) {
-                    console.log("Migrating local contacts to secure server...");
-                    tbody.innerHTML = '<tr class="animate-pulse"><td colspan="6" class="p-4 text-center text-brand-orange">Migrating your contacts to the secure database...</td></tr>';
-
-                    const map = {};
-                    localJobs.forEach(job => {
-                        if (!map[job.customer]) {
-                            map[job.customer] = {
-                                name: job.customer,
-                                email: job.email || '',
-                                phone: job.phone || '',
-                                lastSeen: job.date,
-                                count: 1
-                            };
-                        } else {
-                            map[job.customer].count++;
-                            if (new Date(job.date) > new Date(map[job.customer].lastSeen)) {
-                                map[job.customer].lastSeen = job.date;
-                            }
+                                container.appendChild(tr);
+                            });
                         }
                     });
-
-                    // Upload all
-                    const migrationPromises = Object.values(map).map(c => saveContactAPI({
-                        id: Date.now() + Math.random().toString(), // New ID for DB
-                        ...c
-                    }));
-
-                    await Promise.all(migrationPromises);
-
-                    // Re-fetch after migration
-                    _cachedContacts = await fetchContacts();
                 }
-            }
 
-            const contacts = _cachedContacts;
+                function updateQty(id, change) {
+                    let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
+                    const idx = items.findIndex(i => i.id === id);
+                    if (idx > -1) {
+                        items[idx].qty = Math.max(0, items[idx].qty + change);
+                        localStorage.setItem('workshop_inventory', JSON.stringify(items));
+                        renderInventory();
+                    }
+                }
 
-            // Jobs for counts (still local for now)
-            const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+                // Helper to prompt category
+                function promptCategory(current) {
+                    let num = prompt(
+                        `Select Category(Enter Number): \n` +
+                        INVENTORY_CATEGORIES.map((c, i) => `${i + 1}. ${c} `).join('\n'),
+                        current ? (INVENTORY_CATEGORIES.indexOf(current) + 1) : "8"
+                    );
+                    if (!num) return null;
+                    const idx = parseInt(num) - 1;
+                    if (idx >= 0 && idx < INVENTORY_CATEGORIES.length) return INVENTORY_CATEGORIES[idx];
+                    return "Other";
+                }
 
-            tbody.innerHTML = ''; // Clear loading
+                function addItem() {
+                    const name = prompt("Item Name:");
+                    if (!name) return;
+                    const qty = parseInt(prompt("Current Quantity:", "1") || "0");
+                    const min = parseInt(prompt("Low Stock Warning Level:", "5") || "5");
+                    const category = promptCategory("Other");
+                    if (!category) return;
 
-            if (contacts.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-500 italic">No contacts found in secure storage.</td></tr>';
-                return;
-            }
+                    let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
+                    items.push({ id: Date.now(), name, qty, min, category });
+                    localStorage.setItem('workshop_inventory', JSON.stringify(items));
+                    renderInventory();
+                }
 
-            // Sort by name
-            contacts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                function editItem(id) {
+                    let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
+                    const idx = items.findIndex(i => i.id === id);
+                    if (idx === -1) return;
 
-            contacts.filter(c => (c.name || '').toLowerCase().includes(search) || (c.email || '').toLowerCase().includes(search))
-                .forEach(c => {
-                    const count = c.job_count || jobs.filter(j => j.customer === c.name).length;
+                    const existingName = items[idx].name;
+                    const existingQty = items[idx].qty;
+                    const existingMin = items[idx].min || 5;
+                    const existingCat = items[idx].category || "Other";
 
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-white/5 transition group border-b border-gray-800/50";
-                    tr.innerHTML = `
+                    const name = prompt("Edit Item Name:", existingName);
+                    if (name === null) return;
+
+                    const qtyStr = prompt("Edit Quantity:", existingQty);
+                    if (qtyStr === null) return;
+                    const qty = parseInt(qtyStr || "0");
+
+                    const minStr = prompt("Low Stock Warning Level:", existingMin);
+                    if (minStr === null) return;
+                    const min = parseInt(minStr || "5");
+
+                    const category = promptCategory(existingCat);
+                    if (!category) return;
+
+                    items[idx] = { ...items[idx], name, qty, min, category };
+                    localStorage.setItem('workshop_inventory', JSON.stringify(items));
+                    renderInventory();
+                }
+
+                function moveItem(id, direction) {
+                    // Reordering logic: We need to swap the item with its neighbor *within the same category* in the main list.
+                    // This is tricky because the main list might not be sorted by category. 
+                    // Better approach: Sort the main list by category first? 
+                    // Or just swap indexes if they are adjacent? 
+                    // "Reorder" implies persistent order. Array order defines display order.
+                    // If we group by category in render, the array order MATTERS primarily within the category subset.
+
+                    let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
+                    const idx = items.findIndex(i => i.id === id);
+                    if (idx === -1) return;
+
+                    const item = items[idx];
+                    // Get all items of this category
+                    const catItems = items.map((it, index) => ({ ...it, originalIndex: index })).filter(it => (it.category || 'Other') === (item.category || 'Other'));
+
+                    // Find position of current item in the category subset
+                    const subIdx = catItems.findIndex(it => it.id === id);
+
+                    if (direction === -1 && subIdx > 0) {
+                        // Move Up
+                        const neighbor = catItems[subIdx - 1];
+                        // Swap in master list
+                        const temp = items[neighbor.originalIndex];
+                        items[neighbor.originalIndex] = items[idx];
+                        items[idx] = temp;
+                    } else if (direction === 1 && subIdx < catItems.length - 1) {
+                        // Move Down
+                        const neighbor = catItems[subIdx + 1];
+                        // Swap in master list
+                        const temp = items[neighbor.originalIndex];
+                        items[neighbor.originalIndex] = items[idx];
+                        items[idx] = temp;
+                    }
+
+                    localStorage.setItem('workshop_inventory', JSON.stringify(items));
+                    renderInventory();
+                }
+
+                function removeItem(id) {
+                    if (confirm('Delete item from inventory?')) {
+                        let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
+                        items = items.filter(i => i.id !== id);
+                        localStorage.setItem('workshop_inventory', JSON.stringify(items));
+                        renderInventory();
+                    }
+                }
+
+                // CONTACTS LOGIC
+
+                // API HELPERS
+                const API_URL = 'http://localhost:3000/api';
+
+                async function fetchContacts() {
+                    const statusIndicator = document.getElementById('api-status');
+                    try {
+                        const res = await fetch(`${API_URL}/contacts`);
+                        if (!res.ok) throw new Error('API Error');
+
+                        if (statusIndicator) {
+                            statusIndicator.className = "mt-2 text-xs font-bold text-green-400 flex items-center gap-1 uppercase tracking-wider";
+                            statusIndicator.innerHTML = '<div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div> Secure Link Active';
+                        }
+
+                        return await res.json();
+                    } catch (e) {
+                        console.error("API Error:", e);
+                        if (statusIndicator) {
+                            statusIndicator.className = "mt-2 text-xs font-bold text-red-500 flex items-center gap-1 uppercase tracking-wider";
+                            statusIndicator.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Server Offline';
+                        }
+                        return [];
+                    }
+                }
+
+
+                async function saveContactAPI(contact) {
+                    try {
+                        console.log("Saving contact...", contact);
+                        await fetch(`${API_URL}/contacts`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(contact)
+                        });
+                    } catch (e) {
+                        console.error("Save Error:", e);
+                    }
+                }
+
+                async function deleteContactAPI(id) {
+                    try {
+                        await fetch(`${API_URL}/contacts/${id}`, { method: 'DELETE' });
+                    } catch (e) {
+                        console.error("Delete Error:", e);
+                    }
+                }
+
+                // Global cache for editing
+                let _cachedContacts = [];
+
+                // CONTACTS LOGIC
+                async function renderContacts() {
+                    const tbody = document.getElementById('contacts-table-body');
+                    if (!tbody) return;
+                    tbody.innerHTML = '<tr class="animate-pulse"><td colspan="6" class="p-4 text-center text-gray-500">Loading secure data...</td></tr>';
+
+                    const searchInput = document.getElementById('contact-search');
+                    const search = searchInput ? searchInput.value.toLowerCase() : '';
+
+                    // Fetch from API
+                    _cachedContacts = await fetchContacts();
+
+                    // AUTO-MIGRATION: If Server is empty but we have local jobs, upload them!
+                    if (_cachedContacts.length === 0) {
+                        const localJobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+                        if (localJobs.length > 0) {
+                            console.log("Migrating local contacts to secure server...");
+                            tbody.innerHTML = '<tr class="animate-pulse"><td colspan="6" class="p-4 text-center text-brand-orange">Migrating your contacts to the secure database...</td></tr>';
+
+                            const map = {};
+                            localJobs.forEach(job => {
+                                if (!map[job.customer]) {
+                                    map[job.customer] = {
+                                        name: job.customer,
+                                        email: job.email || '',
+                                        phone: job.phone || '',
+                                        lastSeen: job.date,
+                                        count: 1
+                                    };
+                                } else {
+                                    map[job.customer].count++;
+                                    if (new Date(job.date) > new Date(map[job.customer].lastSeen)) {
+                                        map[job.customer].lastSeen = job.date;
+                                    }
+                                }
+                            });
+
+                            // Upload all
+                            const migrationPromises = Object.values(map).map(c => saveContactAPI({
+                                id: Date.now() + Math.random().toString(), // New ID for DB
+                                ...c
+                            }));
+
+                            await Promise.all(migrationPromises);
+
+                            // Re-fetch after migration
+                            _cachedContacts = await fetchContacts();
+                        }
+                    }
+
+                    const contacts = _cachedContacts;
+
+                    // Jobs for counts (still local for now)
+                    const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+
+                    tbody.innerHTML = ''; // Clear loading
+
+                    if (contacts.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-500 italic">No contacts found in secure storage.</td></tr>';
+                        return;
+                    }
+
+                    // Sort by name
+                    contacts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+                    contacts.filter(c => (c.name || '').toLowerCase().includes(search) || (c.email || '').toLowerCase().includes(search))
+                        .forEach(c => {
+                            const count = c.job_count || jobs.filter(j => j.customer === c.name).length;
+
+                            const tr = document.createElement('tr');
+                            tr.className = "hover:bg-white/5 transition group border-b border-gray-800/50";
+                            tr.innerHTML = `
                         <td class="p-4 font-bold text-white">${c.name}</td>
                         <td class="p-4 text-sm text-gray-400">${c.email || '—'}</td>
                         <td class="p-4 text-sm text-gray-400">${c.phone || '—'}</td>
@@ -1522,332 +1527,332 @@
                             <button onclick="deleteContact('${c.id}')" title="Delete Contact" class="text-gray-400 hover:text-red-500 bg-gray-800 hover:bg-white p-2 rounded transition"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     `;
-                    tbody.appendChild(tr);
-                });
-        }
-
-        async function editContact(id) {
-            // Find in cache
-            const contact = _cachedContacts.find(c => c.id === id);
-            if (!contact) return;
-
-            document.getElementById('edit-contact-id').value = contact.id;
-            document.getElementById('edit-contact-name').value = contact.name;
-            document.getElementById('edit-contact-email').value = contact.email;
-            document.getElementById('edit-contact-phone').value = contact.phone;
-
-            document.getElementById('edit-contact-modal').showModal();
-        }
-
-        async function saveContact() {
-            const id = document.getElementById('edit-contact-id').value;
-            const name = document.getElementById('edit-contact-name').value;
-            const email = document.getElementById('edit-contact-email').value;
-            const phone = document.getElementById('edit-contact-phone').value;
-
-            // Optimistic UI update
-            await saveContactAPI({
-                id,
-                name,
-                email,
-                phone,
-                lastSeen: new Date().toISOString()
-            });
-
-            document.getElementById('edit-contact-modal').close();
-            await renderContacts(); // Refresh
-        }
-
-        async function deleteContact(id) {
-            if (!confirm("Permenantly delete this encrypted contact?")) return;
-            await deleteContactAPI(id);
-            await renderContacts();
-        }
-
-        // REPEAT CUSTOMER JOB LOGIC
-        function startNewJob(contactId) {
-            const contact = _cachedContacts.find(c => c.id === contactId);
-            if (!contact) return;
-
-            // Pre-fill for Existing Customer
-            document.getElementById('new-job-contact-id').value = contact.id;
-
-            const nameInput = document.getElementById('new-job-name');
-            nameInput.value = contact.name;
-            nameInput.readOnly = true; // Lock name for existing
-            nameInput.classList.add('cursor-not-allowed', 'text-gray-400');
-
-            document.getElementById('new-job-email').value = contact.email || '';
-            document.getElementById('new-job-phone').value = contact.phone || '';
-
-            // Clear job details
-            document.getElementById('new-job-bike').value = '';
-            document.getElementById('new-job-service').selectedIndex = 0;
-
-            document.getElementById('new-job-modal').showModal();
-        }
-
-        function startWalkInJob() {
-            // Clear for Walk-in (New Customer)
-            document.getElementById('new-job-contact-id').value = '';
-
-            const nameInput = document.getElementById('new-job-name');
-            nameInput.value = '';
-            nameInput.readOnly = false; // Unlock name
-            nameInput.classList.remove('cursor-not-allowed', 'text-gray-400');
-
-            document.getElementById('new-job-email').value = '';
-            document.getElementById('new-job-phone').value = '';
-            document.getElementById('new-job-bike').value = '';
-            document.getElementById('new-job-service').selectedIndex = 0;
-
-            document.getElementById('new-job-modal').showModal();
-        }
-
-        async function confirmNewJob() {
-            let contactId = document.getElementById('new-job-contact-id').value;
-            const name = document.getElementById('new-job-name').value;
-            const email = document.getElementById('new-job-email').value;
-            const phone = document.getElementById('new-job-phone').value;
-            const bike = document.getElementById('new-job-bike').value;
-            const service = document.getElementById('new-job-service').value;
-
-            if (!name) {
-                alert("Customer Name is required.");
-                return;
-            }
-            if (!bike) {
-                alert("Please enter the Bike Model.");
-                return;
-            }
-
-            // AUTO-CREATE CONTACT if ID is missing (Walk-in)
-            if (!contactId) {
-                const newContact = {
-                    id: Date.now().toString(),
-                    name: name,
-                    email: email,
-                    phone: phone,
-                    lastSeen: new Date().toISOString().split('T')[0],
-                    count: 0
-                };
-                await saveContactAPI(newContact);
-                contactId = newContact.id;
-                // Cache update handled by next fetch, but let's be safe
-            }
-
-            // Construct Data Object compatible with addJobCard
-            const jobData = {
-                fullname: name,
-                email: email,
-                phone: phone,
-                bike: bike,
-                service: service
-            };
-
-            addJobCard(jobData);
-            document.getElementById('new-job-modal').close();
-
-            // Refresh Contacts to show new count/last seen
-            renderContacts();
-
-            // Switch to Dashboard or Jobs view to see it?
-            switchTab('dashboard');
-
-            // Show toast
-            const toast = document.createElement('div');
-            toast.className = "fixed bottom-4 right-4 bg-green-600 text-white px-6 py-4 rounded shadow-2xl z-50 text-xl font-bold uppercase tracking-wide animate-bounce";
-            toast.innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i> Job Booked!';
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        // NAVIGATION
-        // TABS
-        function switchTab(tab) {
-            // Hide all views
-            ['dashboard', 'jobs', 'inventory', 'contacts'].forEach(t => {
-                const view = document.getElementById(`view-${t}`);
-                if (view) view.classList.add('hidden');
-
-                const nav = document.getElementById(`nav-${t}`);
-                if (nav) {
-                    // Reset to inactive state (text-gray-400)
-                    nav.classList.remove('bg-brand-orange', 'text-white', 'hover:bg-orange-600');
-                    nav.classList.add('text-gray-400', 'hover:text-white', 'hover:bg-white/5');
+                            tbody.appendChild(tr);
+                        });
                 }
-            });
 
-            // Show selected
-            const activeView = document.getElementById(`view-${tab}`);
-            if (activeView) activeView.classList.remove('hidden');
+                async function editContact(id) {
+                    // Find in cache
+                    const contact = _cachedContacts.find(c => c.id === id);
+                    if (!contact) return;
 
-            const activeNav = document.getElementById(`nav-${tab}`);
-            if (activeNav) {
-                // Set to active state (brand orange)
-                activeNav.classList.remove('text-gray-400', 'hover:text-white', 'hover:bg-white/5');
-                activeNav.classList.add('bg-brand-orange', 'text-white', 'hover:bg-orange-600');
-            }
+                    document.getElementById('edit-contact-id').value = contact.id;
+                    document.getElementById('edit-contact-name').value = contact.name;
+                    document.getElementById('edit-contact-email').value = contact.email;
+                    document.getElementById('edit-contact-phone').value = contact.phone;
 
-            if (tab === 'dashboard') {
-                renderDashboard();
-            } else if (tab === 'jobs') {
-                renderKanban();
-            } else if (tab === 'inventory') {
-                renderInventory();
-            } else if (tab === 'contacts') {
-                renderContacts();
-            }
-        }
+                    document.getElementById('edit-contact-modal').showModal();
+                }
 
-        function addAmazonItem() {
-            const name = prompt("Product Name:");
-            if (!name) return;
-            const link = prompt("Amazon Link (Affiliate URL):");
-            if (!link) return;
-            const image = prompt("Image URL (Right click image on Amazon -> Copy Image Address):");
+                async function saveContact() {
+                    const id = document.getElementById('edit-contact-id').value;
+                    const name = document.getElementById('edit-contact-name').value;
+                    const email = document.getElementById('edit-contact-email').value;
+                    const phone = document.getElementById('edit-contact-phone').value;
 
-            let stock = JSON.parse(localStorage.getItem('workshop_amazon_stock')) || [];
-            const newId = stock.length > 0 ? Math.max(...stock.map(s => s.id)) + 1 : 1;
+                    // Optimistic UI update
+                    await saveContactAPI({
+                        id,
+                        name,
+                        email,
+                        phone,
+                        lastSeen: new Date().toISOString()
+                    });
 
-            stock.push({
-                id: newId,
-                name: name,
-                link: link,
-                image: image || "https://placehold.co/400x400?text=No+Image"
-            });
+                    document.getElementById('edit-contact-modal').close();
+                    await renderContacts(); // Refresh
+                }
 
-            localStorage.setItem('workshop_amazon_stock', JSON.stringify(stock));
-            alert("Item added to Workshop Stockroom!");
-        }
+                async function deleteContact(id) {
+                    if (!confirm("Permenantly delete this encrypted contact?")) return;
+                    await deleteContactAPI(id);
+                    await renderContacts();
+                }
 
-        function logout() {
-            localStorage.removeItem('mechanic_auth');
-            window.location.href = 'index.html';
-        }
+                // REPEAT CUSTOMER JOB LOGIC
+                function startNewJob(contactId) {
+                    const contact = _cachedContacts.find(c => c.id === contactId);
+                    if (!contact) return;
 
-        // JOB SHEET LOGIC
-        function openJobSheet(jobId) {
-            const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
-            const job = jobs.find(j => j.id === jobId);
-            if (!job) return;
+                    // Pre-fill for Existing Customer
+                    document.getElementById('new-job-contact-id').value = contact.id;
 
-            document.getElementById('modal-customer').textContent = job.customer;
-            document.getElementById('modal-bike').innerHTML = `<i class="fa-solid fa-bicycle mr-1"></i> ${job.bike}`;
-            document.getElementById('modal-service').innerHTML = `<i class="fa-solid fa-screwdriver-wrench mr-1"></i> ${job.service}`;
+                    const nameInput = document.getElementById('new-job-name');
+                    nameInput.value = contact.name;
+                    nameInput.readOnly = true; // Lock name for existing
+                    nameInput.classList.add('cursor-not-allowed', 'text-gray-400');
 
-            renderChecklist(job);
-            document.getElementById('job-sheet-modal').showModal();
-        }
+                    document.getElementById('new-job-email').value = contact.email || '';
+                    document.getElementById('new-job-phone').value = contact.phone || '';
 
-        function closeJobSheet() {
-            document.getElementById('job-sheet-modal').close();
-        }
+                    // Clear job details
+                    document.getElementById('new-job-bike').value = '';
+                    document.getElementById('new-job-service').selectedIndex = 0;
 
-        function renderChecklist(job) {
-            const container = document.getElementById('modal-checklist');
-            container.innerHTML = '';
+                    document.getElementById('new-job-modal').showModal();
+                }
 
-            // Normalize service name to match keys
-            let serviceKey = job.service;
-            // Handle matching "The Tune-Up" vs "Tune-Up" if needed, currently keys match
+                function startWalkInJob() {
+                    // Clear for Walk-in (New Customer)
+                    document.getElementById('new-job-contact-id').value = '';
 
-            const checklist = SERVICE_CHECKLISTS[serviceKey] || SERVICE_CHECKLISTS["Safety Check"]; // Fallback
-            const savedState = job.checklist || {}; // { "uniqueItemString": true/false }
+                    const nameInput = document.getElementById('new-job-name');
+                    nameInput.value = '';
+                    nameInput.readOnly = false; // Unlock name
+                    nameInput.classList.remove('cursor-not-allowed', 'text-gray-400');
 
-            if (!checklist) {
-                container.innerHTML = '<div class="text-gray-500">No checklist available for this service type.</div>';
-                return;
-            }
+                    document.getElementById('new-job-email').value = '';
+                    document.getElementById('new-job-phone').value = '';
+                    document.getElementById('new-job-bike').value = '';
+                    document.getElementById('new-job-service').selectedIndex = 0;
 
-            // Loop categories
-            for (const [category, items] of Object.entries(checklist)) {
-                const catDiv = document.createElement('div');
-                catDiv.className = "checklist-category";
+                    document.getElementById('new-job-modal').showModal();
+                }
 
-                catDiv.innerHTML = `<h3 class="font-display font-bold text-xl text-gray-300 uppercase mb-3 border-b border-gray-700 pb-1">${category}</h3>`;
+                async function confirmNewJob() {
+                    let contactId = document.getElementById('new-job-contact-id').value;
+                    const name = document.getElementById('new-job-name').value;
+                    const email = document.getElementById('new-job-email').value;
+                    const phone = document.getElementById('new-job-phone').value;
+                    const bike = document.getElementById('new-job-bike').value;
+                    const service = document.getElementById('new-job-service').value;
 
-                const ul = document.createElement('ul');
-                ul.className = "space-y-3";
+                    if (!name) {
+                        alert("Customer Name is required.");
+                        return;
+                    }
+                    if (!bike) {
+                        alert("Please enter the Bike Model.");
+                        return;
+                    }
 
-                items.forEach(itemHtml => {
-                    // Create unique ID for state saving (simple hash or string)
-                    const itemId = `${category}-${itemHtml}`.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
-                    const isChecked = savedState[itemId] || false;
+                    // AUTO-CREATE CONTACT if ID is missing (Walk-in)
+                    if (!contactId) {
+                        const newContact = {
+                            id: Date.now().toString(),
+                            name: name,
+                            email: email,
+                            phone: phone,
+                            lastSeen: new Date().toISOString().split('T')[0],
+                            count: 0
+                        };
+                        await saveContactAPI(newContact);
+                        contactId = newContact.id;
+                        // Cache update handled by next fetch, but let's be safe
+                    }
 
-                    const li = document.createElement('li');
-                    li.className = "flex items-start gap-3 p-3 rounded hover:bg-white/5 transition cursor-pointer";
-                    li.onclick = (e) => {
-                        // Prevent triggering if clicked on link (if any)
-                        if (e.target.tagName === 'INPUT') return;
-                        const cb = li.querySelector('input');
-                        cb.checked = !cb.checked;
-                        toggleCheckItem(job.id, itemId, cb.checked);
+                    // Construct Data Object compatible with addJobCard
+                    const jobData = {
+                        fullname: name,
+                        email: email,
+                        phone: phone,
+                        bike: bike,
+                        service: service
                     };
 
-                    li.innerHTML = `
+                    addJobCard(jobData);
+                    document.getElementById('new-job-modal').close();
+
+                    // Refresh Contacts to show new count/last seen
+                    renderContacts();
+
+                    // Switch to Dashboard or Jobs view to see it?
+                    switchTab('dashboard');
+
+                    // Show toast
+                    const toast = document.createElement('div');
+                    toast.className = "fixed bottom-4 right-4 bg-green-600 text-white px-6 py-4 rounded shadow-2xl z-50 text-xl font-bold uppercase tracking-wide animate-bounce";
+                    toast.innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i> Job Booked!';
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3000);
+                }
+
+                // NAVIGATION
+                // TABS
+                function switchTab(tab) {
+                    // Hide all views
+                    ['dashboard', 'jobs', 'inventory', 'contacts'].forEach(t => {
+                        const view = document.getElementById(`view-${t}`);
+                        if (view) view.classList.add('hidden');
+
+                        const nav = document.getElementById(`nav-${t}`);
+                        if (nav) {
+                            // Reset to inactive state (text-gray-400)
+                            nav.classList.remove('bg-brand-orange', 'text-white', 'hover:bg-orange-600');
+                            nav.classList.add('text-gray-400', 'hover:text-white', 'hover:bg-white/5');
+                        }
+                    });
+
+                    // Show selected
+                    const activeView = document.getElementById(`view-${tab}`);
+                    if (activeView) activeView.classList.remove('hidden');
+
+                    const activeNav = document.getElementById(`nav-${tab}`);
+                    if (activeNav) {
+                        // Set to active state (brand orange)
+                        activeNav.classList.remove('text-gray-400', 'hover:text-white', 'hover:bg-white/5');
+                        activeNav.classList.add('bg-brand-orange', 'text-white', 'hover:bg-orange-600');
+                    }
+
+                    if (tab === 'dashboard') {
+                        renderDashboard();
+                    } else if (tab === 'jobs') {
+                        renderKanban();
+                    } else if (tab === 'inventory') {
+                        renderInventory();
+                    } else if (tab === 'contacts') {
+                        renderContacts();
+                    }
+                }
+
+                function addAmazonItem() {
+                    const name = prompt("Product Name:");
+                    if (!name) return;
+                    const link = prompt("Amazon Link (Affiliate URL):");
+                    if (!link) return;
+                    const image = prompt("Image URL (Right click image on Amazon -> Copy Image Address):");
+
+                    let stock = JSON.parse(localStorage.getItem('workshop_amazon_stock')) || [];
+                    const newId = stock.length > 0 ? Math.max(...stock.map(s => s.id)) + 1 : 1;
+
+                    stock.push({
+                        id: newId,
+                        name: name,
+                        link: link,
+                        image: image || "https://placehold.co/400x400?text=No+Image"
+                    });
+
+                    localStorage.setItem('workshop_amazon_stock', JSON.stringify(stock));
+                    alert("Item added to Workshop Stockroom!");
+                }
+
+                function logout() {
+                    localStorage.removeItem('mechanic_auth');
+                    window.location.href = 'index.html';
+                }
+
+                // JOB SHEET LOGIC
+                function openJobSheet(jobId) {
+                    const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+                    const job = jobs.find(j => j.id === jobId);
+                    if (!job) return;
+
+                    document.getElementById('modal-customer').textContent = job.customer;
+                    document.getElementById('modal-bike').innerHTML = `<i class="fa-solid fa-bicycle mr-1"></i> ${job.bike}`;
+                    document.getElementById('modal-service').innerHTML = `<i class="fa-solid fa-screwdriver-wrench mr-1"></i> ${job.service}`;
+
+                    renderChecklist(job);
+                    document.getElementById('job-sheet-modal').showModal();
+                }
+
+                function closeJobSheet() {
+                    document.getElementById('job-sheet-modal').close();
+                }
+
+                function renderChecklist(job) {
+                    const container = document.getElementById('modal-checklist');
+                    container.innerHTML = '';
+
+                    // Normalize service name to match keys
+                    let serviceKey = job.service;
+                    // Handle matching "The Tune-Up" vs "Tune-Up" if needed, currently keys match
+
+                    const checklist = SERVICE_CHECKLISTS[serviceKey] || SERVICE_CHECKLISTS["Safety Check"]; // Fallback
+                    const savedState = job.checklist || {}; // { "uniqueItemString": true/false }
+
+                    if (!checklist) {
+                        container.innerHTML = '<div class="text-gray-500">No checklist available for this service type.</div>';
+                        return;
+                    }
+
+                    // Loop categories
+                    for (const [category, items] of Object.entries(checklist)) {
+                        const catDiv = document.createElement('div');
+                        catDiv.className = "checklist-category";
+
+                        catDiv.innerHTML = `<h3 class="font-display font-bold text-xl text-gray-300 uppercase mb-3 border-b border-gray-700 pb-1">${category}</h3>`;
+
+                        const ul = document.createElement('ul');
+                        ul.className = "space-y-3";
+
+                        items.forEach(itemHtml => {
+                            // Create unique ID for state saving (simple hash or string)
+                            const itemId = `${category}-${itemHtml}`.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+                            const isChecked = savedState[itemId] || false;
+
+                            const li = document.createElement('li');
+                            li.className = "flex items-start gap-3 p-3 rounded hover:bg-white/5 transition cursor-pointer";
+                            li.onclick = (e) => {
+                                // Prevent triggering if clicked on link (if any)
+                                if (e.target.tagName === 'INPUT') return;
+                                const cb = li.querySelector('input');
+                                cb.checked = !cb.checked;
+                                toggleCheckItem(job.id, itemId, cb.checked);
+                            };
+
+                            li.innerHTML = `
                         <input type="checkbox" ${isChecked ? 'checked' : ''} 
                             onchange="toggleCheckItem('${job.id}', '${itemId}', this.checked)"
                             class="mt-1 w-5 h-5 text-brand-orange rounded bg-gray-700 border-gray-600 focus:ring-brand-orange">
                         <div class="text-sm text-gray-300 leading-relaxed select-none ${isChecked ? 'line-through opacity-50' : ''}">${itemHtml}</div>
                     `;
-                    ul.appendChild(li);
+                            ul.appendChild(li);
+                        });
+
+                        catDiv.appendChild(ul);
+                        container.appendChild(catDiv);
+                    }
+                }
+
+                function toggleCheckItem(jobId, itemId, isChecked) {
+                    let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+                    const idx = jobs.findIndex(j => j.id === jobId);
+                    if (idx > -1) {
+                        if (!jobs[idx].checklist) jobs[idx].checklist = {};
+                        jobs[idx].checklist[itemId] = isChecked;
+                        localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+
+                        // Re-render only style updates if needed, or simple class toggle
+                        // For now, re-rendering might be heavy, so let's just toggle classes (optional)
+                        renderChecklist(jobs[idx]); // Re-render to show line-through
+                    }
+                }
+
+                // REAL-TIME SYNC
+                window.addEventListener('storage', (e) => {
+                    if (e.key === 'new_service_request') {
+                        checkNewSubmissions();
+                        // Show notification
+                        const toast = document.createElement('div');
+                        toast.className = "fixed bottom-4 right-4 bg-brand-orange text-white px-6 py-4 rounded shadow-2xl z-50 text-xl font-bold uppercase tracking-wide animate-bounce";
+                        toast.innerHTML = '<i class="fa-solid fa-bell mr-2"></i> New Job Received!';
+                        document.body.appendChild(toast);
+                        setTimeout(() => toast.remove(), 5000);
+                    }
                 });
 
-                catDiv.appendChild(ul);
-                container.appendChild(catDiv);
-            }
-        }
+                // JOB HISTORY LOGIC
+                // JOB HISTORY LOGIC //
+                function viewContactHistory(contactId, contactName) {
+                    const modal = document.getElementById('job-history-modal');
+                    const list = document.getElementById('history-list');
+                    document.getElementById('history-customer-name').textContent = contactName;
 
-        function toggleCheckItem(jobId, itemId, isChecked) {
-            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
-            const idx = jobs.findIndex(j => j.id === jobId);
-            if (idx > -1) {
-                if (!jobs[idx].checklist) jobs[idx].checklist = {};
-                jobs[idx].checklist[itemId] = isChecked;
-                localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+                    // Get Jobs
+                    const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+                    const customerJobs = jobs.filter(j => j.customer === contactName).sort((a, b) => new Date(b.date) - new Date(a.date));
 
-                // Re-render only style updates if needed, or simple class toggle
-                // For now, re-rendering might be heavy, so let's just toggle classes (optional)
-                renderChecklist(jobs[idx]); // Re-render to show line-through
-            }
-        }
+                    list.innerHTML = '';
+                    if (customerJobs.length === 0) {
+                        list.innerHTML = '<div class="text-gray-500 text-center italic">No job history found.</div>';
+                    } else {
+                        customerJobs.forEach(job => {
+                            const completedItems = getReadableChecklist(job);
+                            const completionCount = completedItems.length;
 
-        // REAL-TIME SYNC
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'new_service_request') {
-                checkNewSubmissions();
-                // Show notification
-                const toast = document.createElement('div');
-                toast.className = "fixed bottom-4 right-4 bg-brand-orange text-white px-6 py-4 rounded shadow-2xl z-50 text-xl font-bold uppercase tracking-wide animate-bounce";
-                toast.innerHTML = '<i class="fa-solid fa-bell mr-2"></i> New Job Received!';
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 5000);
-            }
-        });
-
-        // JOB HISTORY LOGIC
-        // JOB HISTORY LOGIC //
-        function viewContactHistory(contactId, contactName) {
-            const modal = document.getElementById('job-history-modal');
-            const list = document.getElementById('history-list');
-            document.getElementById('history-customer-name').textContent = contactName;
-
-            // Get Jobs
-            const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
-            const customerJobs = jobs.filter(j => j.customer === contactName).sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            list.innerHTML = '';
-            if (customerJobs.length === 0) {
-                list.innerHTML = '<div class="text-gray-500 text-center italic">No job history found.</div>';
-            } else {
-                customerJobs.forEach(job => {
-                    const completedItems = getReadableChecklist(job);
-                    const completionCount = completedItems.length;
-
-                    const div = document.createElement('div');
-                    div.className = "bg-[#0B0B2B] p-4 rounded-lg border border-gray-700 flex flex-col gap-3";
-                    div.innerHTML = `
+                            const div = document.createElement('div');
+                            div.className = "bg-[#0B0B2B] p-4 rounded-lg border border-gray-700 flex flex-col gap-3";
+                            div.innerHTML = `
                         <div class="flex justify-between items-start">
                             <div>
                                 <div class="font-bold text-lg text-white">${job.service}</div>
@@ -1875,189 +1880,188 @@
                              </button>
                         </div>
                     `;
-                    list.appendChild(div);
-                });
-            }
-
-            modal.showModal();
-        }
-
-        // Helper to get READABLE text from messed up IDs
-        function getReadableChecklist(job) {
-            const checklistIds = job.checklist || {};
-            const activeIds = Object.entries(checklistIds).filter(([k, v]) => v).map(([k]) => k);
-
-            // Build Lookup Map
-            const idMap = {};
-            if (typeof SERVICE_CHECKLISTS !== 'undefined') {
-                Object.entries(SERVICE_CHECKLISTS).forEach(([serviceName, categories]) => {
-                    Object.entries(categories).forEach(([category, items]) => {
-                        items.forEach(item => {
-                            const cleanCat = category.replace(/[^a-zA-Z0-9]/g, '');
-                            const cleanItemText = item.replace(/<[^>]*>/g, '');
-                            const cleanItem = cleanItemText.replace(/[^a-zA-Z0-9]/g, '');
-                            const id = cleanCat + cleanItem;
-                            idMap[id] = cleanItemText;
+                            list.appendChild(div);
                         });
+                    }
+
+                    modal.showModal();
+                }
+
+                // Helper to get READABLE text from messed up IDs
+                function getReadableChecklist(job) {
+                    const checklistIds = job.checklist || {};
+                    const activeIds = Object.entries(checklistIds).filter(([k, v]) => v).map(([k]) => k);
+
+                    // Build Lookup Map
+                    const idMap = {};
+                    if (typeof SERVICE_CHECKLISTS !== 'undefined') {
+                        Object.entries(SERVICE_CHECKLISTS).forEach(([serviceName, categories]) => {
+                            Object.entries(categories).forEach(([category, items]) => {
+                                items.forEach(item => {
+                                    const cleanCat = category.replace(/[^a-zA-Z0-9]/g, '');
+                                    const cleanItemText = item.replace(/<[^>]*>/g, '');
+                                    const cleanItem = cleanItemText.replace(/[^a-zA-Z0-9]/g, '');
+                                    const id = cleanCat + cleanItem;
+                                    idMap[id] = cleanItemText;
+                                });
+                            });
+                        });
+                    }
+
+                    return activeIds.map(id => {
+                        if (idMap[id]) return idMap[id];
+                        // Fallback
+                        let readable = id.replace(/([A-Z])/g, ' $1').trim();
+                        readable = readable.replace(/^(Frame Fork|Handlebar Headset Stem|Brakes|Drivetrain|Wheels Tires)/, '');
+                        return readable.trim();
                     });
-                });
-            }
-
-            return activeIds.map(id => {
-                if (idMap[id]) return idMap[id];
-                // Fallback
-                let readable = id.replace(/([A-Z])/g, ' $1').trim();
-                readable = readable.replace(/^(Frame Fork|Handlebar Headset Stem|Brakes|Drivetrain|Wheels Tires)/, '');
-                return readable.trim();
-            });
-        }
-
-        function generateReportBody(job, completedItems, newline) {
-            const firstName = job.customer ? job.customer.split(' ')[0] : 'Customer';
-            // Add [x] checkbox for text/email
-            const itemsList = completedItems.map(k => "[x] " + k).join(newline);
-            const body = `Hi ${firstName},${newline}${newline}Here is the service report for your ${job.bike}.${newline}${newline}Service: ${job.service}${newline}Date: ${new Date(job.date).toLocaleDateString()}${newline}${newline}Completed Checks:${newline}${itemsList || 'No specific checks recorded.'}${newline}${newline}Your bike is ready properly maintained!${newline}${newline}- Weeecycle Workshop`;
-            return encodeURIComponent(body);
-        }
-
-        function downloadPDF(jobId) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
-            const job = jobs.find(j => j.id === jobId);
-            if (!job) return;
-
-            // Header
-            doc.setFontSize(22);
-            doc.setTextColor(255, 137, 27); // Brand Orange
-            doc.text("WEEECYCLE WORKSHOP", 20, 20);
-
-            doc.setFontSize(16);
-            doc.setTextColor(0, 0, 0);
-            doc.text("Service Report", 20, 30);
-
-            doc.setLineWidth(0.5);
-            doc.line(20, 35, 190, 35);
-
-            // Details
-            doc.setFontSize(12);
-            doc.text(`Customer: ${job.customer}`, 20, 45);
-            doc.text(`Bike: ${job.bike}`, 20, 52);
-            doc.text(`Service: ${job.service}`, 20, 59);
-            doc.text(`Date: ${new Date(job.date).toLocaleDateString()}`, 140, 45);
-
-            // Checklist
-            doc.setFontSize(14);
-            doc.text("Completed Checks:", 20, 75);
-
-            doc.setFontSize(10);
-            let y = 85;
-            const completedItems = getReadableChecklist(job);
-
-            completedItems.forEach(item => {
-                if (y > 270) {
-                    doc.addPage();
-                    y = 20;
                 }
-                doc.text(`• ${item}`, 25, y);
-                y += 7;
-            });
 
-            // Footer
-            const pageHeight = doc.internal.pageSize.height;
-            doc.setFontSize(10);
-            doc.setTextColor(150);
-            doc.text("Thank you for choosing Weeecycle!", 20, pageHeight - 20);
-
-            doc.save(`Service_Report_${job.customer.split(' ')[0]}_${new Date().toISOString().split('T')[0]}.pdf`);
-        }
-
-        // SETTINGS & AUTH LOGIC
-        async function changePassword() {
-            const currentPass = document.getElementById('current-password').value;
-            const newPass = document.getElementById('new-password').value;
-            const msg = document.getElementById('password-msg');
-
-            msg.className = "text-center text-sm hidden";
-
-            if (!currentPass || !newPass) {
-                msg.textContent = "Please fill in all fields.";
-                msg.classList.remove('hidden');
-                msg.classList.add('text-red-500');
-                return;
-            }
-
-            try {
-                const res = await fetch(`${API_URL}/auth/password`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ currentPassword: currentPass, newPassword: newPass })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    msg.textContent = "Password updated successfully!";
-                    msg.classList.remove('hidden');
-                    msg.classList.add('text-green-500');
-                    document.getElementById('current-password').value = '';
-                    document.getElementById('new-password').value = '';
-                    setTimeout(() => document.getElementById('settings-modal').close(), 1500);
-                } else {
-                    msg.textContent = data.error || "Update failed";
-                    msg.classList.remove('hidden');
-                    msg.classList.add('text-red-500');
+                function generateReportBody(job, completedItems, newline) {
+                    const firstName = job.customer ? job.customer.split(' ')[0] : 'Customer';
+                    // Add [x] checkbox for text/email
+                    const itemsList = completedItems.map(k => "[x] " + k).join(newline);
+                    const body = `Hi ${firstName},${newline}${newline}Here is the service report for your ${job.bike}.${newline}${newline}Service: ${job.service}${newline}Date: ${new Date(job.date).toLocaleDateString()}${newline}${newline}Completed Checks:${newline}${itemsList || 'No specific checks recorded.'}${newline}${newline}Your bike is ready properly maintained!${newline}${newline}- Weeecycle Workshop`;
+                    return encodeURIComponent(body);
                 }
-            } catch (e) {
-                msg.textContent = "Server Connection Error";
-                msg.classList.remove('hidden');
-                msg.classList.add('text-red-500');
-            }
-        }
 
-        // MANUAL ADD CONTACT
-        function openAddContactModal() {
-            document.getElementById('add-contact-name').value = '';
-            document.getElementById('add-contact-email').value = '';
-            document.getElementById('add-contact-phone').value = '';
-            document.getElementById('add-contact-modal').showModal();
-        }
+                function downloadPDF(jobId) {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
 
-        async function saveNewContact() {
-            const name = document.getElementById('add-contact-name').value;
-            const email = document.getElementById('add-contact-email').value;
-            const phone = document.getElementById('add-contact-phone').value;
+                    const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+                    const job = jobs.find(j => j.id === jobId);
+                    if (!job) return;
 
-            if (!name) {
-                alert("Name is required");
-                return;
-            }
+                    // Header
+                    doc.setFontSize(22);
+                    doc.setTextColor(255, 137, 27); // Brand Orange
+                    doc.text("WEEECYCLE WORKSHOP", 20, 20);
 
-            const newContact = {
-                id: Date.now().toString(),
-                name: name,
-                email: email,
-                phone: phone,
-                lastSeen: new Date().toISOString().split('T')[0],
-                count: 0
-            };
+                    doc.setFontSize(16);
+                    doc.setTextColor(0, 0, 0);
+                    doc.text("Service Report", 20, 30);
 
-            await saveContactAPI(newContact);
-            document.getElementById('add-contact-modal').close();
+                    doc.setLineWidth(0.5);
+                    doc.line(20, 35, 190, 35);
 
-            // Show toast
-            const toast = document.createElement('div');
-            toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg z-50 animate-bounce';
-            toast.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Contact Added';
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+                    // Details
+                    doc.setFontSize(12);
+                    doc.text(`Customer: ${job.customer}`, 20, 45);
+                    doc.text(`Bike: ${job.bike}`, 20, 52);
+                    doc.text(`Service: ${job.service}`, 20, 59);
+                    doc.text(`Date: ${new Date(job.date).toLocaleDateString()}`, 140, 45);
 
-            renderContacts();
-        }
+                    // Checklist
+                    doc.setFontSize(14);
+                    doc.text("Completed Checks:", 20, 75);
 
-        // START
-        init();
+                    doc.setFontSize(10);
+                    let y = 85;
+                    const completedItems = getReadableChecklist(job);
+
+                    completedItems.forEach(item => {
+                        if (y > 270) {
+                            doc.addPage();
+                            y = 20;
+                        }
+                        doc.text(`• ${item}`, 25, y);
+                        y += 7;
+                    });
+
+                    // Footer
+                    const pageHeight = doc.internal.pageSize.height;
+                    doc.setFontSize(10);
+                    doc.setTextColor(150);
+                    doc.text("Thank you for choosing Weeecycle!", 20, pageHeight - 20);
+
+                    doc.save(`Service_Report_${job.customer.split(' ')[0]}_${new Date().toISOString().split('T')[0]}.pdf`);
+                }
+
+                // SETTINGS & AUTH LOGIC
+                async function changePassword() {
+                    const currentPass = document.getElementById('current-password').value;
+                    const newPass = document.getElementById('new-password').value;
+                    const msg = document.getElementById('password-msg');
+
+                    msg.className = "text-center text-sm hidden";
+
+                    if (!currentPass || !newPass) {
+                        msg.textContent = "Please fill in all fields.";
+                        msg.classList.remove('hidden');
+                        msg.classList.add('text-red-500');
+                        return;
+                    }
+
+                    try {
+                        const res = await fetch(`${API_URL}/auth/password`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ currentPassword: currentPass, newPassword: newPass })
+                        });
+                        const data = await res.json();
+
+                        if (data.success) {
+                            msg.textContent = "Password updated successfully!";
+                            msg.classList.remove('hidden');
+                            msg.classList.add('text-green-500');
+                            document.getElementById('current-password').value = '';
+                            document.getElementById('new-password').value = '';
+                            setTimeout(() => document.getElementById('settings-modal').close(), 1500);
+                        } else {
+                            msg.textContent = data.error || "Update failed";
+                            msg.classList.remove('hidden');
+                            msg.classList.add('text-red-500');
+                        }
+                    } catch (e) {
+                        msg.textContent = "Server Connection Error";
+                        msg.classList.remove('hidden');
+                        msg.classList.add('text-red-500');
+                    }
+                }
+
+                // MANUAL ADD CONTACT
+                function openAddContactModal() {
+                    document.getElementById('add-contact-name').value = '';
+                    document.getElementById('add-contact-email').value = '';
+                    document.getElementById('add-contact-phone').value = '';
+                    document.getElementById('add-contact-modal').showModal();
+                }
+
+                async function saveNewContact() {
+                    const name = document.getElementById('add-contact-name').value;
+                    const email = document.getElementById('add-contact-email').value;
+                    const phone = document.getElementById('add-contact-phone').value;
+
+                    if (!name) {
+                        alert("Name is required");
+                        return;
+                    }
+
+                    const newContact = {
+                        id: Date.now().toString(),
+                        name: name,
+                        email: email,
+                        phone: phone,
+                        lastSeen: new Date().toISOString().split('T')[0],
+                        count: 0
+                    };
+
+                    await saveContactAPI(newContact);
+                    document.getElementById('add-contact-modal').close();
+
+                    // Show toast
+                    const toast = document.createElement('div');
+                    toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg z-50 animate-bounce';
+                    toast.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Contact Added';
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3000);
+
+                    renderContacts();
+                }
+
+                // START
+                init();
     </script>
 </body>
 
-</html>
