@@ -325,9 +325,9 @@
                             onkeyup="renderContacts()"
                             class="bg-[#050511] border border-gray-700 text-white pl-10 pr-4 py-2 rounded w-64 focus:border-brand-orange focus:outline-none">
                     </div>
-                    <button onclick="openAddContactModal()"
+                    <button onclick="startWalkInJob()"
                         class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-4 py-2 rounded transition flex items-center gap-2 ml-4">
-                        <i class="fa-solid fa-user-plus"></i> Add Contact
+                        <i class="fa-solid fa-plus-circle"></i> New Job
                     </button>
                 </div>
 
@@ -382,13 +382,28 @@
         </div>
         <div class="p-6 space-y-4">
             <input type="hidden" id="new-job-contact-id">
-            <input type="hidden" id="new-job-email">
-            <input type="hidden" id="new-job-phone">
 
-            <div>
-                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Customer</label>
-                <input type="text" id="new-job-name" readonly
-                    class="w-full bg-[#0B0B2B] text-gray-300 rounded border border-gray-700 p-2 focus:outline-none cursor-not-allowed">
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Customer Name</label>
+                    <input type="text" id="new-job-name"
+                        class="w-full bg-[#0B0B2B] text-white rounded border border-gray-700 p-2 focus:border-brand-orange focus:outline-none placeholder-gray-600"
+                        placeholder="Enter Name">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Email</label>
+                        <input type="email" id="new-job-email"
+                            class="w-full bg-[#0B0B2B] text-white rounded border border-gray-700 p-2 focus:border-brand-orange focus:outline-none placeholder-gray-600"
+                            placeholder="Optional">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Phone</label>
+                        <input type="tel" id="new-job-phone"
+                            class="w-full bg-[#0B0B2B] text-white rounded border border-gray-700 p-2 focus:border-brand-orange focus:outline-none placeholder-gray-600"
+                            placeholder="Optional">
+                    </div>
+                </div>
             </div>
 
             <div>
@@ -1450,28 +1465,71 @@
             const contact = _cachedContacts.find(c => c.id === contactId);
             if (!contact) return;
 
+            // Pre-fill for Existing Customer
             document.getElementById('new-job-contact-id').value = contact.id;
-            document.getElementById('new-job-name').value = contact.name;
+
+            const nameInput = document.getElementById('new-job-name');
+            nameInput.value = contact.name;
+            nameInput.readOnly = true; // Lock name for existing
+            nameInput.classList.add('cursor-not-allowed', 'text-gray-400');
+
             document.getElementById('new-job-email').value = contact.email || '';
             document.getElementById('new-job-phone').value = contact.phone || '';
 
-            // Try to pre-fill bike from last job if possible? 
-            // For now just leave bike empty or let them type it.
+            // Clear job details
             document.getElementById('new-job-bike').value = '';
+            document.getElementById('new-job-service').selectedIndex = 0;
 
             document.getElementById('new-job-modal').showModal();
         }
 
-        function confirmNewJob() {
+        function startWalkInJob() {
+            // Clear for Walk-in (New Customer)
+            document.getElementById('new-job-contact-id').value = '';
+
+            const nameInput = document.getElementById('new-job-name');
+            nameInput.value = '';
+            nameInput.readOnly = false; // Unlock name
+            nameInput.classList.remove('cursor-not-allowed', 'text-gray-400');
+
+            document.getElementById('new-job-email').value = '';
+            document.getElementById('new-job-phone').value = '';
+            document.getElementById('new-job-bike').value = '';
+            document.getElementById('new-job-service').selectedIndex = 0;
+
+            document.getElementById('new-job-modal').showModal();
+        }
+
+        async function confirmNewJob() {
+            let contactId = document.getElementById('new-job-contact-id').value;
             const name = document.getElementById('new-job-name').value;
             const email = document.getElementById('new-job-email').value;
             const phone = document.getElementById('new-job-phone').value;
             const bike = document.getElementById('new-job-bike').value;
             const service = document.getElementById('new-job-service').value;
 
+            if (!name) {
+                alert("Customer Name is required.");
+                return;
+            }
             if (!bike) {
                 alert("Please enter the Bike Model.");
                 return;
+            }
+
+            // AUTO-CREATE CONTACT if ID is missing (Walk-in)
+            if (!contactId) {
+                const newContact = {
+                    id: Date.now().toString(),
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    lastSeen: new Date().toISOString().split('T')[0],
+                    count: 0
+                };
+                await saveContactAPI(newContact);
+                contactId = newContact.id;
+                // Cache update handled by next fetch, but let's be safe
             }
 
             // Construct Data Object compatible with addJobCard
@@ -1486,8 +1544,10 @@
             addJobCard(jobData);
             document.getElementById('new-job-modal').close();
 
+            // Refresh Contacts to show new count/last seen
+            renderContacts();
+
             // Switch to Dashboard or Jobs view to see it?
-            // User probably wants to see it added.
             switchTab('dashboard');
 
             // Show toast
