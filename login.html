@@ -68,18 +68,29 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const pass = document.getElementById('password').value;
-            const hash = await sha256(pass);
+            const errorMsg = document.getElementById('errorMsg');
 
-            // Hash of 'WrenchTime'
-            const correctHash = "b1b36019bedd7ad9cc4287e26af41e133cc5eaf60bf67842321ac3745e5d5505";
+            try {
+                const res = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pass })
+                });
 
-            if (hash === correctHash) {
-                localStorage.setItem('mechanic_auth', 'true');
-                window.location.href = 'workshop.html';
-            } else {
-                document.getElementById('errorMsg').classList.remove('hidden');
-                document.getElementById('password').value = '';
-                document.getElementById('password').focus();
+                const data = await res.json();
+
+                if (data.success) {
+                    localStorage.setItem('mechanic_auth', 'true');
+                    window.location.href = 'workshop.html';
+                } else {
+                    errorMsg.textContent = "Access Denied";
+                    errorMsg.classList.remove('hidden');
+                    document.getElementById('password').value = '';
+                    document.getElementById('password').focus();
+                }
+            } catch (err) {
+                errorMsg.textContent = "Server Connection Failed";
+                errorMsg.classList.remove('hidden');
             }
         });
     </script>

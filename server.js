@@ -156,6 +156,79 @@ app.post('/api/jobs', async (req, res) => {
     }
 });
 
+// AUTHENTICATION
+// Default Hash for "WrenchTime" (SHA-256)
+const DEFAULT_HASH = "b1b36019bedd7ad9cc4287e26af41e133cc5eaf60bf67842321ac3745e5d5505";
+
+db.serialize(() => {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS auth (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            hash TEXT
+        )
+    `, (err) => {
+        if (!err) {
+            // Seed default if empty
+            db.get("SELECT count(*) as count FROM auth", (err, row) => {
+                if (row && row.count === 0) {
+                    db.run("INSERT INTO auth (id, hash) VALUES (1, ?)", [DEFAULT_HASH]);
+                    console.log("Seeded default admin password.");
+                }
+            });
+        }
+    });
+});
+
+function hashPassword(password) {
+    return crypto.createHash('sha256').update(password).digest('hex');
+}
+
+app.post('/api/auth/login', async (req, res) => {
+    const { password } = req.body;
+    try {
+        const row = await new Promise((resolve, reject) => {
+            db.get("SELECT hash FROM auth WHERE id = 1", (err, row) => {
+                if (err) reject(err); else resolve(row);
+            });
+        });
+
+        if (!row) {
+            return res.status(500).json({ error: "Auth configuration missing" });
+        }
+
+        const inputHash = hashPassword(password);
+        if (inputHash === row.hash) {
+            res.json({ success: true });
+        } else {
+            res.status(401).json({ error: "Invalid credentials" });
+        }
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/auth/password', async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    try {
+        const row = await new Promise((resolve, reject) => {
+            db.get("SELECT hash FROM auth WHERE id = 1", (err, row) => {
+                if (err) reject(err); else resolve(row);
+            });
+        });
+
+        const currentHash = hashPassword(currentPassword);
+        if (currentHash !== row.hash) {
+            return res.status(401).json({ error: "Current password incorrect" });
+        }
+
+        const newHash = hashPassword(newPassword);
+        await dbRun("UPDATE auth SET hash = ? WHERE id = 1", [newHash]);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // Start Server
 app.listen(PORT, () => {
     console.log(`Lockdown Secure Server running at http://localhost:${PORT}`);
