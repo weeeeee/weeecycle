@@ -426,14 +426,16 @@
 
             <div>
                 <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Service Type</label>
-                <select id="new-job-service"
-                    class="w-full bg-[#0B0B2B] text-white rounded border border-gray-700 p-2 focus:border-green-500 focus:outline-none">
-                    <option value="Safety Check">Safety Check ($50)</option>
-                    <option value="The Tune-Up">The Tune-Up ($90)</option>
-                    <option value="Overhaul">Overhaul ($180)</option>
-                    <option value="Dream Build">Dream Build ($300)</option>
-                    <option value="A La Carte">A La Carte (Varies)</option>
+                <select id="new-job-service" onchange="toggleCustomService()"
+                    class="w-full bg-[#0B0B2B] text-white p-3 rounded border border-gray-700 focus:border-brand-orange outline-none mb-3 font-mono text-sm">
+                    <option value="Safety Check">Safety Check</option>
+                    <option value="The Tune-Up">The Tune-Up</option>
+                    <option value="Overhaul">Overhaul</option>
+                    <option value="Dream Build">Dream Build</option>
+                    <option value="A La Carte">A La Carte</option>
                 </select>
+                <input type="text" id="new-job-custom-service" placeholder="Specify Service (e.g. Wheel True)"
+                    class="w-full bg-[#0B0B2B] text-white p-3 rounded border border-gray-700 focus:border-brand-orange outline-none mb-3 font-mono text-sm hidden">
             </div>
         </div>
         <div class="p-4 bg-[#0B0B2B] border-t border-gray-700 flex justify-end gap-2">
@@ -1709,55 +1711,94 @@
             document.getElementById('new-job-modal').showModal();
         }
 
+        function toggleCustomService() {
+            const notify = document.getElementById('new-job-service');
+            const custom = document.getElementById('new-job-custom-service');
+            if (notify.value === 'A La Carte') {
+                custom.classList.remove('hidden');
+                custom.focus();
+            } else {
+                custom.classList.add('hidden');
+                custom.value = '';
+            }
+        }
+
         async function confirmNewJob() {
             let contactId = document.getElementById('new-job-contact-id').value;
-            const name = document.getElementById('new-job-name').value;
-            const email = document.getElementById('new-job-email').value;
-            const phone = document.getElementById('new-job-phone').value;
+            const nameInput = document.getElementById('new-job-name').value;
+            const emailInput = document.getElementById('new-job-email').value;
+            const phoneInput = document.getElementById('new-job-phone').value;
             const bike = document.getElementById('new-job-bike').value;
-            const service = document.getElementById('new-job-service').value;
+            const serviceSelect = document.getElementById('new-job-service');
+            let service = serviceSelect.value;
 
-            if (!name) {
-                alert("Customer Name is required.");
-                return;
+            if (service === 'A La Carte') {
+                const custom = document.getElementById('new-job-custom-service').value.trim();
+                if (custom) {
+                    service = `A La Carte: ${custom}`;
+                } else {
+                    alert("Please enter a custom service description.");
+                    document.getElementById('new-job-custom-service').focus();
+                    return;
+                }
             }
-            if (!bike) {
-                alert("Please enter the Bike Model.");
+
+            if (!bike || !service) {
+                alert("Please fill in all fields (Bike and Service).");
                 return;
             }
 
             // AUTO-CREATE CONTACT if ID is missing (Walk-in)
-            if (!contactId) {
-                const newContact = {
-                    id: Date.now().toString(),
-                    name: name,
-                    email: email,
-                    phone: phone,
-                    lastSeen: new Date().toISOString().split('T')[0],
-                    count: 0
-                };
-                await saveContactAPI(newContact);
-                contactId = newContact.id;
-                // Cache update handled by next fetch, but let's be safe
+            if (!contactId && nameInput) {
+                try {
+                    const res = await fetch(`${API_URL}/contacts`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: nameInput, email: emailInput, phone: phoneInput })
+                    });
+                    const newContact = await res.json();
+                    if (newContact.id) {
+                        contactId = newContact.id;
+                        renderContacts();
+                    } else {
+                        alert("Failed to create contact. Please try again.");
+                        return;
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert("Server Error creating contact.");
+                    return;
+                }
             }
 
-            // Construct Data Object compatible with addJobCard
-            const jobData = {
-                fullname: name,
-                email: email,
-                phone: phone,
+            if (!contactId) {
+                alert("Please select a contact or enter a new customer name.");
+                return;
+            }
+
+            // Create Job Object
+            const job = {
+                id: Date.now().toString(),
+                contactId: contactId,
+                customer: nameInput || document.getElementById('new-job-name').placeholder,
                 bike: bike,
-                service: service
+                service: service,
+                status: 'booked',
+                date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+                checklist: {}
             };
 
-            addJobCard(jobData);
+            // Save to LocalStorage
+            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+            jobs.push(job);
+            localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+
             document.getElementById('new-job-modal').close();
 
-            // Refresh Contacts to show new count/last seen
-            renderContacts();
-
-            // Switch to Dashboard or Jobs view to see it?
-            switchTab('dashboard');
+            // Refresh UI
+            renderDashboard();
+            renderKanban();
+            renderActionRequired();
 
             // Show toast
             const toast = document.createElement('div');
