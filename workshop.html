@@ -1750,18 +1750,29 @@
 
             // AUTO-CREATE CONTACT if ID is missing (Walk-in)
             if (!contactId && nameInput) {
+                const newId = Date.now().toString();
                 try {
                     const res = await fetch(`${API_URL}/contacts`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name: nameInput, email: emailInput, phone: phoneInput })
+                        body: JSON.stringify({
+                            id: newId,
+                            name: nameInput,
+                            email: emailInput,
+                            phone: phoneInput,
+                            lastSeen: new Date().toISOString().split('T')[0],
+                            count: 1 // Start with 1 job
+                        })
                     });
-                    const newContact = await res.json();
-                    if (newContact.id) {
-                        contactId = newContact.id;
+
+                    // Server returns { success: true } usually
+                    const data = await res.json();
+
+                    if (data.success || data.id) { // robust check
+                        contactId = newId;
                         renderContacts();
                     } else {
-                        alert("Failed to create contact. Please try again.");
+                        alert("Failed to create contact (API Error).");
                         return;
                     }
                 } catch (e) {
