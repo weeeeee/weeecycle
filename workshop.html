@@ -501,8 +501,14 @@
             </div>
 
             <!-- Body -->
-            <div id="modal-checklist" class="flex-grow overflow-y-auto p-8 space-y-8">
+            <div class="flex-grow overflow-y-auto p-8 space-y-8">
+                <!-- Parts & Extras Section -->
+                <div id="modal-parts" class="space-y-4 border-b border-gray-700 pb-8">
+                    <!-- Populated via JS -->
+                </div>
+
                 <!-- Checklist items injected here -->
+                <div id="modal-checklist" class="space-y-8"></div>
             </div>
 
             <!-- Footer -->
@@ -1750,35 +1756,58 @@
 
             // AUTO-CREATE CONTACT if ID is missing (Walk-in)
             if (!contactId && nameInput) {
-                const newId = Date.now().toString();
-                try {
-                    const res = await fetch(`${API_URL}/contacts`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            id: newId,
-                            name: nameInput,
-                            email: emailInput,
-                            phone: phoneInput,
-                            lastSeen: new Date().toISOString().split('T')[0],
-                            count: 1 // Start with 1 job
-                        })
-                    });
+                // DEDUPLICATION CHECK
+                // Check if phone or email matches an existing contact
+                if (typeof _cachedContacts !== 'undefined') {
+                    const match = _cachedContacts.find(c =>
+                        (emailInput && c.email === emailInput) ||
+                        (phoneInput && c.phone === phoneInput)
+                    );
 
-                    // Server returns { success: true } usually
-                    const data = await res.json();
+                    if (match) {
+                        // Link to existing
+                        contactId = match.id;
 
-                    if (data.success || data.id) { // robust check
-                        contactId = newId;
-                        renderContacts();
-                    } else {
-                        alert("Failed to create contact (API Error).");
+                        // Toast
+                        const toast = document.createElement('div');
+                        toast.className = "fixed bottom-20 right-4 bg-brand-orange text-white px-4 py-2 rounded shadow-xl z-50 text-sm font-bold";
+                        toast.innerHTML = `<i class="fa-solid fa-link mr-2"></i> Linked to existing customer: ${match.name}`;
+                        document.body.appendChild(toast);
+                        setTimeout(() => toast.remove(), 4000);
+                    }
+                }
+
+                if (!contactId) {
+                    // Proceed to Create New
+                    const newId = Date.now().toString();
+                    try {
+                        const res = await fetch(`${API_URL}/contacts`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                id: newId,
+                                name: nameInput,
+                                email: emailInput,
+                                phone: phoneInput,
+                                lastSeen: new Date().toISOString().split('T')[0],
+                                count: 1
+                            })
+                        });
+
+                        const data = await res.json();
+
+                        if (data.success || data.id) {
+                            contactId = newId;
+                            renderContacts();
+                        } else {
+                            alert("Failed to create contact (API Error).");
+                            return;
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        alert("Server Error creating contact.");
                         return;
                     }
-                } catch (e) {
-                    console.error(e);
-                    alert("Server Error creating contact.");
-                    return;
                 }
             }
 
@@ -1893,6 +1922,7 @@
             document.getElementById('modal-bike').innerHTML = `<i class="fa-solid fa-bicycle mr-1"></i> ${job.bike}`;
             document.getElementById('modal-service').innerHTML = `<i class="fa-solid fa-screwdriver-wrench mr-1"></i> ${job.service}`;
 
+            renderJobParts(job);
             renderChecklist(job);
             document.getElementById('job-sheet-modal').showModal();
         }
@@ -1953,6 +1983,86 @@
 
                 catDiv.appendChild(ul);
                 container.appendChild(catDiv);
+            }
+        }
+
+        // --- JOB PARTS & EXTRAS ---
+        function renderJobParts(job) {
+            const container = document.getElementById('modal-parts');
+            const parts = job.parts || [];
+
+            let html = `
+                <div class="flex justify-between items-end mb-4">
+                    <h3 class="font-display font-bold text-xl uppercase text-white">Parts & Extras</h3>
+                </div>
+                
+                <div class="overflow-hidden rounded-lg border border-gray-700 mb-4">
+                    <table class="w-full text-left text-sm text-gray-400">
+                        <thead class="bg-[#151535] text-xs uppercase font-bold text-gray-500">
+                            <tr>
+                                <th class="p-4">Item Description</th>
+                                <th class="p-4 text-right w-32">Price</th>
+                                <th class="p-4 w-12"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800 bg-[#0B0B2B]">
+            `;
+
+            if (parts.length === 0) {
+                html += `<tr><td colspan="3" class="p-4 text-center italic text-gray-600">No additional parts added.</td></tr>`;
+            } else {
+                parts.forEach((p, idx) => {
+                    html += `
+                        <tr class="group hover:bg-[#151535] transition">
+                            <td class="p-4 text-white">${p.desc}</td>
+                            <td class="p-4 text-right font-mono text-brand-orange">$${parseFloat(p.price).toFixed(2)}</td>
+                            <td class="p-4 text-right">
+                                <button onclick="deleteJobPart('${job.id}', ${idx})" class="text-gray-600 hover:text-red-500 transition"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Add New Part Form -->
+                <div class="flex gap-2">
+                    <input type="text" id="part-desc" placeholder="Add Item (e.g. Inner Tube)" class="flex-grow bg-[#151535] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
+                    <input type="number" id="part-price" placeholder="0.00" class="w-32 bg-[#151535] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none font-mono">
+                    <button onclick="addJobPart('${job.id}')" class="bg-gray-700 hover:bg-brand-orange text-white px-4 py-2 rounded transition font-bold"><i class="fa-solid fa-plus"></i></button>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function addJobPart(jobId) {
+            const desc = document.getElementById('part-desc').value.trim();
+            const price = parseFloat(document.getElementById('part-price').value) || 0;
+
+            if (!desc) return;
+
+            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+            const idx = jobs.findIndex(j => j.id === jobId);
+            if (idx > -1) {
+                if (!jobs[idx].parts) jobs[idx].parts = [];
+                jobs[idx].parts.push({ desc, price });
+                localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+                renderJobParts(jobs[idx]);
+            }
+        }
+
+        function deleteJobPart(jobId, partIndex) {
+            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+            const idx = jobs.findIndex(j => j.id === jobId);
+            if (idx > -1 && jobs[idx].parts) {
+                jobs[idx].parts.splice(partIndex, 1);
+                localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+                renderJobParts(jobs[idx]);
             }
         }
 
