@@ -1120,8 +1120,11 @@
                 }
             });
         }
-        const hours = localStorage.getItem('workshop_hours') || "Mon-Fri: 9am - 5pm\nSat: 10am - 2pm\nSun: Closed";
-        document.getElementById('shop-hours').textContent = hours;
+
+        // SHOP HOURS
+        function renderShopHours() {
+            const hours = localStorage.getItem('workshop_hours') || "Mon-Fri: 9am - 5pm\nSat: 10am - 2pm\nSun: Closed";
+            document.getElementById('shop-hours').textContent = hours;
         }
 
         function editShopHours() {
