@@ -546,6 +546,16 @@
                 </div>
             </div>
             <div id="password-msg" class="text-center text-sm hidden"></div>
+
+            <div class="border-t border-gray-700 pt-4 mt-2">
+                <h4 class="font-bold text-lg border-b border-gray-700 pb-2 mb-4">Database Tools</h4>
+                <button onclick="mergeDuplicates()"
+                    class="w-full bg-[#1e1e3f] hover:bg-brand-orange text-white py-2 rounded border border-gray-600 transition flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-users-viewfinder"></i> Cleanup Duplicate Contacts
+                </button>
+                <p class="text-xs text-gray-500 mt-2 text-center">Merges duplicates by email and removes redundant
+                    records.</p>
+            </div>
         </div>
         <div class="bg-[#0f0f1f] p-4 flex justify-end gap-2 rounded-b-xl border-t border-gray-700">
             <button onclick="changePassword()"
@@ -589,6 +599,34 @@
             <button onclick="saveNewContact()"
                 class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-6 py-2 rounded transition">Save
                 Contact</button>
+        </div>
+    </dialog>
+
+    <!-- Inventory Selection Modal -->
+    <dialog id="inventory-selection-modal"
+        class="bg-[#151525] text-white p-0 rounded-xl shadow-2xl backdrop:bg-black/80 w-full max-w-md border border-gray-700">
+        <div class="border-b border-gray-700 p-4 flex justify-between items-center bg-[#0f0f1f]">
+            <h3 class="font-display font-bold text-xl uppercase tracking-wider text-brand-orange"><i
+                    class="fa-solid fa-boxes-stacked mr-2"></i> Select Part</h3>
+            <button onclick="cancelPartSelection()" class="text-gray-400 hover:text-white transition"><i
+                    class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-gray-400">Select the part used for this job to deduct from inventory.</p>
+            <div>
+                <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Part</label>
+                <select id="inventory-select-dropdown"
+                    class="w-full bg-[#0a0a1a] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+        </div>
+        <div class="bg-[#0f0f1f] p-4 flex justify-end gap-2 rounded-b-xl border-t border-gray-700">
+            <button onclick="cancelPartSelection()"
+                class="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
+            <button onclick="confirmPartSelection()"
+                class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-6 py-2 rounded transition">Confirm
+                & Move</button>
         </div>
     </dialog>
 
@@ -1270,6 +1308,69 @@
             ev.target.classList.add('dragging');
         }
 
+        // INVENTORY SELECTION LOGIC
+        let _pendingJobMove = null;
+
+        function openInventorySelection(jobId, targetCol) {
+            _pendingJobMove = { jobId, targetCol };
+            const modal = document.getElementById('inventory-selection-modal');
+            const select = document.getElementById('inventory-select-dropdown');
+
+            // Populate Dropdown
+            const inventory = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
+            select.innerHTML = '<option value="">-- Select Part --</option>';
+            inventory.forEach(item => {
+                select.innerHTML += `<option value="${item.id}">${item.name} (Qty: ${item.qty})</option>`;
+            });
+
+            modal.showModal();
+        }
+
+        function cancelPartSelection() {
+            document.getElementById('inventory-selection-modal').close();
+            _pendingJobMove = null;
+            renderKanban(); // Revert UI
+        }
+
+        function confirmPartSelection() {
+            const select = document.getElementById('inventory-select-dropdown');
+            const partId = parseInt(select.value); // IDs are numbers in current data
+
+            if (!partId) {
+                alert("Please select a part.");
+                return;
+            }
+
+            // Deduct Inventory
+            let inventory = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
+            const itemIndex = inventory.findIndex(i => i.id === partId);
+
+            if (itemIndex > -1) {
+                if (inventory[itemIndex].qty > 0) {
+                    inventory[itemIndex].qty--;
+                    localStorage.setItem('workshop_inventory', JSON.stringify(inventory));
+                } else {
+                    if (!confirm("This item is out of stock. Proceed anyway?")) return;
+                    inventory[itemIndex].qty--;
+                    localStorage.setItem('workshop_inventory', JSON.stringify(inventory));
+                }
+            }
+
+            // Complete Move
+            if (_pendingJobMove) {
+                let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+                const jobIndex = jobs.findIndex(j => j.id === _pendingJobMove.jobId);
+                if (jobIndex > -1) {
+                    jobs[jobIndex].status = 'parts';
+                    localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+                }
+            }
+
+            document.getElementById('inventory-selection-modal').close();
+            _pendingJobMove = null;
+            init(); // Re-render everything
+        }
+
         function drop(ev) {
             ev.preventDefault();
             const data = ev.dataTransfer.getData("text");
@@ -1291,7 +1392,16 @@
 
             let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
             const jobIndex = jobs.findIndex(j => j.id === jobId);
+
             if (jobIndex > -1) {
+                const oldStatus = jobs[jobIndex].status;
+
+                // Intercept Approval -> Waiting Parts
+                if (oldStatus === 'approval' && newStatus === 'parts') {
+                    openInventorySelection(jobId, targetCol);
+                    return;
+                }
+
                 jobs[jobIndex].status = newStatus;
                 localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
                 renderKanban(); // Re-render to update counts
@@ -1760,7 +1870,7 @@
                 // Check if phone or email matches an existing contact
                 if (typeof _cachedContacts !== 'undefined') {
                     const match = _cachedContacts.find(c =>
-                        (emailInput && c.email === emailInput) ||
+                        (emailInput && c.email && c.email.toLowerCase() === emailInput.toLowerCase()) ||
                         (phoneInput && c.phone === phoneInput)
                     );
 
