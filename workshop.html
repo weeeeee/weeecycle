@@ -340,6 +340,19 @@
                         class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-4 py-2 rounded transition flex items-center gap-2 ml-4">
                         <i class="fa-solid fa-plus-circle"></i> New Job
                     </button>
+                    <!-- Import/Export -->
+                    <div class="flex gap-2 ml-2">
+                        <input type="file" id="csv-upload" accept=".csv" class="hidden"
+                            onchange="processCSVImport(this)">
+                        <button onclick="document.getElementById('csv-upload').click()"
+                            class="bg-[#151535] hover:bg-gray-700 text-gray-300 hover:text-white font-bold uppercase tracking-wider px-4 py-2 rounded transition flex items-center gap-2 text-sm border border-gray-700">
+                            <i class="fa-solid fa-file-import"></i> Import
+                        </button>
+                        <button onclick="exportContactsCSV()"
+                            class="bg-[#151535] hover:bg-gray-700 text-gray-300 hover:text-white font-bold uppercase tracking-wider px-4 py-2 rounded transition flex items-center gap-2 text-sm border border-gray-700">
+                            <i class="fa-solid fa-file-export"></i> Export
+                        </button>
+                    </div>
                 </div>
 
                 <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl overflow-hidden">
@@ -1785,6 +1798,83 @@
             if (!confirm("Permenantly delete this encrypted contact?")) return;
             await deleteContactAPI(id);
             await renderContacts();
+        }
+
+        // IMPORT / EXPORT LOGIC
+        function exportContactsCSV() {
+            if (!_cachedContacts || _cachedContacts.length === 0) {
+                alert("No contacts to export.");
+                return;
+            }
+
+            // Headers matches QuickBooks-friendly format where possible, though QB usually needs specific mapping.
+            // Simple generic CSV: Name,Email,Phone,TotalJobs,LastSeen
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Customer Name,Email,Phone,Job Count,Last Seen\n";
+
+            _cachedContacts.forEach(c => {
+                const name = (c.name || '').replace(/,/g, ''); // Simple escape
+                const email = (c.email || '').replace(/,/g, '');
+                const phone = (c.phone || '').replace(/,/g, '');
+                const count = c.job_count || 0;
+                const last = c.last_seen || '';
+                csvContent += `${name},${email},${phone},${count},${last}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "workshop_contacts.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        async function processCSVImport(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+
+                let count = 0;
+                // Skipping header if first row has "Name" or "Customer"
+                const startIndex = (lines[0].toLowerCase().includes('name') || lines[0].toLowerCase().includes('customer')) ? 1 : 0;
+
+                for (let i = startIndex; i < lines.length; i++) {
+                    const row = lines[i].trim();
+                    if (!row) continue;
+
+                    // Simple logic: assume col 1=Name, col 2=Email, col 3=Phone (QuickBooks Export variation)
+                    // If rows have quotes, this simple split fail. But sufficient for basic usage.
+                    const cols = row.split(',');
+                    if (cols.length < 1) continue;
+
+                    const name = cols[0].trim();
+                    const email = cols[1] ? cols[1].trim() : '';
+                    const phone = cols[2] ? cols[2].trim() : '';
+
+                    if (name) {
+                        const contactPayload = {
+                            id: Date.now().toString() + Math.random().toString().substr(2, 5),
+                            name: name,
+                            email: email,
+                            phone: phone,
+                            lastSeen: new Date().toISOString(),
+                            count: 0
+                        };
+                        await saveContactAPI(contactPayload);
+                        count++;
+                    }
+                }
+
+                alert(`Imported ${count} contacts successfully.`);
+                input.value = ''; // Reset
+                renderContacts();
+            };
+            reader.readAsText(file);
         }
 
         // REPEAT CUSTOMER JOB LOGIC
