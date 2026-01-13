@@ -133,6 +133,27 @@ app.delete('/api/contacts/:id', async (req, res) => {
     }
 });
 
+
+app.post('/api/contacts/batch-delete', async (req, res) => {
+    console.log("Received batch delete request:", req.body);
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids)) {
+        console.error("Invalid IDs for batch delete:", ids);
+        return res.status(400).json({ error: "Invalid IDs" });
+    }
+
+    try {
+        const placeholders = ids.map(() => '?').join(',');
+        console.log(`Executing DELETE for IDs: ${ids.join(', ')}`);
+        await dbRun(`DELETE FROM contacts WHERE id IN (${placeholders})`, ids);
+        console.log("Deleted successfully.");
+        res.json({ success: true });
+    } catch (e) {
+        console.error("Batch delete error:", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // JOBS (Basic Proxy)
 app.get('/api/jobs', async (req, res) => {
     try {
@@ -156,49 +177,58 @@ app.post('/api/jobs', async (req, res) => {
     }
 });
 
-// AUTHENTICATION
-// Default Hash for "WrenchTime" (SHA-256)
-const DEFAULT_HASH = "b1b36019bedd7ad9cc4287e26af41e133cc5eaf60bf67842321ac3745e5d5505";
+// AUTHENTICATION SYSTEM
+const SALT_LENGTH = 16;
+
+function hashPassword(password, salt) {
+    return crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
+}
 
 db.serialize(() => {
+    // 1. Users Table
     db.run(`
-        CREATE TABLE IF NOT EXISTS auth (
-            id INTEGER PRIMARY KEY CHECK (id = 1),
-            hash TEXT
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            hash TEXT,
+            salt TEXT
         )
     `, (err) => {
         if (!err) {
-            // Seed default if empty
-            db.get("SELECT count(*) as count FROM auth", (err, row) => {
+            // Seed Default Admin if no users exist
+            db.get("SELECT count(*) as count FROM users", (err, row) => {
                 if (row && row.count === 0) {
-                    db.run("INSERT INTO auth (id, hash) VALUES (1, ?)", [DEFAULT_HASH]);
-                    console.log("Seeded default admin password.");
+                    const salt = crypto.randomBytes(SALT_LENGTH).toString('hex');
+                    const hash = hashPassword("WrenchTime", salt);
+                    db.run("INSERT INTO users (username, hash, salt) VALUES (?, ?, ?)", ["admin", hash, salt]);
+                    console.log("Seeded default admin user: admin / WrenchTime");
                 }
             });
         }
     });
+
+    // Remove old auth table if it exists (Optional clean up)
+    db.run("DROP TABLE IF EXISTS auth");
 });
 
-function hashPassword(password) {
-    return crypto.createHash('sha256').update(password).digest('hex');
-}
-
+// Login Endpoint
 app.post('/api/auth/login', async (req, res) => {
-    const { password } = req.body;
+    const { username, password } = req.body;
     try {
         const row = await new Promise((resolve, reject) => {
-            db.get("SELECT hash FROM auth WHERE id = 1", (err, row) => {
+            db.get("SELECT * FROM users WHERE username = ?", [username], (err, row) => {
                 if (err) reject(err); else resolve(row);
             });
         });
 
         if (!row) {
-            return res.status(500).json({ error: "Auth configuration missing" });
+            return res.status(401).json({ error: "Invalid credentials" });
         }
 
-        const inputHash = hashPassword(password);
+        const inputHash = hashPassword(password, row.salt);
         if (inputHash === row.hash) {
-            res.json({ success: true });
+            // In a real app, send a JWT. Here we send a simple success flag + user info.
+            res.json({ success: true, user: { username: row.username } });
         } else {
             res.status(401).json({ error: "Invalid credentials" });
         }
@@ -207,25 +237,22 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-app.post('/api/auth/password', async (req, res) => {
-    const { currentPassword, newPassword } = req.body;
+// Create User Endpoint (Internal/Admin only usage recommended)
+app.post('/api/auth/register', async (req, res) => {
+    const { username, password } = req.body;
+    // Basic protection: Only allow if no users exist OR (add your own logic)
+    // For now, we allow it for setup flexibility.
+
+    if (!username || !password) return res.status(400).json({ error: "Missing fields" });
+
+    const salt = crypto.randomBytes(SALT_LENGTH).toString('hex');
+    const hash = hashPassword(password, salt);
+
     try {
-        const row = await new Promise((resolve, reject) => {
-            db.get("SELECT hash FROM auth WHERE id = 1", (err, row) => {
-                if (err) reject(err); else resolve(row);
-            });
-        });
-
-        const currentHash = hashPassword(currentPassword);
-        if (currentHash !== row.hash) {
-            return res.status(401).json({ error: "Current password incorrect" });
-        }
-
-        const newHash = hashPassword(newPassword);
-        await dbRun("UPDATE auth SET hash = ? WHERE id = 1", [newHash]);
+        await dbRun("INSERT INTO users (username, hash, salt) VALUES (?, ?, ?)", [username, hash, salt]);
         res.json({ success: true });
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        res.status(400).json({ error: "Username likely exists" });
     }
 });
 

@@ -4,93 +4,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mechanic Login | Weeecycle.net</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&display=swap"
-        rel="stylesheet" />
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: { dark: '#050511', blue: '#0B0B3B', orange: '#FF8000' }
-                    },
-                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Roboto Condensed', 'sans-serif'] }
-                }
-            }
+    <title>Workshop Login - Weeecycle</title>
+    <style>
+        :root {
+            --primary: #f26522;
+            --dark: #1a1a1a;
+            --light: #f4f4f4;
         }
-    </script>
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--dark);
+            color: var(--light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-card {
+            background: #2a2a2a;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #333;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            filter: brightness(1.1);
+        }
+
+        #error {
+            color: #ff5555;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #888;
+        }
+    </style>
 </head>
 
-<body class="bg-brand-dark h-screen flex items-center justify-center font-body">
+<body>
 
-    <div class="bg-[#0B0B2B] p-8 rounded-xl shadow-2xl border border-gray-800 w-full max-w-md">
-        <div class="text-center mb-8">
-            <div class="h-12 w-12 mx-auto relative overflow-hidden flex items-center justify-center mb-4">
-                <img src="images/logo/FullLogo_Transparent_NoBuffer.png" alt="Weeecycle Icon"
-                    class="h-10 w-auto object-contain drop-shadow-[0_0_5px_rgba(255,128,0,0.5)]" />
-            </div>
-            <h1 class="font-display font-bold text-4xl text-white uppercase tracking-widest">Mechanic Access</h1>
-            <p class="text-gray-400 text-sm uppercase tracking-wide mt-2">Authorized Personnel Only</p>
-        </div>
+    <div class="login-card">
+        <h1>Workshop Login</h1>
+        <p>Please sign in to access the workshop dashboard.</p>
 
-        <form id="loginForm" class="space-y-6">
-            <div>
-                <label
-                    class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Passcode</label>
-                <input type="password" id="password" required
-                    class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition text-center tracking-[0.5em] text-xl"
-                    placeholder="••••">
-            </div>
-            <div id="errorMsg" class="text-red-500 text-center text-sm hidden">Access Denied</div>
-            <button type="submit"
-                class="w-full bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-xl uppercase tracking-wider py-3 rounded transition shadow-lg shadow-orange-900/50">
-                Unlock Workshop
-            </button>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" required autofocus>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Sign In</button>
+            <div id="error"></div>
         </form>
-        <div class="mt-6 text-center">
-            <a href="index.html" class="text-gray-500 text-sm hover:text-white transition">Return to Site</a>
-        </div>
+        <div class="footer">&copy; 2026 Weeecycle</div>
     </div>
 
     <script>
-        const form = document.getElementById('loginForm');
+        const API_URL = 'http://localhost:3000/api';
 
-        async function sha256(message) {
-            const msgBuffer = new TextEncoder().encode(message);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-            return hashHex;
-        }
-
-        form.addEventListener('submit', async (e) => {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const pass = document.getElementById('password').value;
-            const errorMsg = document.getElementById('errorMsg');
+            const errorDiv = document.getElementById('error');
+            errorDiv.style.display = 'none';
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
 
             try {
-                const res = await fetch('http://localhost:3000/api/auth/login', {
+                const res = await fetch(`${API_URL}/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ password: pass })
+                    body: JSON.stringify({ username, password })
                 });
 
                 const data = await res.json();
 
                 if (data.success) {
-                    localStorage.setItem('mechanic_auth', 'true');
+                    localStorage.setItem('workshop_user', JSON.stringify(data.user));
+                    localStorage.setItem('workshop_token', 'logged_in'); // Simple flag for now
                     window.location.href = 'workshop.html';
                 } else {
-                    errorMsg.textContent = "Access Denied";
-                    errorMsg.classList.remove('hidden');
-                    document.getElementById('password').value = '';
-                    document.getElementById('password').focus();
+                    errorDiv.textContent = data.error || 'Login failed';
+                    errorDiv.style.display = 'block';
                 }
             } catch (err) {
-                errorMsg.textContent = "Server Connection Failed";
-                errorMsg.classList.remove('hidden');
+                errorDiv.textContent = 'Server error. Is it running?';
+                errorDiv.style.display = 'block';
             }
         });
     </script>
