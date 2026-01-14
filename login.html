@@ -136,7 +136,7 @@
                 // Check for non-200 status codes
                 if (!res.ok) {
                     if (res.status === 404) {
-                        throw new Error(`API Endpoint Not Found (404). \nIs Nginx configured to proxy /api to port 3000?`);
+                        throw new Error(`API Endpoint Not Found (404). \nIs your Web Server (Apache/Nginx) configured to proxy /api to port 3000?`);
                     }
                     const text = await res.text();
                     try {
