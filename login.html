@@ -96,10 +96,7 @@
     </div>
 
     <script>
-        // Automatically determine the API URL based on the current hostname
-        // This ensures it works if the page is loaded via port 5500 (Live Server) or 3000 (Node)
-        const API_PORT = 3000;
-        const API_URL = `${window.location.protocol}//${window.location.hostname}:${API_PORT}/api`;
+
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
