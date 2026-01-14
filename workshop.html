@@ -38,7 +38,7 @@
     </style>
 </head>
 
-<body class="bg-black text-gray-200 font-body antialiased flex h-screen overflow-hidden">
+<body class="bg-black text-gray-200 font-body antialiased flex h-screen overflow-hidden relative">
     <style>
         .kanban-col {
             min-height: 500px;
@@ -102,15 +102,23 @@
         }
     </script>
 
+    <!-- MOBILE SIDEBAR OVERLAY -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()"
+        class="fixed inset-0 bg-black/80 z-40 hidden md:hidden glass-blur"></div>
+
     <!-- SIDEBAR -->
-    <aside class="w-64 bg-[#050511] border-r border-gray-800 flex flex-col flex-shrink-0 z-40">
+    <aside id="sidebar"
+        class="fixed inset-y-0 left-0 z-50 w-64 bg-[#050511] border-r border-gray-800 flex flex-col transition-transform duration-300 transform -translate-x-full md:translate-x-0 md:static md:flex-shrink-0">
         <!-- Brand -->
-        <div class="h-20 flex flex-col justify-center px-6 border-b border-gray-800">
+        <div class="h-20 flex flex-col justify-center px-6 border-b border-gray-800 relative">
             <div class="flex flex-col">
                 <span class="font-display font-bold text-2xl tracking-widest text-white leading-none">WEEECYCLE<span
                         class="text-brand-orange">.NET</span></span>
                 <span class="font-body text-[10px] text-brand-orange uppercase tracking-[0.2em]">Mechanic Portal</span>
             </div>
+            <button onclick="toggleSidebar()" class="absolute right-4 top-1/2 -translate-y-1/2 md:hidden text-gray-400">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
             <div id="api-status"
                 class="mt-2 text-xs font-bold text-gray-600 flex items-center gap-1 uppercase tracking-wider">
                 <div class="w-2 h-2 bg-gray-600 rounded-full"></div> Connecting...
@@ -119,22 +127,22 @@
 
         <!-- Navigation -->
         <nav class="flex-1 flex flex-col p-4 gap-2 overflow-y-auto">
-            <button onclick="switchTab('dashboard')" id="nav-dashboard"
+            <button onclick="switchTab('dashboard'); closeSidebarMobile()" id="nav-dashboard"
                 class="nav-item active flex items-center gap-3 px-4 py-3 rounded-lg bg-brand-orange text-white hover:bg-orange-600 transition text-left">
                 <i class="fa-solid fa-gauge-high w-6 text-center"></i>
                 <span class="font-display font-bold uppercase tracking-wide">Dashboard</span>
             </button>
-            <button onclick="switchTab('jobs')" id="nav-jobs"
+            <button onclick="switchTab('jobs'); closeSidebarMobile()" id="nav-jobs"
                 class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition text-left">
                 <i class="fa-solid fa-list-check w-6 text-center"></i>
                 <span class="font-display font-bold uppercase tracking-wide">Job Board</span>
             </button>
-            <button onclick="switchTab('inventory')" id="nav-inventory"
+            <button onclick="switchTab('inventory'); closeSidebarMobile()" id="nav-inventory"
                 class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition text-left">
                 <i class="fa-solid fa-boxes-stacked w-6 text-center"></i>
                 <span class="font-display font-bold uppercase tracking-wide">Inventory</span>
             </button>
-            <button onclick="switchTab('contacts')" id="nav-contacts"
+            <button onclick="switchTab('contacts'); closeSidebarMobile()" id="nav-contacts"
                 class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition text-left">
                 <i class="fa-solid fa-address-book w-6 text-center"></i>
                 <span class="font-display font-bold uppercase tracking-wide">Contacts</span>
@@ -153,7 +161,7 @@
             </div>
             <!-- Bottom Actions -->
             <div class="mt-auto pt-6 border-t border-gray-800 space-y-2">
-                <button onclick="document.getElementById('settings-modal').showModal()"
+                <button onclick="document.getElementById('settings-modal').showModal(); closeSidebarMobile()"
                     class="w-full flex items-center gap-3 px-4 py-2 rounded text-gray-400 hover:text-white hover:bg-white/5 transition text-sm uppercase font-bold">
                     <i class="fa-solid fa-cog w-6 text-center"></i> Settings
                 </button>
@@ -166,198 +174,219 @@
     </aside>
 
     <!-- MAIN CONTENT -->
-    <main class="flex-1 relative overflow-hidden bg-black h-full">
+    <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-black">
 
-        <!-- DASHBOARD VIEW -->
-        <div id="view-dashboard" class="absolute inset-0 p-6 overflow-auto">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto h-full">
-
-                <!-- Left Column: Action Required & Recents -->
-                <div class="lg:col-span-1 space-y-8 flex flex-col">
-
-                    <!-- Action Required -->
-                    <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 flex-1 flex flex-col">
-                        <h2 class="font-display font-bold text-3xl text-white uppercase mb-4 flex items-center gap-2">
-                            <span class="material-symbols-outlined text-brand-orange">notification_important</span>
-                            Action Required
-                        </h2>
-                        <div id="action-required-list" class="space-y-4 overflow-y-auto flex-1 pr-2 max-h-[400px]">
-                            <!-- Populated by JS -->
-                        </div>
-                    </div>
-
-                    <!-- Recents -->
-                    <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 h-fit">
-                        <h2 class="font-display font-bold text-2xl text-white uppercase mb-4">Recent Activity</h2>
-                        <ul id="recents-list" class="space-y-3 text-sm text-gray-400">
-                            <!-- Populated by JS -->
-                        </ul>
-                    </div>
-
-                </div>
-
-                <!-- Right Column: Agenda & Analytics -->
-                <div class="lg:col-span-2 flex flex-col gap-6 h-full">
-
-                    <!-- Top: Agenda (Day View) -->
-                    <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 flex-1 flex flex-col">
-                        <div class="flex justify-between items-center mb-4">
-                            <div>
-                                <h2 class="font-display font-bold text-3xl text-white uppercase">Agenda</h2>
-                                <p id="agenda-date" class="text-brand-orange font-bold uppercase text-lg">Today</p>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <button onclick="changeDay(-1)"
-                                    class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center transition"><i
-                                        class="fa-solid fa-chevron-left"></i></button>
-                                <button onclick="resetDay()"
-                                    class="px-3 py-1 rounded bg-brand-orange hover:bg-orange-600 text-white text-xs font-bold uppercase transition">Today</button>
-                                <button onclick="changeDay(1)"
-                                    class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center transition"><i
-                                        class="fa-solid fa-chevron-right"></i></button>
-                            </div>
-                        </div>
-
-                        <!-- Agenda List -->
-                        <div id="agenda-list" class="flex-1 overflow-y-auto space-y-3 pr-2">
-                            <!-- Populated by JS -->
-                        </div>
-                    </div>
-
-                    <!-- Bottom: Metrics (Pie Chart + Hours) -->
-                    <div class="h-64">
-
-
-                        <!-- Shop Info -->
-                        <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 relative">
-                            <h3 class="font-display font-bold text-lg text-white uppercase mb-4">Shop Status</h3>
-                            <div class="text-left">
-                                <h4 class="font-bold text-brand-orange uppercase text-xs tracking-wider mb-1">Hours of
-                                    Operation</h4>
-                                <p id="shop-hours" class="text-gray-400 text-sm whitespace-pre-line mb-4">Mon-Fri: 9am -
-                                    5pm\nSat: 10am - 2pm\nSun: Closed</p>
-                                <button onclick="editShopHours()"
-                                    class="text-xs bg-gray-800 hover:bg-white hover:text-black text-gray-400 px-3 py-1 rounded transition">Edit
-                                    Hours</button>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
+        <!-- Mobile Header -->
+        <div
+            class="md:hidden h-16 bg-[#050511] border-b border-gray-800 flex items-center px-4 justify-between flex-shrink-0 z-30">
+            <span class="font-display font-bold text-xl tracking-widest text-white leading-none">WEEECYCLE</span>
+            <button onclick="toggleSidebar()" class="text-white p-2">
+                <i class="fa-solid fa-bars text-2xl"></i>
+            </button>
         </div>
 
-        <!-- JOB BOARD VIEW -->
-        <div id="view-jobs" class="hidden absolute inset-0 p-6 overflow-x-auto overflow-y-hidden flex gap-6">
-            <!-- Columns generated by JS -->
-            <div class="flex gap-6 h-full min-w-max" id="kanban-board">
-                <!-- Columns: Booked In, Waiting Approval, Waiting Parts, Working On, Bike Ready, Completed -->
-            </div>
-        </div>
+        <!-- Views Container -->
+        <div class="flex-1 relative overflow-hidden">
 
-        <!-- INVENTORY VIEW -->
-        <div id="view-inventory" class="hidden absolute inset-0 p-6 overflow-auto bg-brand-dark">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            <!-- DASHBOARD VIEW -->
+            <div id="view-dashboard" class="absolute inset-0 p-4 md:p-6 overflow-auto">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto h-full">
 
-                <!-- My Bench Inventory -->
-                <div class="lg:col-span-2 bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 h-fit">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="font-display font-bold text-3xl text-white uppercase">My Bench Stock</h2>
-                        <button onclick="addItem()"
-                            class="bg-brand-orange text-white px-3 py-1 rounded text-sm uppercase font-bold hover:bg-orange-600 transition">+
-                            Add Item</button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm text-gray-400">
-                            <thead class="bg-gray-900 text-gray-200 uppercase font-display text-lg">
-                                <tr>
-                                    <th class="p-3 rounded-tl-lg">Item Name</th>
-                                    <th class="p-3">Qty</th>
-                                    <th class="p-3">Status</th>
-                                    <th class="p-3 rounded-tr-lg text-right">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="inventory-table-body" class="divide-y divide-gray-800">
+                    <!-- Left Column: Action Required & Recents -->
+                    <div class="lg:col-span-1 space-y-8 flex flex-col">
+
+                        <!-- Action Required -->
+                        <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 flex-1 flex flex-col">
+                            <h2
+                                class="font-display font-bold text-3xl text-white uppercase mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-brand-orange">notification_important</span>
+                                Action Required
+                            </h2>
+                            <div id="action-required-list" class="space-y-4 overflow-y-auto flex-1 pr-2 max-h-[400px]">
                                 <!-- Populated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                            </div>
+                        </div>
 
-                <!-- Amazon Restock -->
-                <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 h-fit">
-                    <h2 class="font-display font-bold text-3xl text-white uppercase mb-6">Quick Restock</h2>
-                    <div class="space-y-4">
-                        <a href="https://amzn.to/4bc5L8S" target="_blank"
-                            class="block p-4 border border-gray-700 rounded hover:border-brand-orange transition group bg-[#151535]">
-                            <div class="flex items-center gap-4">
-                                <div class="bg-white p-2 rounded w-12 h-12 flex items-center justify-center"><img
-                                        src="images/Tri-Flow-Lube.png" class="max-h-full"></div>
+                        <!-- Recents -->
+                        <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 h-fit">
+                            <h2 class="font-display font-bold text-2xl text-white uppercase mb-4">Recent Activity</h2>
+                            <ul id="recents-list" class="space-y-3 text-sm text-gray-400">
+                                <!-- Populated by JS -->
+                            </ul>
+                        </div>
+
+                    </div>
+
+                    <!-- Right Column: Agenda & Analytics -->
+                    <div class="lg:col-span-2 flex flex-col gap-6 h-full">
+
+                        <!-- Top: Agenda (Day View) -->
+                        <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 flex-1 flex flex-col">
+                            <div class="flex justify-between items-center mb-4">
                                 <div>
-                                    <div class="font-bold text-white uppercase group-hover:text-brand-orange">Tri-Flow
-                                        Lube</div>
-                                    <div class="text-xs text-gray-500">Premium Lubricant</div>
+                                    <h2 class="font-display font-bold text-3xl text-white uppercase">Agenda</h2>
+                                    <p id="agenda-date" class="text-brand-orange font-bold uppercase text-lg">Today</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="changeDay(-1)"
+                                        class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center transition"><i
+                                            class="fa-solid fa-chevron-left"></i></button>
+                                    <button onclick="resetDay()"
+                                        class="px-3 py-1 rounded bg-brand-orange hover:bg-orange-600 text-white text-xs font-bold uppercase transition">Today</button>
+                                    <button onclick="changeDay(1)"
+                                        class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center transition"><i
+                                            class="fa-solid fa-chevron-right"></i></button>
                                 </div>
                             </div>
-                        </a>
-                        <a href="https://amzn.to/4qckoy1" target="_blank"
-                            class="block p-4 border border-gray-700 rounded hover:border-brand-orange transition group bg-[#151535]">
-                            <div class="flex items-center gap-4">
-                                <div class="bg-white p-2 rounded w-12 h-12 flex items-center justify-center"><img
-                                        src="images/orange bartape.png" class="max-h-full"></div>
-                                <div>
-                                    <div class="font-bold text-white uppercase group-hover:text-brand-orange">Orange Bar
-                                        Tape</div>
-                                    <div class="text-xs text-gray-500">Grip & Style</div>
+
+                            <!-- Agenda List -->
+                            <div id="agenda-list" class="flex-1 overflow-y-auto space-y-3 pr-2">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Bottom: Metrics (Pie Chart + Hours) -->
+                        <div class="h-64">
+
+
+                            <!-- Shop Info -->
+                            <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 relative">
+                                <h3 class="font-display font-bold text-lg text-white uppercase mb-4">Shop Status</h3>
+                                <div class="text-left">
+                                    <h4 class="font-bold text-brand-orange uppercase text-xs tracking-wider mb-1">Hours
+                                        of
+                                        Operation</h4>
+                                    <p id="shop-hours" class="text-gray-400 text-sm whitespace-pre-line mb-4">Mon-Fri:
+                                        9am -
+                                        5pm\nSat: 10am - 2pm\nSun: Closed</p>
+                                    <button onclick="editShopHours()"
+                                        class="text-xs bg-gray-800 hover:bg-white hover:text-black text-gray-400 px-3 py-1 rounded transition">Edit
+                                        Hours</button>
                                 </div>
                             </div>
-                        </a>
-                        <button onclick="addAmazonItem()"
-                            class="w-full py-2 border border-gray-600 text-gray-400 hover:text-brand-orange hover:border-brand-orange transition uppercase font-bold text-xs rounded mb-4">+
-                            Add Amazon Product</button>
-                        <button onclick="window.open('stock.html', '_blank')"
-                            class="w-full py-3 border border-dashed border-gray-600 text-gray-400 hover:text-white hover:border-brand-orange transition uppercase font-bold text-sm rounded mt-4">Browse
-                            Stockroom</button>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- JOB BOARD VIEW -->
+            <div id="view-jobs" class="hidden absolute inset-0 p-4 md:p-6 overflow-x-auto overflow-y-hidden flex gap-6">
+                <!-- Columns generated by JS -->
+                <div class="flex gap-6 h-full min-w-max" id="kanban-board">
+                    <!-- Columns: Booked In, Waiting Approval, Waiting Parts, Working On, Bike Ready, Completed -->
+                </div>
+            </div>
+
+            <!-- INVENTORY VIEW -->
+            <div id="view-inventory" class="hidden absolute inset-0 p-4 md:p-6 overflow-auto bg-brand-dark">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+
+                    <!-- My Bench Inventory -->
+                    <div class="lg:col-span-2 bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 h-fit">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="font-display font-bold text-3xl text-white uppercase">My Bench Stock</h2>
+                            <button onclick="addItem()"
+                                class="bg-brand-orange text-white px-3 py-1 rounded text-sm uppercase font-bold hover:bg-orange-600 transition">+
+                                Add Item</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-gray-400">
+                                <thead class="bg-gray-900 text-gray-200 uppercase font-display text-lg">
+                                    <tr>
+                                        <th class="p-3 rounded-tl-lg">Item Name</th>
+                                        <th class="p-3">Qty</th>
+                                        <th class="p-3">Status</th>
+                                        <th class="p-3 rounded-tr-lg text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventory-table-body" class="divide-y divide-gray-800">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Amazon Restock -->
+                    <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 h-fit">
+                        <h2 class="font-display font-bold text-3xl text-white uppercase mb-6">Quick Restock</h2>
+                        <div class="space-y-4">
+                            <a href="https://amzn.to/4bc5L8S" target="_blank"
+                                class="block p-4 border border-gray-700 rounded hover:border-brand-orange transition group bg-[#151535]">
+                                <div class="flex items-center gap-4">
+                                    <div class="bg-white p-2 rounded w-12 h-12 flex items-center justify-center"><img
+                                            src="images/Tri-Flow-Lube.png" class="max-h-full"></div>
+                                    <div>
+                                        <div class="font-bold text-white uppercase group-hover:text-brand-orange">
+                                            Tri-Flow
+                                            Lube</div>
+                                        <div class="text-xs text-gray-500">Premium Lubricant</div>
+                                    </div>
+                                </div>
+                            </a>
+                            <a href="https://amzn.to/4qckoy1" target="_blank"
+                                class="block p-4 border border-gray-700 rounded hover:border-brand-orange transition group bg-[#151535]">
+                                <div class="flex items-center gap-4">
+                                    <div class="bg-white p-2 rounded w-12 h-12 flex items-center justify-center"><img
+                                            src="images/orange bartape.png" class="max-h-full"></div>
+                                    <div>
+                                        <div class="font-bold text-white uppercase group-hover:text-brand-orange">Orange
+                                            Bar
+                                            Tape</div>
+                                        <div class="text-xs text-gray-500">Grip & Style</div>
+                                    </div>
+                                </div>
+                            </a>
+                            <button onclick="addAmazonItem()"
+                                class="w-full py-2 border border-gray-600 text-gray-400 hover:text-brand-orange hover:border-brand-orange transition uppercase font-bold text-xs rounded mb-4">+
+                                Add Amazon Product</button>
+                            <button onclick="window.open('stock.html', '_blank')"
+                                class="w-full py-3 border border-dashed border-gray-600 text-gray-400 hover:text-white hover:border-brand-orange transition uppercase font-bold text-sm rounded mt-4">Browse
+                                Stockroom</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
         </div>
 
         <!-- CONTACTS VIEW -->
-        <div id="view-contacts" class="hidden absolute inset-0 p-8 overflow-auto bg-brand-dark">
+        <div id="view-contacts" class="hidden absolute inset-0 p-4 md:p-8 overflow-auto bg-brand-dark">
             <div class="max-w-7xl mx-auto">
-                <div class="flex justify-between items-center mb-8">
-                    <h2 class="font-display font-bold text-4xl text-white uppercase">Contacts</h2>
-                    <div class="relative">
-                        <i
-                            class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-                        <input type="text" id="contact-search" placeholder="Search customers..."
-                            onkeyup="renderContacts()"
-                            class="bg-[#050511] border border-gray-700 text-white pl-10 pr-4 py-2 rounded w-64 focus:border-brand-orange focus:outline-none">
-                    </div>
-                    <button onclick="startWalkInJob()"
-                        class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-4 py-2 rounded transition flex items-center gap-2 ml-4">
-                        <i class="fa-solid fa-plus-circle"></i> New Job
-                    </button>
-                    <!-- Import/Export -->
-                    <div class="flex gap-2 ml-2">
-                        <input type="file" id="csv-upload" accept=".csv" class="hidden"
-                            onchange="processCSVImport(this)">
-                        <button onclick="document.getElementById('csv-upload').click()"
-                            class="bg-[#151535] hover:bg-gray-700 text-gray-300 hover:text-white font-bold uppercase tracking-wider px-4 py-2 rounded transition flex items-center gap-2 text-sm border border-gray-700">
-                            <i class="fa-solid fa-file-import"></i> Import
-                        </button>
-                        <button onclick="exportContactsCSV()"
-                            class="bg-[#151535] hover:bg-gray-700 text-gray-300 hover:text-white font-bold uppercase tracking-wider px-4 py-2 rounded transition flex items-center gap-2 text-sm border border-gray-700">
-                            <i class="fa-solid fa-file-export"></i> Export
-                        </button>
+                <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-8">
+                    <h2 class="font-display font-bold text-3xl md:text-4xl text-white uppercase">Contacts</h2>
+                    <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+                        <div class="relative w-full md:w-auto">
+                            <i
+                                class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                            <input type="text" id="contact-search" placeholder="Search customers..."
+                                onkeyup="renderContacts()"
+                                class="bg-[#050511] border border-gray-700 text-white pl-10 pr-4 py-2 rounded w-full md:w-64 focus:border-brand-orange focus:outline-none">
+                        </div>
+                        <div class="flex gap-2 flex-wrap">
+                            <button onclick="startWalkInJob()"
+                                class="flex-1 md:flex-none bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-4 py-2 rounded transition flex items-center justify-center gap-2 whitespace-nowrap">
+                                <i class="fa-solid fa-plus-circle"></i> New Job
+                            </button>
+                            <!-- Import/Export -->
+                            <div class="flex gap-2 flex-1 md:flex-none">
+                                <input type="file" id="csv-upload" accept=".csv" class="hidden"
+                                    onchange="processCSVImport(this)">
+                                <button onclick="document.getElementById('csv-upload').click()"
+                                    class="flex-1 bg-[#151535] hover:bg-gray-700 text-gray-300 hover:text-white font-bold uppercase tracking-wider px-4 py-2 rounded transition flex items-center justify-center gap-2 text-sm border border-gray-700">
+                                    <i class="fa-solid fa-file-import"></i> Import
+                                </button>
+                                <button onclick="exportContactsCSV()"
+                                    class="flex-1 bg-[#151535] hover:bg-gray-700 text-gray-300 hover:text-white font-bold uppercase tracking-wider px-4 py-2 rounded transition flex items-center justify-center gap-2 text-sm border border-gray-700">
+                                    <i class="fa-solid fa-file-export"></i> Export
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl overflow-hidden">
+                <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl overflow-x-auto">
                     <table class="w-full text-left">
                         <thead
                             class="bg-[#151535] text-brand-orange font-bold uppercase text-sm border-b border-gray-700">
@@ -385,6 +414,7 @@
         </div>
 
         </div> <!-- End Absolute Wrapper -->
+        </div> <!-- End Views Container -->
     </main> <!-- End Main -->
 
     <!-- Modals -->
@@ -652,6 +682,29 @@
     </dialog>
 
     <script>
+        // --- MOBILE NAV ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+
+            if (sidebar.classList.contains('-translate-x-full')) {
+                // Open
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                // Close
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function closeSidebarMobile() {
+            if (window.innerWidth < 768) { // md breakpoint
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+                document.getElementById('sidebar-overlay').classList.add('hidden');
+            }
+        }
+
         // --- DATA & STATE ---
         const COLUMNS = [
             { id: 'booked', title: 'Booked In', color: 'border-l-4 border-gray-400' },
@@ -663,6 +716,14 @@
         ];
 
         // CHECKLIST DATA
+        const SERVICE_PRICES = {
+            "Safety Check": 60,
+            "The Tune-Up": 120,
+            "Overhaul": 250,
+            "Dream Build": 400,
+            "A La Carte": 0 // Calculated manually or per item
+        };
+
         const SERVICE_CHECKLISTS = {
             "Safety Check": {
                 "Frame/Fork": [
@@ -1281,7 +1342,7 @@
                 </div>
                 <div class="flex justify-between items-center pt-2 border-t border-gray-800/50 mt-1">
                      <div class="text-[10px] text-gray-500 font-bold uppercase"><i class="fa-regular fa-calendar mr-1"></i> ${dateStr}</div>
-                     <button onclick="deleteJob('${String(job.id)}')" class="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition px-2"><i class="fa-solid fa-trash"></i></button>
+                     <button onclick="event.stopPropagation(); deleteJob('${String(job.id)}')" class="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition px-2"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `;
             return div;
@@ -1380,7 +1441,7 @@
             // Complete Move
             if (_pendingJobMove) {
                 let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
-                const jobIndex = jobs.findIndex(j => j.id === _pendingJobMove.jobId);
+                const jobIndex = jobs.findIndex(j => String(j.id) === String(_pendingJobMove.jobId));
                 if (jobIndex > -1) {
                     jobs[jobIndex].status = 'parts';
                     localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
@@ -1432,7 +1493,8 @@
         function deleteJob(id) {
             if (confirm('Archive this job record?')) {
                 let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
-                jobs = jobs.filter(j => j.id !== id);
+                // Coerce to string for robust comparison (handles "1701" vs 1701 type mismatches)
+                jobs = jobs.filter(j => String(j.id) !== String(id));
                 localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
                 renderKanban();
             }
@@ -2219,7 +2281,8 @@
         // JOB SHEET LOGIC
         function openJobSheet(jobId) {
             const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
-            const job = jobs.find(j => j.id === jobId);
+            // Robust ID check
+            const job = jobs.find(j => String(j.id) === String(jobId));
             if (!job) return;
 
             document.getElementById('modal-customer').textContent = job.customer;
@@ -2295,12 +2358,32 @@
             const container = document.getElementById('modal-parts');
             const parts = job.parts || [];
 
+            // Calculate Totals
+            const servicePrice = SERVICE_PRICES[job.service] || SERVICE_PRICES['A La Carte'] || 0;
+            // Checks if service price is embedded in string for A La Carte custom? For now assume simplified or specific logic
+            // Actually, for A La Carte, we might want to store the price on the job object if it differs.
+            // But let's stick to base logic for now.
+
+            const partsTotal = parts.reduce((sum, p) => sum + (parseFloat(p.price) || 0), 0);
+            const subtotal = servicePrice + partsTotal;
+            const taxRate = 0.06; // 6% KY Sales Tax
+            const tax = subtotal * taxRate;
+            const total = subtotal + tax;
+
             let html = `
                 <div class="flex justify-between items-end mb-4">
-                    <h3 class="font-display font-bold text-xl uppercase text-white">Parts & Extras</h3>
+                    <h3 class="font-display font-bold text-xl uppercase text-white">Charges & Parts</h3>
                 </div>
                 
-                <div class="overflow-hidden rounded-lg border border-gray-700 mb-4">
+                <div class="overflow-hidden rounded-lg border border-gray-700 mb-4 bg-[#0B0B2B]">
+                    <!-- Service Charge Row -->
+                    <div class="flex justify-between items-center p-4 border-b border-gray-800">
+                         <div>
+                            <span class="text-white font-bold">${job.service}</span>
+                            <span class="text-xs text-gray-400 block uppercase tracking-wider">Labor Service</span>
+                         </div>
+                         <div class="font-mono text-white">$${servicePrice.toFixed(2)}</div>
+                    </div>
                     <table class="w-full text-left text-sm text-gray-400">
                         <thead class="bg-[#151535] text-xs uppercase font-bold text-gray-500">
                             <tr>
@@ -2330,6 +2413,23 @@
 
             html += `
                         </tbody>
+                        <tfoot class="bg-[#151535] border-t border-gray-700">
+                            <tr>
+                                <td class="p-4 text-right text-gray-400 uppercase text-xs font-bold">Subtotal</td>
+                                <td class="p-4 text-right font-mono text-gray-300">$${subtotal.toFixed(2)}</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td class="p-4 text-right text-gray-400 uppercase text-xs font-bold">KY Sales Tax (6%)</td>
+                                <td class="p-4 text-right font-mono text-gray-300">$${tax.toFixed(2)}</td>
+                                <td></td>
+                            </tr>
+                            <tr class="bg-gray-800/50">
+                                <td class="p-4 text-right text-brand-orange uppercase text-sm font-bold">Total Due</td>
+                                <td class="p-4 text-right font-mono text-brand-orange font-bold text-lg">$${total.toFixed(2)}</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
 
@@ -2351,7 +2451,7 @@
             if (!desc) return;
 
             let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
-            const idx = jobs.findIndex(j => j.id === jobId);
+            const idx = jobs.findIndex(j => String(j.id) === String(jobId));
             if (idx > -1) {
                 if (!jobs[idx].parts) jobs[idx].parts = [];
                 jobs[idx].parts.push({ desc, price });
@@ -2362,7 +2462,7 @@
 
         function deleteJobPart(jobId, partIndex) {
             let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
-            const idx = jobs.findIndex(j => j.id === jobId);
+            const idx = jobs.findIndex(j => String(j.id) === String(jobId));
             if (idx > -1 && jobs[idx].parts) {
                 jobs[idx].parts.splice(partIndex, 1);
                 localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
@@ -2372,7 +2472,7 @@
 
         function toggleCheckItem(jobId, itemId, isChecked) {
             let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
-            const idx = jobs.findIndex(j => j.id === jobId);
+            const idx = jobs.findIndex(j => String(j.id) === String(jobId));
             if (idx > -1) {
                 if (!jobs[idx].checklist) jobs[idx].checklist = {};
                 jobs[idx].checklist[itemId] = isChecked;
@@ -2492,8 +2592,9 @@
         }
 
         function downloadPDF(jobId) {
-            const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
+            // KY Tax Rate
+            const TAX_RATE = 0.06;
 
             const jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
             const job = jobs.find(j => j.id === jobId);
@@ -2522,27 +2623,77 @@
             doc.setFontSize(14);
             doc.text("Completed Checks:", 20, 75);
 
+            const checks = getReadableChecklist(job);
             doc.setFontSize(10);
             let y = 85;
-            const completedItems = getReadableChecklist(job);
-
-            completedItems.forEach(item => {
-                if (y > 270) {
-                    doc.addPage();
-                    y = 20;
-                }
-                doc.text(`• ${item}`, 25, y);
-                y += 7;
+            checks.forEach(check => {
+                doc.text(`[x] ${check}`, 20, y);
+                y += 6;
             });
 
-            // Footer
-            const pageHeight = doc.internal.pageSize.height;
-            doc.setFontSize(10);
-            doc.setTextColor(150);
-            doc.text("Thank you for choosing Weeecycle!", 20, pageHeight - 20);
+            // invoice Calculation
+            y += 10;
+            doc.setLineWidth(0.5);
+            doc.line(20, y, 190, y);
+            y += 10;
 
-            doc.save(`Service_Report_${job.customer.split(' ')[0]}_${new Date().toISOString().split('T')[0]}.pdf`);
+            doc.setFontSize(14);
+            doc.text("Invoice", 20, y);
+            y += 10;
+
+            const baseServicePrice = SERVICE_PRICES[job.service] || SERVICE_PRICES['A La Carte'] || 0;
+            const partsTotal = (job.parts || []).reduce((sum, p) => sum + (parseFloat(p.price) || 0), 0);
+            const subtotal = baseServicePrice + partsTotal;
+            const tax = subtotal * TAX_RATE;
+            const total = subtotal + tax;
+
+            doc.setFontSize(10);
+            doc.text("Description", 20, y);
+            doc.text("Amount", 160, y);
+            y += 6;
+
+            // Service
+            doc.text(`Service: ${job.service}`, 20, y);
+            doc.text(`$${baseServicePrice.toFixed(2)}`, 160, y);
+            y += 6;
+
+            // Parts
+            if (job.parts && job.parts.length > 0) {
+                job.parts.forEach(p => {
+                    doc.text(`Part: ${p.desc}`, 20, y);
+                    doc.text(`$${parseFloat(p.price).toFixed(2)}`, 160, y);
+                    y += 6;
+                });
+            }
+
+            y += 4;
+            doc.line(120, y, 190, y); // separator
+            y += 6;
+
+            doc.text("Subtotal:", 120, y);
+            doc.text(`$${subtotal.toFixed(2)}`, 160, y);
+            y += 6;
+
+            doc.text("KY Tax (6%):", 120, y);
+            doc.text(`$${tax.toFixed(2)}`, 160, y);
+            y += 8;
+
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text("Total Due:", 120, y);
+            doc.text(`$${total.toFixed(2)}`, 160, y);
+
+            // Footer
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(8);
+            doc.text("Weeecycle Workshop - Thank you for your business!", 20, 280);
+
+            const safeName = (job.customer || 'customer').replace(/[^a-z0-9]/gi, '_');
+            doc.save(`invoice_${safeName}_${job.id}.pdf`);
         }
+
+
+
 
         // SETTINGS & AUTH LOGIC
         async function changePassword() {
@@ -2560,10 +2711,14 @@
             }
 
             try {
+                // Get current username
+                const userStr = localStorage.getItem('workshop_user');
+                const username = userStr ? JSON.parse(userStr).username : 'admin';
+
                 const res = await fetch(`${API_URL}/auth/password`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ currentPassword: currentPass, newPassword: newPass })
+                    body: JSON.stringify({ username: username, currentPassword: currentPass, newPassword: newPass })
                 });
                 const data = await res.json();
 

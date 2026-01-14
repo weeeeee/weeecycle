@@ -237,6 +237,41 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
+// Change Password Endpoint
+app.post('/api/auth/password', async (req, res) => {
+    const { username, currentPassword, newPassword } = req.body;
+    const targetUser = username || 'admin'; // Fallback to admin if not specified
+
+    try {
+        const row = await new Promise((resolve, reject) => {
+            db.get("SELECT * FROM users WHERE username = ?", [targetUser], (err, row) => {
+                if (err) reject(err); else resolve(row);
+            });
+        });
+
+        if (!row) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const inputHash = hashPassword(currentPassword, row.salt);
+        if (inputHash !== row.hash) {
+            return res.status(401).json({ error: "Incorrect current password" });
+        }
+
+        // Generate new hash
+        const newSalt = crypto.randomBytes(SALT_LENGTH).toString('hex');
+        const newHash = hashPassword(newPassword, newSalt);
+
+        await dbRun("UPDATE users SET hash = ?, salt = ? WHERE id = ?", [newHash, newSalt, row.id]);
+
+        console.log(`Password updated for user: ${targetUser}`);
+        res.json({ success: true });
+    } catch (e) {
+        console.error("Password update error:", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // Create User Endpoint (Internal/Admin only usage recommended)
 app.post('/api/auth/register', async (req, res) => {
     const { username, password } = req.body;
