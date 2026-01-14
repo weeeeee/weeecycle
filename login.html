@@ -124,7 +124,8 @@
                     errorDiv.style.display = 'block';
                 }
             } catch (err) {
-                errorDiv.textContent = 'Server error. Is it running?';
+                console.error(err);
+                errorDiv.textContent = 'Server error: ' + err.message;
                 errorDiv.style.display = 'block';
             }
         });

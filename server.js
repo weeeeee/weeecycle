@@ -292,7 +292,7 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Lockdown Secure Server running at http://localhost:${PORT}`);
     console.log(`Database: SQLite (AES-256 Encrypted)`);
 });
