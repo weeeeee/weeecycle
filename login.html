@@ -96,12 +96,16 @@
     </div>
 
     <script>
-        const API_URL = '/api';
+        // Automatically determine the API URL based on the current hostname
+        // This ensures it works if the page is loaded via port 5500 (Live Server) or 3000 (Node)
+        const API_PORT = 3000;
+        const API_URL = `${window.location.protocol}//${window.location.hostname}:${API_PORT}/api`;
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const errorDiv = document.getElementById('error');
             errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
 
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
@@ -113,6 +117,18 @@
                     body: JSON.stringify({ username, password })
                 });
 
+                // Check for non-200 status codes
+                if (!res.ok) {
+                    const text = await res.text();
+                    try {
+                        const json = JSON.parse(text);
+                        throw new Error(json.error || `Server returned ${res.status}: ${res.statusText}`);
+                    } catch (e) {
+                        // If response wasn't JSON, throw the raw text or status
+                        throw new Error(`Server error (${res.status}): ${text || res.statusText}`);
+                    }
+                }
+
                 const data = await res.json();
 
                 if (data.success) {
@@ -120,12 +136,11 @@
                     localStorage.setItem('workshop_token', 'logged_in'); // Simple flag for now
                     window.location.href = 'workshop.html';
                 } else {
-                    errorDiv.textContent = data.error || 'Login failed';
-                    errorDiv.style.display = 'block';
+                    throw new Error(data.error || 'Login failed');
                 }
             } catch (err) {
                 console.error(err);
-                errorDiv.textContent = 'Server error: ' + err.message;
+                errorDiv.textContent = 'Connection failed: ' + err.message;
                 errorDiv.style.display = 'block';
             }
         });
