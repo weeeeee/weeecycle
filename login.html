@@ -96,7 +96,8 @@
     </div>
 
     <script>
-
+        // Use relative path to allow Nginx/Proxy to handle the request to the backend
+        const API_URL = '/api';
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -108,19 +109,20 @@
             const password = document.getElementById('password').value;
 
             // Debug Info
-            const debugInfo = document.createElement('div');
+            const debugInfo = document.querySelector('div[id^="debug-info"]') || document.createElement('div');
+            debugInfo.id = 'debug-info';
             debugInfo.style.fontSize = '10px';
             debugInfo.style.color = 'gray';
             debugInfo.style.marginTop = '10px';
-            debugInfo.textContent = `Target: ${API_URL}/auth/login`;
-            errorDiv.parentNode.insertBefore(debugInfo, errorDiv);
+            debugInfo.textContent = `Target: ${window.location.origin}/api/auth/login`;
+            if (!debugInfo.parentNode) errorDiv.parentNode.insertBefore(debugInfo, errorDiv);
 
             const btn = document.querySelector('button');
             btn.disabled = true;
             btn.textContent = 'Signing in...';
 
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
             try {
                 const res = await fetch(`${API_URL}/auth/login`, {
@@ -138,7 +140,9 @@
                         const json = JSON.parse(text);
                         throw new Error(json.error || `Server returned ${res.status}: ${res.statusText}`);
                     } catch (e) {
-                        throw new Error(`Server error (${res.status}): ${text || res.statusText}`);
+                        // Show the HTML/Text content for debugging
+                        const preview = text.substring(0, 100).replace(/</g, '&lt;');
+                        throw new Error(`Server error (${res.status}): ${preview}...`);
                     }
                 }
 
@@ -154,9 +158,9 @@
             } catch (err) {
                 console.error(err);
                 if (err.name === 'AbortError') {
-                    errorDiv.textContent = 'Connection Timed Out! (Firewall or wrong IP?)';
+                    errorDiv.textContent = 'Connection Timed Out!';
                 } else {
-                    errorDiv.textContent = 'Failed: ' + err.message;
+                    errorDiv.innerHTML = 'Failed: ' + err.message; // Allow HTML entities for preview
                 }
                 errorDiv.style.display = 'block';
             } finally {
