@@ -1694,7 +1694,8 @@
         // CONTACTS LOGIC
 
         // API HELPERS
-        const API_URL = '/api';
+        // Reverted to localhost for desktop/laptop stability
+        const API_URL = 'http://localhost:3000/api';
 
         async function fetchContacts() {
             const statusIndicator = document.getElementById('api-status');

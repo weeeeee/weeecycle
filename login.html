@@ -96,8 +96,8 @@
     </div>
 
     <script>
-        // Use relative path to allow Nginx/Proxy to handle the request to the backend
-        const API_URL = '/api';
+        // Reverted to localhost for desktop/laptop stability
+        const API_URL = 'http://localhost:3000/api';
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -108,14 +108,7 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
-            // Debug Info
-            const debugInfo = document.querySelector('div[id^="debug-info"]') || document.createElement('div');
-            debugInfo.id = 'debug-info';
-            debugInfo.style.fontSize = '10px';
-            debugInfo.style.color = 'gray';
-            debugInfo.style.marginTop = '10px';
-            debugInfo.textContent = `Target: ${window.location.origin}/api/auth/login`;
-            if (!debugInfo.parentNode) errorDiv.parentNode.insertBefore(debugInfo, errorDiv);
+            // Debug Info Removed for cleaner UI
 
             const btn = document.querySelector('button');
             btn.disabled = true;
