@@ -1,3 +1,6 @@
-node_modules
-node_modules
-node_modules
+node_modules/
+server.log
+workshop.db
+*.log
+.env
+.DS_Store
