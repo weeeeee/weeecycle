@@ -3,6 +3,8 @@ const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const crypto = require('crypto');
 const path = require('path');
+const nodemailer = require('nodemailer');
+require('dotenv').config(); // Ensure dotenv is used for config
 
 const app = express();
 const PORT = 3000;
@@ -11,6 +13,33 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '/')));
+
+// Email Transporter Setup
+let transporter;
+if (process.env.SMTP_HOST) {
+    transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT || 587,
+        secure: process.env.SMTP_PORT == 465,
+        auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS
+        }
+    });
+} else {
+    // Mock transporter for testing
+    transporter = {
+        sendMail: async (mailOptions) => {
+            console.log("\n--- MOCK EMAIL SENT (Check Server Logs) ---");
+            console.log("To:", mailOptions.to);
+            console.log("Subject:", mailOptions.subject);
+            console.log("Text:", mailOptions.text);
+            console.log("-------------------------------------------\n");
+            return { messageId: 'mock-id' };
+        }
+    };
+    console.log("SMTP config missing. Using mock email transporter.");
+}
 
 // Database Setup
 const db = new sqlite3.Database('workshop.db', (err) => {
@@ -269,6 +298,81 @@ app.post('/api/auth/password', async (req, res) => {
     } catch (e) {
         console.error("Password update error:", e);
         res.status(500).json({ error: e.message });
+    }
+});
+
+// Forgot Password Endpoint
+app.post('/api/auth/forgot-password', async (req, res) => {
+    const { identifier } = req.body; // Can be username or email
+
+    if (!identifier) return res.status(400).json({ error: "Identifier is required" });
+
+    try {
+        const user = await new Promise((resolve, reject) => {
+            db.get("SELECT * FROM users WHERE username = ? OR email = ?", [identifier, identifier], (err, row) => {
+                if (err) reject(err); else resolve(row);
+            });
+        });
+
+        if (!user || !user.email) {
+            // Act like it succeeded to prevent user enumeration
+            return res.json({ success: true, message: "If an account exists, a reset link was sent." });
+        }
+
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetExpiry = Date.now() + 3600000; // 1 hour
+
+        await dbRun("UPDATE users SET reset_token = ?, reset_expiry = ? WHERE id = ?", [resetToken, resetExpiry, user.id]);
+
+        const resetLink = `http://${req.headers.host}/reset-password.html?token=${resetToken}`;
+
+        await transporter.sendMail({
+            from: process.env.SMTP_FROM || '"Weeecycle Admin" <admin@weeecycle.net>',
+            to: user.email,
+            subject: "Password Reset Request",
+            text: `You requested a password reset. Click the following link to reset your password:\n\n${resetLink}\n\nIf you did not request this, please ignore this email.`
+        });
+
+        res.json({ success: true, message: "If an account exists, a reset link was sent." });
+
+    } catch (e) {
+        console.error("Forgot password error:", e);
+        res.status(500).json({ error: "Internal server error." });
+    }
+});
+
+// Reset Password Endpoint
+app.post('/api/auth/reset-password', async (req, res) => {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) return res.status(400).json({ error: "Token and new password are required" });
+
+    try {
+        const user = await new Promise((resolve, reject) => {
+            db.get("SELECT * FROM users WHERE reset_token = ?", [token], (err, row) => {
+                if (err) reject(err); else resolve(row);
+            });
+        });
+
+        if (!user) {
+            return res.status(400).json({ error: "Invalid or expired token" });
+        }
+
+        if (Date.now() > user.reset_expiry) {
+            return res.status(400).json({ error: "Token has expired" });
+        }
+
+        const newSalt = crypto.randomBytes(SALT_LENGTH).toString('hex');
+        const newHash = hashPassword(newPassword, newSalt);
+
+        await dbRun("UPDATE users SET hash = ?, salt = ?, reset_token = NULL, reset_expiry = NULL WHERE id = ?", [newHash, newSalt, user.id]);
+
+        console.log(`Password reset successfully for user: ${user.username}`);
+        res.json({ success: true, message: "Password has been successfully reset" });
+
+    } catch (e) {
+        console.error("Reset password error:", e);
+        res.status(500).json({ error: "Internal server error." });
     }
 });
 

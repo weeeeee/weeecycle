@@ -91,7 +91,25 @@
             <input type="password" id="password" placeholder="Password" required>
             <button type="submit">Sign In</button>
             <div id="error"></div>
+            <div style="margin-top: 15px; text-align: right;">
+                <a href="#" id="forgotPasswordLink"
+                    style="color: var(--primary); text-decoration: none; font-size: 0.9rem;">Forgot Password?</a>
+            </div>
         </form>
+
+        <form id="forgotPasswordForm" style="display: none;">
+            <p style="font-size: 0.9rem; text-align: left; margin-bottom: 15px;">Enter your username or email and we'll
+                send a reset link.</p>
+            <input type="text" id="forgotIdentifier" placeholder="Username or Email" required>
+            <button type="submit">Send Reset Link</button>
+            <div id="forgotError" style="color: #ff5555; margin-top: 10px; display: none;"></div>
+            <div id="forgotSuccess" style="color: #4CAF50; margin-top: 10px; display: none;"></div>
+            <div style="margin-top: 15px; text-align: center;">
+                <a href="#" id="backToLoginLink" style="color: #888; text-decoration: none; font-size: 0.9rem;">Back to
+                    Login</a>
+            </div>
+        </form>
+
         <div class="footer">&copy; 2026 Weeecycle</div>
     </div>
 
@@ -162,6 +180,58 @@
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Sign In';
+            }
+        });
+
+        const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+        const loginFormEl = document.getElementById('loginForm');
+        document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginFormEl.style.display = 'none';
+            forgotPasswordForm.style.display = 'block';
+            document.getElementById('forgotError').style.display = 'none';
+            document.getElementById('forgotSuccess').style.display = 'none';
+        });
+
+        document.getElementById('backToLoginLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            forgotPasswordForm.style.display = 'none';
+            loginFormEl.style.display = 'block';
+        });
+
+        forgotPasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = forgotPasswordForm.querySelector('button');
+            const errorDiv = document.getElementById('forgotError');
+            const successDiv = document.getElementById('forgotSuccess');
+            const identifier = document.getElementById('forgotIdentifier').value;
+
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+
+            try {
+                const res = await fetch(`${API_URL}/auth/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    successDiv.textContent = data.message;
+                    successDiv.style.display = 'block';
+                    forgotPasswordForm.reset();
+                } else {
+                    throw new Error(data.error || 'Failed to send reset link');
+                }
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Send Reset Link';
             }
         });
     </script>
