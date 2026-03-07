@@ -112,9 +112,12 @@
         <!-- Brand -->
         <div class="h-20 flex flex-col justify-center px-6 border-b border-gray-800 relative">
             <div class="flex flex-col">
-                <span class="font-display font-bold text-2xl tracking-widest text-white leading-none">WEEECYCLE<span
-                        class="text-brand-orange">.NET</span></span>
-                <span class="font-body text-[10px] text-brand-orange uppercase tracking-[0.2em]">Mechanic Portal</span>
+                <a href="index.html" class="hover:opacity-80 transition flex flex-col">
+                    <span class="font-display font-bold text-2xl tracking-widest text-white leading-none">WEEECYCLE<span
+                            class="text-brand-orange">.NET</span></span>
+                    <span class="font-body text-[10px] text-brand-orange uppercase tracking-[0.2em]">Mechanic
+                        Portal</span>
+                </a>
             </div>
             <button onclick="toggleSidebar()" class="absolute right-4 top-1/2 -translate-y-1/2 md:hidden text-gray-400">
                 <i class="fa-solid fa-xmark text-xl"></i>
@@ -179,7 +182,8 @@
         <!-- Mobile Header -->
         <div
             class="md:hidden h-16 bg-[#050511] border-b border-gray-800 flex items-center px-4 justify-between flex-shrink-0 z-30">
-            <span class="font-display font-bold text-xl tracking-widest text-white leading-none">WEEECYCLE</span>
+            <a href="index.html"
+                class="font-display font-bold text-xl tracking-widest text-white leading-none hover:text-brand-orange transition">WEEECYCLE</a>
             <button onclick="toggleSidebar()" class="text-white p-2">
                 <i class="fa-solid fa-bars text-2xl"></i>
             </button>
@@ -607,6 +611,27 @@
                 <p class="text-xs text-gray-500 mt-2 text-center">Merges duplicates by email and removes redundant
                     records.</p>
             </div>
+
+            <!-- Live Website Appearance Toggles -->
+            <div class="border-t border-gray-700 pt-4 mt-2">
+                <h4 class="font-bold text-lg border-b border-gray-700 pb-2 mb-4">Live Website Appearance</h4>
+                <div class="space-y-4">
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="text-sm font-bold text-gray-300">Show "The Garage" (Services)</span>
+                        <input type="checkbox" id="toggle-services"
+                            class="form-checkbox h-5 w-5 rounded text-brand-orange bg-gray-800 border-gray-700"
+                            onchange="toggleSiteSection('services', this.checked)">
+                    </label>
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="text-sm font-bold text-gray-300">Show "What Customers Say"</span>
+                        <input type="checkbox" id="toggle-reviews"
+                            class="form-checkbox h-5 w-5 rounded text-brand-orange bg-gray-800 border-gray-700"
+                            onchange="toggleSiteSection('reviews', this.checked)">
+                    </label>
+                    <p class="text-xs text-gray-500 mt-2 text-center" id="toggle-status-msg">Changes automatically sync
+                        to live website.</p>
+                </div>
+            </div>
         </div>
         <div class="bg-[#0f0f1f] p-4 flex justify-end gap-2 rounded-b-xl border-t border-gray-700">
             <button onclick="changePassword()"
@@ -702,6 +727,54 @@
             if (window.innerWidth < 768) { // md breakpoint
                 document.getElementById('sidebar').classList.add('-translate-x-full');
                 document.getElementById('sidebar-overlay').classList.add('hidden');
+            }
+        }
+
+        // --- WEBSITE CONTROLS ---
+        async function fetchSiteStatus() {
+            try {
+                const res = await fetch('/api/settings/site-status');
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('toggle-services').checked = data.status.services;
+                    document.getElementById('toggle-reviews').checked = data.status.reviews;
+                }
+            } catch (e) {
+                console.error("Could not load site status");
+            }
+        }
+
+        // Fetch it once on initial load
+        fetchSiteStatus();
+
+        async function toggleSiteSection(section, isVisible) {
+            const msgEl = document.getElementById('toggle-status-msg');
+            msgEl.textContent = 'Syncing change to live website...';
+            msgEl.classList.add('text-brand-orange');
+            msgEl.classList.remove('text-green-500');
+
+            try {
+                const res = await fetch('/api/settings/toggle-section', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ section, isVisible })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    msgEl.textContent = 'Sync complete! Site will update in ~1 minute.';
+                    msgEl.classList.remove('text-brand-orange');
+                    msgEl.classList.add('text-green-500');
+                    setTimeout(() => {
+                        msgEl.textContent = 'Changes automatically sync to live website.';
+                        msgEl.classList.remove('text-green-500');
+                    }, 5000);
+                } else {
+                    alert('Error: ' + data.error);
+                    msgEl.textContent = 'Sync failed. Check console.';
+                }
+            } catch (e) {
+                alert('Connection error');
+                msgEl.textContent = 'Sync failed.';
             }
         }
 
