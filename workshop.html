@@ -2636,7 +2636,6 @@
                     <h3 class="font-display font-bold text-xl uppercase text-white">Charges & Parts</h3>
                     <div class="flex gap-2 text-xs">
                         <button onclick="downloadDocument('${job.id}', 'estimate')" class="bg-[#151535] border border-gray-700 hover:border-brand-orange text-white uppercase px-2 py-1 rounded transition whitespace-nowrap"><i class="fa-solid fa-file-pdf mr-1"></i> Estimate PDF</button>
-                        <button onclick="downloadDocument('${job.id}', 'invoice')" class="bg-[#151535] border border-gray-700 hover:border-green-500 text-green-400 uppercase px-2 py-1 rounded transition whitespace-nowrap"><i class="fa-solid fa-file-pdf mr-1"></i> Invoice PDF</button>
                     </div>
                 </div>
                 
@@ -2736,6 +2735,7 @@
         }
 
         function downloadDocument(jobId, type) {
+            const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const TAX_RATE = 0.06;
 
@@ -2826,17 +2826,6 @@
             doc.setTextColor(255, 137, 27);
             doc.text(`$${total.toFixed(2)}`, 160, y);
             doc.setTextColor(0, 0, 0);
-
-            // Payment Link
-            y += 20;
-            doc.setFontSize(12);
-            doc.setFont(undefined, 'normal');
-            doc.text("To securely pay by credit card without any fees, please visit:", 20, y);
-            y += 8;
-
-            doc.setTextColor(0, 0, 255);
-            const paymentLink = "https://payments.found.com/invoices/invoice_cdAyrFtu4DNk";
-            doc.textWithLink(paymentLink, 20, y, { url: paymentLink });
 
             // Footer
             doc.setTextColor(0, 0, 0);
@@ -2953,6 +2942,7 @@
         }
 
         function downloadPDF(jobId) {
+            const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             // KY Tax Rate
             const TAX_RATE = 0.06;
