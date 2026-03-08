@@ -2774,10 +2774,16 @@
 
             if (method === 'email') {
                 const subject = `Weeecycle ${type === 'estimate' ? 'Estimate' : 'Invoice'} - ${job.bike}`;
-                window.location.href = `mailto:${cEmail !== 'Not provided' ? cEmail : ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                // Mailto links require \r\n (%0D%0A) for newlines on many clients
+                const mailBody = encodeURIComponent(body).replace(/%0A/g, '%0D%0A');
+                const emailStr = cEmail !== 'Not provided' ? encodeURIComponent(cEmail) : '';
+                window.location.href = `mailto:${emailStr}?subject=${encodeURIComponent(subject)}&body=${mailBody}`;
             } else if (method === 'sms') {
                 const phoneForSms = cPhone !== 'Not provided' ? cPhone.replace(/\D/g, '') : '';
-                window.location.href = `sms:${phoneForSms}?body=${encodeURIComponent(body)}`;
+                // iOS uses &body= whereas Android mostly uses ?body=
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                const separator = isIOS ? '&' : '?';
+                window.location.href = `sms:${phoneForSms}${separator}body=${encodeURIComponent(body)}`;
             }
         }
 
