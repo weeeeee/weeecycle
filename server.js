@@ -112,6 +112,7 @@ db.serialize(() => {
             name TEXT, 
             email TEXT,
             phone TEXT,
+            address TEXT,
             last_seen TEXT,
             job_count INTEGER DEFAULT 0
         )
@@ -140,7 +141,8 @@ app.get('/api/contacts', async (req, res) => {
             ...row,
             name: decrypt(row.name),
             email: decrypt(row.email),
-            phone: decrypt(row.phone)
+            phone: decrypt(row.phone),
+            address: decrypt(row.address)
         }));
         res.json(decrypted);
     } catch (e) {
@@ -149,18 +151,19 @@ app.get('/api/contacts', async (req, res) => {
 });
 
 app.post('/api/contacts', async (req, res) => {
-    const { id, name, email, phone, lastSeen, count } = req.body;
+    const { id, name, email, phone, address, lastSeen, count } = req.body;
 
     // Encrypt sensitive fields
     const encName = encrypt(name);
     const encEmail = encrypt(email);
     const encPhone = encrypt(phone);
+    const encAddress = encrypt(address);
 
     try {
         await dbRun(`
-            INSERT OR REPLACE INTO contacts (id, name, email, phone, last_seen, job_count)
-            VALUES (?, ?, ?, ?, ?, ?)
-        `, [id, encName, encEmail, encPhone, lastSeen, count || 0]);
+            INSERT OR REPLACE INTO contacts (id, name, email, phone, address, last_seen, job_count)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [id, encName, encEmail, encPhone, encAddress, lastSeen, count || 0]);
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: e.message });
