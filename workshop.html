@@ -313,37 +313,14 @@
                     </div>
 
                     <!-- Amazon Restock -->
-                    <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 h-fit">
+                    <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 h-fit max-h-[800px] flex flex-col">
                         <h2 class="font-display font-bold text-3xl text-white uppercase mb-6">Quick Restock</h2>
-                        <div class="space-y-4">
-                            <a href="https://amzn.to/4bc5L8S" target="_blank"
-                                class="block p-4 border border-gray-700 rounded hover:border-brand-orange transition group bg-[#151535]">
-                                <div class="flex items-center gap-4">
-                                    <div class="bg-white p-2 rounded w-12 h-12 flex items-center justify-center"><img
-                                            src="images/Tri-Flow-Lube.png" class="max-h-full"></div>
-                                    <div>
-                                        <div class="font-bold text-white uppercase group-hover:text-brand-orange">
-                                            Tri-Flow
-                                            Lube</div>
-                                        <div class="text-xs text-gray-500">Premium Lubricant</div>
-                                    </div>
-                                </div>
-                            </a>
-                            <a href="https://amzn.to/4qckoy1" target="_blank"
-                                class="block p-4 border border-gray-700 rounded hover:border-brand-orange transition group bg-[#151535]">
-                                <div class="flex items-center gap-4">
-                                    <div class="bg-white p-2 rounded w-12 h-12 flex items-center justify-center"><img
-                                            src="images/orange bartape.png" class="max-h-full"></div>
-                                    <div>
-                                        <div class="font-bold text-white uppercase group-hover:text-brand-orange">Orange
-                                            Bar
-                                            Tape</div>
-                                        <div class="text-xs text-gray-500">Grip & Style</div>
-                                    </div>
-                                </div>
-                            </a>
-                            <button onclick="addAmazonItem()"
-                                class="w-full py-2 border border-gray-600 text-gray-400 hover:text-brand-orange hover:border-brand-orange transition uppercase font-bold text-xs rounded mb-4">+
+                        <div id="affiliates-list" class="space-y-4 overflow-y-auto flex-1 pr-2 mb-4">
+                            <!-- Populated by JS -->
+                        </div>
+                        <div class="space-y-4 mt-auto">
+                            <button onclick="openAffiliateModal()"
+                                class="w-full py-2 border border-gray-600 text-gray-400 hover:text-brand-orange hover:border-brand-orange transition uppercase font-bold text-xs rounded">+
                                 Add Amazon Product</button>
                             <button onclick="window.open('stock.html', '_blank')"
                                 class="w-full py-3 border border-dashed border-gray-600 text-gray-400 hover:text-white hover:border-brand-orange transition uppercase font-bold text-sm rounded mt-4">Browse
@@ -689,12 +666,19 @@
         </div>
         <div class="p-6 space-y-4">
             <p class="text-sm text-gray-400">Select the part used for this job to deduct from inventory.</p>
-            <div>
-                <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Part</label>
-                <select id="inventory-select-dropdown"
-                    class="w-full bg-[#0a0a1a] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
-                    <!-- Populated by JS -->
-                </select>
+            <div class="flex gap-2 items-end">
+                <div class="flex-grow">
+                    <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Part</label>
+                    <select id="inventory-select-dropdown"
+                        class="w-full bg-[#0a0a1a] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+                <button onclick="addNewPartForJob()"
+                    class="bg-gray-800 hover:bg-brand-orange text-white px-4 py-2 rounded h-[42px] transition flex items-center justify-center font-bold"
+                    title="Add New Part to Inventory">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
             </div>
         </div>
         <div class="bg-[#0f0f1f] p-4 flex justify-end gap-2 rounded-b-xl border-t border-gray-700">
@@ -704,6 +688,42 @@
                 class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-6 py-2 rounded transition">Confirm
                 & Move</button>
         </div>
+    </dialog>
+
+    <!-- Affiliate Modal -->
+    <dialog id="affiliate-modal"
+        class="bg-[#151525] text-white p-0 rounded-xl shadow-2xl backdrop:bg-black/80 w-full max-w-md border border-gray-700">
+        <div class="border-b border-gray-700 p-4 flex justify-between items-center bg-[#0f0f1f]">
+            <h3 class="font-display font-bold text-xl uppercase tracking-wider text-brand-orange"><i
+                    class="fa-solid fa-link mr-2"></i> Affiliate Link</h3>
+            <button type="button" onclick="document.getElementById('affiliate-modal').close()"
+                class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <form id="affiliate-form" onsubmit="saveAffiliate(event)" class="p-6 space-y-4">
+            <input type="hidden" id="affiliate-id">
+            <div>
+                <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Product Title</label>
+                <input type="text" id="affiliate-title" required
+                    class="w-full bg-[#0a0a1a] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
+            </div>
+            <div>
+                <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Amazon Link</label>
+                <input type="url" id="affiliate-url" required
+                    class="w-full bg-[#0a0a1a] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
+            </div>
+            <div>
+                <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Product Image</label>
+                <input type="file" id="affiliate-image" accept="image/*"
+                    class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-white hover:file:bg-gray-700">
+                <p class="text-xs text-gray-500 mt-1" id="affiliate-image-hint">Leave blank to keep existing image</p>
+            </div>
+            <div class="pt-4 flex justify-end gap-2 border-t border-gray-700 mt-4">
+                <button type="button" onclick="document.getElementById('affiliate-modal').close()"
+                    class="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
+                <button type="submit"
+                    class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-6 py-2 rounded transition">Save</button>
+            </div>
+        </form>
     </dialog>
 
     <script>
@@ -775,6 +795,102 @@
             } catch (e) {
                 alert('Connection error');
                 msgEl.textContent = 'Sync failed.';
+            }
+        }
+
+        // --- AFFILIATES ---
+        async function loadAffiliates() {
+            try {
+                const res = await fetch('/api/affiliates');
+                const result = await res.json();
+                if (result.success) {
+                    const list = document.getElementById('affiliates-list');
+                    list.innerHTML = '';
+                    result.data.forEach(item => {
+                        list.innerHTML += `
+                            <div class="relative p-3 border border-gray-700 rounded hover:border-brand-orange transition group bg-[#151535]">
+                                <div class="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition z-10">
+                                    <button onclick="editAffiliate(${item.id}, '${item.title.replace(/'/g, "\\'")}', '${item.url}', '${item.image_path}')" class="text-blue-400 hover:text-blue-300"><i class="fa-solid fa-edit"></i></button>
+                                    <button onclick="deleteAffiliate(${item.id})" class="text-red-500 hover:text-red-400"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                                <a href="${item.url}" target="_blank" class="flex items-center gap-4 relative z-0">
+                                    <div class="bg-white p-2 rounded w-12 h-12 flex items-center justify-center flex-shrink-0"><img src="${item.image_path}" class="max-h-full object-contain"></div>
+                                    <div class="flex-1 min-w-0 pr-12">
+                                        <div class="font-bold text-white uppercase text-xs truncate">${item.title}</div>
+                                        <div class="text-[10px] text-gray-500 mt-1">Amazon Affiliate Link</div>
+                                    </div>
+                                </a>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (e) {
+                console.error("Failed to load affiliates", e);
+            }
+        }
+
+        loadAffiliates(); // call on load
+
+        function openAffiliateModal() {
+            document.getElementById('affiliate-id').value = '';
+            document.getElementById('affiliate-title').value = '';
+            document.getElementById('affiliate-url').value = '';
+            document.getElementById('affiliate-image').value = '';
+            document.getElementById('affiliate-modal').showModal();
+        }
+
+        function editAffiliate(id, title, url, image_path) {
+            document.getElementById('affiliate-id').value = id;
+            document.getElementById('affiliate-title').value = title;
+            document.getElementById('affiliate-url').value = url;
+            document.getElementById('affiliate-image').value = '';
+            document.getElementById('affiliate-modal').showModal();
+        }
+
+        async function saveAffiliate(e) {
+            e.preventDefault();
+            const id = document.getElementById('affiliate-id').value;
+            const title = document.getElementById('affiliate-title').value;
+            const url = document.getElementById('affiliate-url').value;
+            const imageFile = document.getElementById('affiliate-image').files[0];
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('url', url);
+            if (imageFile) formData.append('image', imageFile);
+
+            const method = id ? 'PUT' : 'POST';
+            const endpoint = id ? '/api/affiliates/' + id : '/api/affiliates';
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: method,
+                    body: formData
+                });
+                const result = await res.json();
+                if (result.success) {
+                    document.getElementById('affiliate-modal').close();
+                    loadAffiliates();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (err) {
+                alert('Request failed');
+            }
+        }
+
+        async function deleteAffiliate(id) {
+            if (!confirm("Are you sure you want to delete this affiliate link?")) return;
+            try {
+                const res = await fetch('/api/affiliates/' + id, { method: 'DELETE' });
+                const result = await res.json();
+                if (result.success) {
+                    loadAffiliates();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (e) {
+                alert('Request failed');
             }
         }
 
@@ -1481,6 +1597,21 @@
             modal.showModal();
         }
 
+        function addNewPartForJob() {
+            const newId = addItem();
+            if (newId) {
+                // Re-populate Dropdown
+                const select = document.getElementById('inventory-select-dropdown');
+                const inventory = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
+                select.innerHTML = '<option value="">-- Select Part --</option>';
+                inventory.forEach(item => {
+                    select.innerHTML += `<option value="${item.id}">${item.name} (Qty: ${item.qty})</option>`;
+                });
+                // Auto-select the newly added item
+                select.value = newId;
+            }
+        }
+
         function cancelPartSelection() {
             document.getElementById('inventory-selection-modal').close();
             _pendingJobMove = null;
@@ -1675,16 +1806,18 @@
 
         function addItem() {
             const name = prompt("Item Name:");
-            if (!name) return;
+            if (!name) return null;
             const qty = parseInt(prompt("Current Quantity:", "1") || "0");
             const min = parseInt(prompt("Low Stock Warning Level:", "5") || "5");
             const category = promptCategory("Other");
-            if (!category) return;
+            if (!category) return null;
 
             let items = JSON.parse(localStorage.getItem('workshop_inventory')) || [];
-            items.push({ id: Date.now(), name, qty, min, category });
+            const newId = Date.now();
+            items.push({ id: newId, name, qty, min, category });
             localStorage.setItem('workshop_inventory', JSON.stringify(items));
             renderInventory();
+            return newId;
         }
 
         function editItem(id) {
@@ -2119,7 +2252,7 @@
 
         // REPEAT CUSTOMER JOB LOGIC
         function startNewJob(contactId) {
-            const contact = _cachedContacts.find(c => c.id === contactId);
+            const contact = _contactsData.find(c => String(c.id) === String(contactId));
             if (!contact) return;
 
             // Pre-fill for Existing Customer
@@ -2198,8 +2331,8 @@
             if (!contactId && nameInput) {
                 // DEDUPLICATION CHECK
                 // Check if phone or email matches an existing contact
-                if (typeof _cachedContacts !== 'undefined') {
-                    const match = _cachedContacts.find(c =>
+                if (typeof _contactsData !== 'undefined') {
+                    const match = _contactsData.find(c =>
                         (emailInput && c.email && c.email.toLowerCase() === emailInput.toLowerCase()) ||
                         (phoneInput && c.phone === phoneInput)
                     );

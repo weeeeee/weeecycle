@@ -4,7 +4,21 @@ const sqlite3 = require('sqlite3').verbose();
 const crypto = require('crypto');
 const path = require('path');
 const nodemailer = require('nodemailer');
+const fs = require('fs');
+const { exec } = require('child_process');
+const multer = require('multer');
 require('dotenv').config(); // Ensure dotenv is used for config
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, 'images'));
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'affiliate-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
 
 const app = express();
 const PORT = 3000;
@@ -376,6 +390,108 @@ app.post('/api/auth/reset-password', async (req, res) => {
     }
 });
 
+// --- WEBSITE CONTROLS ---
+
+app.get('/api/settings/site-status', (req, res) => {
+    try {
+        const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+
+        // Define regex to match the sections
+        const servicesRegex = /<section\s+(?:[^>]*?\s+)?class="([^"]*)"[^>]*id="services"/;
+        const reviewsRegex = /<section\s+(?:[^>]*?\s+)?class="([^"]*)"[^>]*id="reviews"/;
+
+        const servicesMatch = html.match(servicesRegex);
+        const reviewsMatch = html.match(reviewsRegex);
+
+        const isServicesHidden = servicesMatch ? servicesMatch[1].includes('hidden') : false;
+        const isReviewsHidden = reviewsMatch ? reviewsMatch[1].includes('hidden') : false;
+
+        res.json({
+            success: true,
+            status: {
+                services: !isServicesHidden, // True if showing, false if hidden
+                reviews: !isReviewsHidden
+            }
+        });
+    } catch (e) {
+        console.error("Error reading site status:", e);
+        res.status(500).json({ error: "Could not read website files." });
+    }
+});
+
+app.post('/api/settings/toggle-section', (req, res) => {
+    const { section, isVisible } = req.body; // section: 'services' | 'reviews', isVisible: boolean
+    if (!['services', 'reviews'].includes(section)) return res.status(400).json({ error: "Invalid section" });
+
+    try {
+        const indexPath = path.join(__dirname, 'index.html');
+        let html = fs.readFileSync(indexPath, 'utf8');
+
+        // Regex to capture the entire opening tag ending with id="<section>" but capturing the class attribute
+        // HTML: <section class="class1 class2 hidden" id="services">
+        const regex = new RegExp(`(<section\\s+(?:[^>]*?\\s+)?class=")([^"]*)("[^>]*id="${section}")`, 'i');
+        const match = html.match(regex);
+
+        if (!match) return res.status(400).json({ error: "Could not locate section in HTML" });
+
+        const classListStr = match[2];
+        let classes = classListStr.split(' ').filter(c => c.trim() !== '');
+
+        // Add or remove 'hidden'
+        if (isVisible) {
+            classes = classes.filter(c => c !== 'hidden');
+        } else {
+            if (!classes.includes('hidden')) classes.push('hidden');
+        }
+
+        // For services also update the two navigation links 
+        // Example: <a class="hidden font-display..." href="#services">
+        if (section === 'services') {
+            const navRegexDesktop = /<a class="([^"]*)"\s*\n?\s*href="#services">/g;
+            const navRegexMobile = /<a class="([^"]*)" href="#services"/g;
+
+            html = html.replace(navRegexDesktop, (fullMatch, navClasses) => {
+                let cl = navClasses.split(' ').filter(c => c.trim() !== '');
+                if (isVisible) cl = cl.filter(c => c !== 'hidden');
+                else if (!cl.includes('hidden')) cl.unshift('hidden'); // unshift keeps it simple
+                return `<a class="${cl.join(' ')}" href="#services">`;
+            });
+
+            html = html.replace(navRegexMobile, (fullMatch, navClasses) => {
+                let cl = navClasses.split(' ').filter(c => c.trim() !== '');
+                if (isVisible) cl = cl.filter(c => c !== 'hidden');
+                else if (!cl.includes('hidden')) cl.unshift('hidden');
+                return `<a class="${cl.join(' ')}" href="#services"`;
+            });
+        }
+
+        // Replace the matched section's classes
+        const newClassString = classes.join(' ');
+        const newTag = match[1] + newClassString + match[3];
+        html = html.replace(regex, newTag);
+
+        // Save back to disk
+        fs.writeFileSync(indexPath, html, 'utf8');
+
+        // Execute git commands to push the deployment
+        console.log(`Toggled ${section} visibility -> ${isVisible}. Pushing to GitHub...`);
+
+        exec('git add index.html && git commit -m "chore: toggle visibility via workshop" && git push',
+            { cwd: __dirname }, (err, stdout, stderr) => {
+                if (err) {
+                    console.error("Git Push Failed:", stderr);
+                    return res.status(500).json({ error: "Failed to sync to GitHub." });
+                }
+                console.log("Git Push Successful.");
+                res.json({ success: true, message: "Site deployed successfully." });
+            });
+
+    } catch (e) {
+        console.error("Toggle error:", e);
+        res.status(500).json({ error: "Internal server error." });
+    }
+});
+
 // Create User Endpoint (Internal/Admin only usage recommended)
 app.post('/api/auth/register', async (req, res) => {
     const { username, password } = req.body;
@@ -393,6 +509,80 @@ app.post('/api/auth/register', async (req, res) => {
     } catch (e) {
         res.status(400).json({ error: "Username likely exists" });
     }
+});
+
+// --- AFFILIATE LINKS ---
+function syncAmazonStore() {
+    db.all("SELECT * FROM affiliates ORDER BY id ASC", [], (err, rows) => {
+        if (err) return;
+        let cardsHtml = '';
+        rows.forEach(row => {
+            cardsHtml += `
+                <div class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                    <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
+                        <img src="${row.image_path}" class="object-contain h-full w-full" alt="${row.title}">
+                    </div>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">${row.title}</h3>
+                    <a href="${row.url}" target="_blank" class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy on Amazon</a>
+                </div>`;
+        });
+
+        const htmlPath = path.join(__dirname, 'amazonstore.html');
+        let html = fs.readFileSync(htmlPath, 'utf8');
+        const regex = /(<!-- AFFILIATE_LINKS_START -->)[\s\S]*?(<!-- AFFILIATE_LINKS_END -->)/;
+        html = html.replace(regex, `$1\n${cardsHtml}\n                $2`);
+        fs.writeFileSync(htmlPath, html);
+
+        exec(`git add amazonstore.html && git commit -m "chore: sync affiliate links" && git push`, { cwd: __dirname });
+    });
+}
+
+app.get('/api/affiliates', (req, res) => {
+    db.all("SELECT * FROM affiliates ORDER BY id ASC", [], (err, rows) => {
+        if (err) res.status(500).json({ error: err.message });
+        else res.json({ success: true, data: rows });
+    });
+});
+
+app.post('/api/affiliates', upload.single('image'), (req, res) => {
+    const { title, url } = req.body;
+    let dp = req.file ? 'images/' + req.file.filename : '';
+    db.run("INSERT INTO affiliates (title, url, image_path) VALUES (?, ?, ?)", [title, url, dp], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        syncAmazonStore();
+        res.json({ success: true, id: this.lastID });
+    });
+});
+
+app.put('/api/affiliates/:id', upload.single('image'), (req, res) => {
+    const { title, url } = req.body;
+    const { id } = req.params;
+    if (req.file) {
+        let dp = 'images/' + req.file.filename;
+        db.run("UPDATE affiliates SET title = ?, url = ?, image_path = ? WHERE id = ?", [title, url, dp, id], function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            syncAmazonStore();
+            res.json({ success: true });
+        });
+    } else {
+        db.run("UPDATE affiliates SET title = ?, url = ? WHERE id = ?", [title, url, id], function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            syncAmazonStore();
+            res.json({ success: true });
+        });
+    }
+});
+
+app.delete('/api/affiliates/:id', (req, res) => {
+    const { id } = req.params;
+    db.get("SELECT image_path FROM affiliates WHERE id = ?", [id], (err, row) => {
+        if (row && row.image_path) fs.unlink(path.join(__dirname, row.image_path), () => { });
+        db.run("DELETE FROM affiliates WHERE id = ?", [id], function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            syncAmazonStore();
+            res.json({ success: true });
+        });
+    });
 });
 
 // Start Server
