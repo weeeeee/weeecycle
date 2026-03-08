@@ -344,7 +344,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
         const resetLink = `http://${req.headers.host}/reset-password.html?token=${resetToken}`;
 
         await transporter.sendMail({
-            from: process.env.SMTP_FROM || '"Weeecycle Admin" <admin@weeecycle.net>',
+            from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
             to: user.email,
             subject: "Password Reset Request",
             text: `You requested a password reset. Click the following link to reset your password:\n\n${resetLink}\n\nIf you did not request this, please ignore this email.`
