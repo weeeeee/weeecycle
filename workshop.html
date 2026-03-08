@@ -2639,9 +2639,12 @@
                 <div class="overflow-hidden rounded-lg border border-gray-700 mb-4 bg-[#0B0B2B]">
                      <!-- Service Charge Row -->
                      <div class="flex justify-between items-center p-4 border-b border-gray-800 group hover:bg-[#151535] transition">
-                          <div>
-                             <span class="text-white font-bold">${job.service}</span>
-                             <span class="text-xs text-gray-400 block uppercase tracking-wider">Labor Service</span>
+                          <div class="flex items-center gap-3">
+                             <div>
+                                <span class="text-white font-bold">${job.service}</span>
+                                <span class="text-xs text-gray-400 block uppercase tracking-wider">Labor Service</span>
+                             </div>
+                             <button onclick="editJobServiceType('${job.id}')" class="text-gray-600 hover:text-brand-orange transition opacity-0 group-hover:opacity-100"><i class="fa-solid fa-pen-to-square"></i></button>
                           </div>
                           <div class="flex items-center gap-4">
                               <div class="font-mono text-white">$${servicePrice.toFixed(2)}</div>
@@ -2722,6 +2725,32 @@
                 jobs[idx].parts.push({ desc, price });
                 localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
                 renderJobParts(jobs[idx]);
+            }
+        }
+
+        function editJobServiceType(jobId) {
+            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+            const idx = jobs.findIndex(j => String(j.id) === String(jobId));
+            if (idx > -1) {
+                const currentService = jobs[idx].service;
+                // Ideally this would be a select dropdown in a modal, but prompt works for quick edits
+                const newService = prompt("Enter new Service Type (e.g. Safety Check, Tune-Up, Overhaul, Build, A La Carte):", currentService);
+                if (newService !== null && newService.trim() !== '') {
+                    jobs[idx].service = newService.trim();
+                    // We also want to reset the price to the default for the new service, unless they specifically want to clear it.
+                    // For safety, let's clear the custom servicePrice so it recalculates based on the new service type.
+                    delete jobs[idx].servicePrice;
+                    localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+
+                    // We also need to update the main Job Sheet modal headers
+                    document.getElementById('modal-service').innerHTML = `<i class="fa-solid fa-screwdriver-wrench mr-1"></i> ${jobs[idx].service}`;
+
+                    // Re-render components
+                    renderJobParts(jobs[idx]);
+                    renderChecklist(jobs[idx]);
+                    renderDashboard(); // Update dashboard cards if open
+                    renderKanban();    // Update kanban board cards if open
+                }
             }
         }
 
