@@ -2777,13 +2777,19 @@
                 // Mailto links require \r\n (%0D%0A) for newlines on many clients
                 const mailBody = encodeURIComponent(body).replace(/%0A/g, '%0D%0A');
                 const emailStr = cEmail !== 'Not provided' ? encodeURIComponent(cEmail) : '';
-                window.location.href = `mailto:${emailStr}?subject=${encodeURIComponent(subject)}&body=${mailBody}`;
+
+                // ChromeOS handles window.open better for mailto links to trigger apps like Gmail without replacing the current tab contents
+                const uri = `mailto:${emailStr}?subject=${encodeURIComponent(subject)}&body=${mailBody}`;
+                window.open(uri, '_blank');
             } else if (method === 'sms') {
                 const phoneForSms = cPhone !== 'Not provided' ? cPhone.replace(/\D/g, '') : '';
                 // iOS uses &body= whereas Android mostly uses ?body=
                 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
                 const separator = isIOS ? '&' : '?';
-                window.location.href = `sms:${phoneForSms}${separator}body=${encodeURIComponent(body)}`;
+
+                // ChromeOS / Android Web App
+                const uri = `sms:${phoneForSms}${separator}body=${encodeURIComponent(body)}`;
+                window.open(uri, '_blank');
             }
         }
 
