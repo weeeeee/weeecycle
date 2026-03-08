@@ -2620,10 +2620,7 @@
             const parts = job.parts || [];
 
             // Calculate Totals
-            const servicePrice = SERVICE_PRICES[job.service] || SERVICE_PRICES['A La Carte'] || 0;
-            // Checks if service price is embedded in string for A La Carte custom? For now assume simplified or specific logic
-            // Actually, for A La Carte, we might want to store the price on the job object if it differs.
-            // But let's stick to base logic for now.
+            const servicePrice = job.servicePrice !== undefined ? parseFloat(job.servicePrice) : (SERVICE_PRICES[job.service] || SERVICE_PRICES['A La Carte'] || 0);
 
             const partsTotal = parts.reduce((sum, p) => sum + (parseFloat(p.price) || 0), 0);
             const subtotal = servicePrice + partsTotal;
@@ -2640,14 +2637,17 @@
                 </div>
                 
                 <div class="overflow-hidden rounded-lg border border-gray-700 mb-4 bg-[#0B0B2B]">
-                    <!-- Service Charge Row -->
-                    <div class="flex justify-between items-center p-4 border-b border-gray-800">
-                         <div>
-                            <span class="text-white font-bold">${job.service}</span>
-                            <span class="text-xs text-gray-400 block uppercase tracking-wider">Labor Service</span>
-                         </div>
-                         <div class="font-mono text-white">$${servicePrice.toFixed(2)}</div>
-                    </div>
+                     <!-- Service Charge Row -->
+                     <div class="flex justify-between items-center p-4 border-b border-gray-800 group hover:bg-[#151535] transition">
+                          <div>
+                             <span class="text-white font-bold">${job.service}</span>
+                             <span class="text-xs text-gray-400 block uppercase tracking-wider">Labor Service</span>
+                          </div>
+                          <div class="flex items-center gap-4">
+                              <div class="font-mono text-white">$${servicePrice.toFixed(2)}</div>
+                              <button onclick="editJobServicePrice('${job.id}')" class="text-gray-600 hover:text-brand-orange transition opacity-0 group-hover:opacity-100"><i class="fa-solid fa-pen-to-square"></i></button>
+                          </div>
+                     </div>
                     <table class="w-full text-left text-sm text-gray-400">
                         <thead class="bg-[#151535] text-xs uppercase font-bold text-gray-500">
                             <tr>
@@ -2667,7 +2667,8 @@
                         <tr class="group hover:bg-[#151535] transition">
                             <td class="p-4 text-white">${p.desc}</td>
                             <td class="p-4 text-right font-mono text-brand-orange">$${parseFloat(p.price).toFixed(2)}</td>
-                            <td class="p-4 text-right">
+                            <td class="p-4 text-right flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition">
+                                <button onclick="editJobPart('${job.id}', ${idx})" class="text-gray-600 hover:text-brand-orange transition"><i class="fa-solid fa-pen-to-square"></i></button>
                                 <button onclick="deleteJobPart('${job.id}', ${idx})" class="text-gray-600 hover:text-red-500 transition"><i class="fa-solid fa-trash"></i></button>
                             </td>
                         </tr>
@@ -2724,6 +2725,52 @@
             }
         }
 
+        function editJobServicePrice(jobId) {
+            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+            const idx = jobs.findIndex(j => String(j.id) === String(jobId));
+            if (idx > -1) {
+                const currentPrice = jobs[idx].servicePrice !== undefined ? jobs[idx].servicePrice : (SERVICE_PRICES[jobs[idx].service] || SERVICE_PRICES['A La Carte'] || 0);
+                const newPriceStr = prompt("Enter new price for Labor Service:", currentPrice);
+                if (newPriceStr !== null) {
+                    const newPrice = parseFloat(newPriceStr);
+                    if (!isNaN(newPrice) && newPrice >= 0) {
+                        jobs[idx].servicePrice = newPrice;
+                        localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+                        renderJobParts(jobs[idx]);
+                    } else {
+                        alert("Invalid price entered.");
+                    }
+                }
+            }
+        }
+
+        function editJobPart(jobId, partIndex) {
+            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+            const idx = jobs.findIndex(j => String(j.id) === String(jobId));
+            if (idx > -1 && jobs[idx].parts && jobs[idx].parts[partIndex]) {
+                const part = jobs[idx].parts[partIndex];
+
+                const newDesc = prompt("Edit Item Description:", part.desc);
+                if (newDesc === null) return; // Cancelled
+                if (newDesc.trim() === '') {
+                    alert("Description cannot be empty.");
+                    return;
+                }
+
+                const newPriceStr = prompt("Edit Item Price:", part.price);
+                if (newPriceStr === null) return; // Cancelled
+                const newPrice = parseFloat(newPriceStr);
+
+                if (!isNaN(newPrice) && newPrice >= 0) {
+                    jobs[idx].parts[partIndex] = { desc: newDesc.trim(), price: newPrice };
+                    localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+                    renderJobParts(jobs[idx]);
+                } else {
+                    alert("Invalid price entered.");
+                }
+            }
+        }
+
         function deleteJobPart(jobId, partIndex) {
             let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
             const idx = jobs.findIndex(j => String(j.id) === String(jobId));
@@ -2775,7 +2822,7 @@
             y += 10;
 
             // Charges & Parts
-            const baseServicePrice = SERVICE_PRICES[job.service] || SERVICE_PRICES['A La Carte'] || 0;
+            const baseServicePrice = job.servicePrice !== undefined ? parseFloat(job.servicePrice) : (SERVICE_PRICES[job.service] || SERVICE_PRICES['A La Carte'] || 0);
             const partsTotal = (job.parts || []).reduce((sum, p) => sum + (parseFloat(p.price) || 0), 0);
             const subtotal = baseServicePrice + partsTotal;
             const tax = subtotal * TAX_RATE;
@@ -2992,7 +3039,7 @@
             doc.text("Invoice", 20, y);
             y += 10;
 
-            const baseServicePrice = SERVICE_PRICES[job.service] || SERVICE_PRICES['A La Carte'] || 0;
+            const baseServicePrice = job.servicePrice !== undefined ? parseFloat(job.servicePrice) : (SERVICE_PRICES[job.service] || SERVICE_PRICES['A La Carte'] || 0);
             const partsTotal = (job.parts || []).reduce((sum, p) => sum + (parseFloat(p.price) || 0), 0);
             const subtotal = baseServicePrice + partsTotal;
             const tax = subtotal * TAX_RATE;
