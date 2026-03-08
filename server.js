@@ -47,7 +47,8 @@ if (process.env.SMTP_HOST) {
             console.log("\n--- MOCK EMAIL SENT (Check Server Logs) ---");
             console.log("To:", mailOptions.to);
             console.log("Subject:", mailOptions.subject);
-            console.log("Text:", mailOptions.text);
+            if (mailOptions.text) console.log("Text:", mailOptions.text);
+            if (mailOptions.html) console.log("HTML:", mailOptions.html);
             console.log("-------------------------------------------\n");
             return { messageId: 'mock-id' };
         }
@@ -390,6 +391,30 @@ app.post('/api/auth/reset-password', async (req, res) => {
     } catch (e) {
         console.error("Reset password error:", e);
         res.status(500).json({ error: "Internal server error." });
+    }
+});
+
+// --- COMMUNICATION ---
+app.post('/api/comm/send', async (req, res) => {
+    const { toEmail, subject, htmlBody } = req.body;
+
+    if (!toEmail || !subject || !htmlBody) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    try {
+        await transporter.sendMail({
+            from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
+            to: toEmail,
+            subject: subject,
+            html: htmlBody
+        });
+
+        console.log(`Email sent successfully to ${toEmail}`);
+        res.json({ success: true, message: "Email Sent Successfully" });
+    } catch (e) {
+        console.error("Email send error:", e);
+        res.status(500).json({ error: "Failed to send email." });
     }
 });
 

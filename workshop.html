@@ -2737,7 +2737,7 @@
             }
         }
 
-        function sendComm(jobId, type, method) {
+        async function sendComm(jobId, type, method) {
             let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
             const job = jobs.find(j => String(j.id) === String(jobId));
             if (!job) return;
@@ -2745,7 +2745,7 @@
             const contact = _contactsData.find(c => String(c.id) === String(job.contactId));
             const cName = contact ? contact.name : job.customer;
             const cPhone = (contact && contact.phone) ? contact.phone : 'Not provided';
-            const cEmail = (contact && contact.email) ? contact.email : 'Not provided';
+            let cEmail = (contact && contact.email) ? contact.email : '';
             const cAddress = (contact && contact.address) ? contact.address : 'Not provided';
 
             const servicePrice = SERVICE_PRICES[job.service] || SERVICE_PRICES['A La Carte'] || 0;
@@ -2755,39 +2755,109 @@
             const tax = subtotal * 0.06;
             const total = subtotal + tax;
 
-            let body = `Hello ${cName},\n\n`;
-            if (type === 'estimate') {
-                body += `Here is the estimate for your ${job.bike}.\n\n`;
-            } else {
-                body += `Here is the final invoice for your ${job.bike}.\n\n`;
-            }
-
-            body += `CUSTOMER DETAILS:\nName: ${cName}\nPhone: ${cPhone}\nAddress: ${cAddress}\n\n`;
-            body += `CHARGES & PARTS:\n`;
-            body += `- ${job.service}: $${servicePrice.toFixed(2)}\n`;
-            parts.forEach(p => {
-                body += `- ${p.desc}: $${parseFloat(p.price).toFixed(2)}\n`;
-            });
-
-            body += `\nSubtotal: $${subtotal.toFixed(2)}\nKY Sales Tax (6%): $${tax.toFixed(2)}\nTOTAL DUE: $${total.toFixed(2)}\n\n`;
-            body += `Thank you for choosing Weeecycle!`;
-
             if (method === 'email') {
-                const subject = `Weeecycle ${type === 'estimate' ? 'Estimate' : 'Invoice'} - ${job.bike}`;
-                // Mailto links require \r\n (%0D%0A) for newlines on many clients
-                const mailBody = encodeURIComponent(body).replace(/%0A/g, '%0D%0A');
-                const emailStr = cEmail !== 'Not provided' ? encodeURIComponent(cEmail) : '';
+                if (!cEmail || cEmail === 'Not provided') {
+                    cEmail = prompt("Customer email is missing. Please enter their email address to send the " + type + ":");
+                    if (!cEmail) {
+                        alert("Email sending cancelled. No email provided.");
+                        return;
+                    }
 
-                // ChromeOS handles window.open better for mailto links to trigger apps like Gmail without replacing the current tab contents
-                const uri = `mailto:${emailStr}?subject=${encodeURIComponent(subject)}&body=${mailBody}`;
-                window.open(uri, '_blank');
+                    // Optionally, update the contact with the new email here if desired
+                }
+
+                const subject = `Weeecycle ${type === 'estimate' ? 'Estimate' : 'Invoice'} - ${job.bike}`;
+
+                let htmlBody = `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">`;
+                htmlBody += `<h2 style="color: #FF891B; text-transform: uppercase;">Weeecycle Workshop</h2>`;
+                htmlBody += `<p>Hello ${cName},</p>`;
+
+                if (type === 'estimate') {
+                    htmlBody += `<p>Here is the estimate for your <strong>${job.bike}</strong>.</p>`;
+                } else {
+                    htmlBody += `<p>Here is the final invoice for your <strong>${job.bike}</strong>.</p>`;
+                }
+
+                htmlBody += `<div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">`;
+                htmlBody += `<h3 style="margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Customer Details</h3>`;
+                htmlBody += `<p style="margin: 5px 0;"><strong>Name:</strong> ${cName}</p>`;
+                htmlBody += `<p style="margin: 5px 0;"><strong>Phone:</strong> ${cPhone}</p>`;
+                htmlBody += `<p style="margin: 5px 0;"><strong>Address:</strong> ${cAddress}</p>`;
+                htmlBody += `</div>`;
+
+                htmlBody += `<h3 style="border-bottom: 2px solid #FF891B; padding-bottom: 5px;">Charges & Parts</h3>`;
+                htmlBody += `<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">`;
+                htmlBody += `<tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>${job.service}</strong> (Service)</td><td style="text-align: right; padding: 8px 0; border-bottom: 1px solid #eee;">$${servicePrice.toFixed(2)}</td></tr>`;
+
+                parts.forEach(p => {
+                    htmlBody += `<tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${p.desc}</td><td style="text-align: right; padding: 8px 0; border-bottom: 1px solid #eee;">$${parseFloat(p.price).toFixed(2)}</td></tr>`;
+                });
+
+                htmlBody += `<tr><td style="padding: 12px 0 8px 0; text-align: right;"><strong>Subtotal:</strong></td><td style="text-align: right; padding: 12px 0 8px 0;">$${subtotal.toFixed(2)}</td></tr>`;
+                htmlBody += `<tr><td style="padding: 8px 0; text-align: right;"><strong>KY Sales Tax (6%):</strong></td><td style="text-align: right; padding: 8px 0;">$${tax.toFixed(2)}</td></tr>`;
+                htmlBody += `<tr><td style="padding: 12px 0; text-align: right; font-size: 1.2em;"><strong>TOTAL DUE:</strong></td><td style="text-align: right; padding: 12px 0; font-size: 1.2em; color: #FF891B;"><strong>$${total.toFixed(2)}</strong></td></tr>`;
+                htmlBody += `</table>`;
+
+                const foundPaymentLink = "https://payments.found.com/invoices/invoice_cdAyrFtu4DNk";
+
+                htmlBody += `<div style="text-align: center; margin: 30px 0;">`;
+                htmlBody += `<a href="${foundPaymentLink}" style="background-color: #FF891B; color: #fff; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 1.1em; display: inline-block;">Pay with Credit Card</a>`;
+                htmlBody += `</div>`;
+
+                htmlBody += `<p>Thank you for choosing Weeecycle!</p>`;
+                htmlBody += `</div>`;
+
+                try {
+                    // Show sending toast
+                    const toast = document.createElement('div');
+                    toast.className = "fixed bottom-20 right-4 bg-blue-600 text-white px-4 py-2 rounded shadow-xl z-50 text-sm font-bold";
+                    toast.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Sending Email...`;
+                    document.body.appendChild(toast);
+
+                    const res = await fetch(`${API_URL}/comm/send`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            toEmail: cEmail,
+                            subject: subject,
+                            htmlBody: htmlBody
+                        })
+                    });
+
+                    toast.remove();
+
+                    if (res.ok) {
+                        const successToast = document.createElement('div');
+                        successToast.className = "fixed bottom-4 right-4 bg-green-600 text-white px-6 py-4 rounded shadow-2xl z-50 text-xl font-bold uppercase tracking-wide animate-bounce";
+                        successToast.innerHTML = '<i class="fa-solid fa-envelope-circle-check mr-2"></i> Email Sent!';
+                        document.body.appendChild(successToast);
+                        setTimeout(() => successToast.remove(), 4000);
+                    } else {
+                        alert("Error sending email via server.");
+                    }
+                } catch (e) {
+                    alert("Network error sending email.");
+                    console.error(e);
+                }
+
             } else if (method === 'sms') {
+                let body = `Hello ${cName},\n\n`;
+                if (type === 'estimate') body += `Here is the estimate for your ${job.bike}.\n\n`;
+                else body += `Here is the final invoice for your ${job.bike}.\n\n`;
+
+                body += `CUSTOMER DETAILS:\nName: ${cName}\nPhone: ${cPhone}\nAddress: ${cAddress}\n\n`;
+                body += `CHARGES & PARTS:\n`;
+                body += `- ${job.service}: $${servicePrice.toFixed(2)}\n`;
+                parts.forEach(p => { body += `- ${p.desc}: $${parseFloat(p.price).toFixed(2)}\n`; });
+
+                body += `\nSubtotal: $${subtotal.toFixed(2)}\nKY Sales Tax (6%): $${tax.toFixed(2)}\nTOTAL DUE: $${total.toFixed(2)}\n\n`;
+                body += `Pay here: https://payments.found.com/invoices/invoice_cdAyrFtu4DNk\n\n`;
+                body += `Thank you for choosing Weeecycle!`;
+
                 const phoneForSms = cPhone !== 'Not provided' ? cPhone.replace(/\D/g, '') : '';
-                // iOS uses &body= whereas Android mostly uses ?body=
                 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
                 const separator = isIOS ? '&' : '?';
 
-                // ChromeOS / Android Web App
                 const uri = `sms:${phoneForSms}${separator}body=${encodeURIComponent(body)}`;
                 window.open(uri, '_blank');
             }
@@ -2855,10 +2925,10 @@
                         </div>
 
                         <div class="flex gap-2 mt-2">
-                             <a href="mailto:${job.email || ''}?subject=Service Report: ${job.bike}&body=${generateReportBody(job, completedItems, '%0D%0A')}" 
+                             <button onclick="sendServiceReportEmail('${job.id}')" 
                                 class="flex-1 bg-gray-700 hover:bg-gray-600 text-white text-center py-2 rounded transition text-sm font-bold uppercase tracking-wide">
                                 <i class="fa-solid fa-envelope mr-2"></i> Email
-                             </a>
+                             </button>
                              <a href="sms:${job.phone || ''}?body=${generateReportBody(job, completedItems, '%0D%0A')}%0D%0A%0D%0AReply STOP to unsubscribe." 
                                 class="flex-1 bg-gray-700 hover:bg-gray-600 text-white text-center py-2 rounded transition text-sm font-bold uppercase tracking-wide">
                                 <i class="fa-solid fa-comment-sms mr-2"></i> SMS
@@ -2912,6 +2982,89 @@
             const itemsList = completedItems.map(k => "[x] " + k).join(newline);
             const body = `Hi ${firstName},${newline}${newline}Here is the service report for your ${job.bike}.${newline}${newline}Service: ${job.service}${newline}Date: ${new Date(job.date).toLocaleDateString()}${newline}${newline}Completed Checks:${newline}${itemsList || 'No specific checks recorded.'}${newline}${newline}Your bike is ready properly maintained!${newline}${newline}- Weeecycle Workshop`;
             return encodeURIComponent(body);
+        }
+
+        async function sendServiceReportEmail(jobId) {
+            let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+            const job = jobs.find(j => String(j.id) === String(jobId));
+            if (!job) return;
+
+            let cEmail = job.email;
+
+            // If job.email doesn't exist, try to find it from the contact
+            if (!cEmail) {
+                const contact = typeof _contactsData !== 'undefined' ? _contactsData.find(c => String(c.id) === String(job.contactId)) : null;
+                if (contact && contact.email && contact.email !== 'Not provided') {
+                    cEmail = contact.email;
+                }
+            }
+
+            if (!cEmail) {
+                cEmail = prompt("Customer email is missing. Please enter their email address to send the Service Report:");
+                if (!cEmail) {
+                    alert("Email sending cancelled. No email provided.");
+                    return;
+                }
+            }
+
+            const completedItems = getReadableChecklist(job);
+            const subject = `Service Report: ${job.bike}`;
+
+            const firstName = job.customer ? job.customer.split(' ')[0] : 'Customer';
+            const itemsList = completedItems.map(k => `<li>${k}</li>`).join('');
+
+            let htmlBody = `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">`;
+            htmlBody += `<h2 style="color: #FF891B; text-transform: uppercase;">Weeecycle Workshop</h2>`;
+            htmlBody += `<p>Hi ${firstName},</p>`;
+            htmlBody += `<p>Here is the service report for your <strong>${job.bike}</strong>.</p>`;
+
+            htmlBody += `<div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">`;
+            htmlBody += `<p style="margin: 5px 0;"><strong>Service:</strong> ${job.service}</p>`;
+            htmlBody += `<p style="margin: 5px 0;"><strong>Date:</strong> ${new Date(job.date).toLocaleDateString()}</p>`;
+            htmlBody += `</div>`;
+
+            htmlBody += `<h3 style="border-bottom: 2px solid #FF891B; padding-bottom: 5px;">Completed Checks</h3>`;
+            if (completedItems.length > 0) {
+                htmlBody += `<ul>${itemsList}</ul>`;
+            } else {
+                htmlBody += `<p>No specific checks recorded.</p>`;
+            }
+
+            htmlBody += `<p>Your bike is ready properly maintained!</p>`;
+            htmlBody += `<p>- Weeecycle Workshop</p>`;
+            htmlBody += `</div>`;
+
+            try {
+                const toast = document.createElement('div');
+                toast.className = "fixed bottom-20 right-4 bg-blue-600 text-white px-4 py-2 rounded shadow-xl z-50 text-sm font-bold";
+                toast.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Sending Email...`;
+                document.body.appendChild(toast);
+
+                const res = await fetch(`${API_URL}/comm/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        toEmail: cEmail,
+                        subject: subject,
+                        htmlBody: htmlBody
+                    })
+                });
+
+                toast.remove();
+
+                if (res.ok) {
+                    const successToast = document.createElement('div');
+                    successToast.className = "fixed bottom-4 right-4 bg-green-600 text-white px-6 py-4 rounded shadow-2xl z-50 text-xl font-bold uppercase tracking-wide animate-bounce";
+                    successToast.innerHTML = '<i class="fa-solid fa-envelope-circle-check mr-2"></i> Email Sent!';
+                    document.body.appendChild(successToast);
+                    setTimeout(() => successToast.remove(), 4000);
+                } else {
+                    alert("Error sending email via server.");
+                }
+            } catch (e) {
+                alert("Network error sending email.");
+                console.error(e);
+            }
         }
 
         function downloadPDF(jobId) {
