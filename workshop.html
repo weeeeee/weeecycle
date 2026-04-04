@@ -796,7 +796,7 @@
         // --- WEBSITE CONTROLS ---
         async function fetchSiteStatus() {
             try {
-                const res = await fetch('/api/settings/site-status');
+                const res = await fetch(`${API_URL}/settings/site-status`);
                 const data = await res.json();
                 if (data.success) {
                     document.getElementById('toggle-services').checked = data.status.services;
@@ -817,7 +817,7 @@
             msgEl.classList.remove('text-green-500');
 
             try {
-                const res = await fetch('/api/settings/toggle-section', {
+                const res = await fetch(`${API_URL}/settings/toggle-section`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ section, isVisible })
