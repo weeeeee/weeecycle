@@ -465,7 +465,8 @@
                 <p class="text-gray-300 text-lg font-light">Tools and gear I trust for my builds.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            <!-- Added id="shop-grid" for dynamic daily updates -->
+            <div id="shop-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
                 <div class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
                     <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
                         <img src="images/garmin_headlight.png" class="object-contain h-full w-full" alt="Garmin Varia Vue Headlight/Camera">
@@ -520,6 +521,52 @@
     </footer>
 
     <script>
+        // Daily Refresh Shop My Bench Script
+        document.addEventListener('DOMContentLoaded', async () => {
+            const shopGrid = document.getElementById('shop-grid');
+            if (!shopGrid) return;
+
+            try {
+                // Fetch the full catalog from the amazonstore page
+                const res = await fetch('amazonstore.html');
+                if (!res.ok) return;
+                const html = await res.text();
+                
+                // Parse the HTML to extract the affiliate cards
+                const parser = new DOMParser();
+                const doc = parser.parseString(html, 'text/html');
+                
+                // Select all the affiliate item cards from the store
+                let items = Array.from(doc.querySelectorAll('#shop .bg-\\[\\#151535\\]'));
+                
+                if (items.length >= 4) {
+                    // Use a day-of-year calculation to pick 4 items consistently for everyone on the same day
+                    const now = new Date();
+                    const start = new Date(now.getFullYear(), 0, 0);
+                    const diff = (now - start) + ((start.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000);
+                    const dayOfYear = Math.floor(diff / 86400000);
+                    
+                    // Shift the array so the items rotate sequentially every day
+                    const shiftAmount = dayOfYear % items.length;
+                    for (let i = 0; i < shiftAmount; i++) {
+                        items.push(items.shift()); // Move first item to the end
+                    }
+                    
+                    // Take the first 4 items after shifting
+                    const dailyItems = items.slice(0, 4);
+                    
+                    // Replace the fallback items with the 4 daily items
+                    shopGrid.innerHTML = '';
+                    dailyItems.forEach(item => {
+                        // Fix image paths if they are relative since amazonstore.html is in same folder, 
+                        // they can be left as is, but we ensure nodes are safely cloned
+                        shopGrid.appendChild(item.cloneNode(true));
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to load daily shop items:', e);
+            }
+        });
     </script>
 </body>
 
