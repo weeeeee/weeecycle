@@ -508,7 +508,7 @@ app.post('/api/settings/toggle-section', (req, res) => {
             { cwd: __dirname }, (err, stdout, stderr) => {
                 if (err) {
                     console.error("Git Push Failed:", stderr);
-                    return res.status(500).json({ error: "Failed to sync to GitHub." });
+                    return res.status(200).json({ success: false, error: "Settings applied locally, but failed to sync to GitHub." });
                 }
                 console.log("Git Push Successful.");
                 res.json({ success: true, message: "Site deployed successfully." });
