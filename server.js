@@ -572,22 +572,20 @@ app.get('/api/affiliates', (req, res) => {
     });
 });
 
-app.post('/api/affiliates', upload.single('image'), (req, res) => {
-    const { title, url } = req.body;
-    let dp = req.file ? 'images/' + req.file.filename : '';
-    db.run("INSERT INTO affiliates (title, url, image_path) VALUES (?, ?, ?)", [title, url, dp], function (err) {
+app.post('/api/affiliates', (req, res) => {
+    const { title, url, imageUrl } = req.body;
+    db.run("INSERT INTO affiliates (title, url, image_path) VALUES (?, ?, ?)", [title, url, imageUrl || ''], function (err) {
         if (err) return res.status(500).json({ error: err.message });
         syncAmazonStore();
         res.json({ success: true, id: this.lastID });
     });
 });
 
-app.put('/api/affiliates/:id', upload.single('image'), (req, res) => {
-    const { title, url } = req.body;
+app.put('/api/affiliates/:id', (req, res) => {
+    const { title, url, imageUrl } = req.body;
     const { id } = req.params;
-    if (req.file) {
-        let dp = 'images/' + req.file.filename;
-        db.run("UPDATE affiliates SET title = ?, url = ?, image_path = ? WHERE id = ?", [title, url, dp, id], function (err) {
+    if (imageUrl !== undefined && imageUrl !== '') {
+        db.run("UPDATE affiliates SET title = ?, url = ?, image_path = ? WHERE id = ?", [title, url, imageUrl, id], function (err) {
             if (err) return res.status(500).json({ error: err.message });
             syncAmazonStore();
             res.json({ success: true });

@@ -755,9 +755,9 @@
                     class="w-full bg-[#0a0a1a] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
             </div>
             <div>
-                <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Product Image</label>
-                <input type="file" id="affiliate-image" accept="image/*"
-                    class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-white hover:file:bg-gray-700">
+                <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Product Image Link</label>
+                <input type="url" id="affiliate-image" placeholder="https://..."
+                    class="w-full bg-[#0a0a1a] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
                 <p class="text-xs text-gray-500 mt-1" id="affiliate-image-hint">Leave blank to keep existing image</p>
             </div>
             <div class="pt-4 flex justify-end gap-2 border-t border-gray-700 mt-4">
@@ -895,12 +895,15 @@
             const id = document.getElementById('affiliate-id').value;
             const title = document.getElementById('affiliate-title').value;
             const url = document.getElementById('affiliate-url').value;
-            const imageFile = document.getElementById('affiliate-image').files[0];
+            const imageUrl = document.getElementById('affiliate-image').value;
 
-            const formData = new FormData();
-            formData.append('title', title);
-            formData.append('url', url);
-            if (imageFile) formData.append('image', imageFile);
+            const payload = {
+                title: title,
+                url: url
+            };
+            if (imageUrl) {
+                payload.imageUrl = imageUrl;
+            }
 
             const method = id ? 'PUT' : 'POST';
             const endpoint = id ? '/api/affiliates/' + id : '/api/affiliates';
@@ -908,7 +911,10 @@
             try {
                 const res = await fetch(endpoint, {
                     method: method,
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
                 });
                 const result = await res.json();
                 if (result.success) {
@@ -2524,24 +2530,7 @@
         }
 
         function addAmazonItem() {
-            const name = prompt("Product Name:");
-            if (!name) return;
-            const link = prompt("Amazon Link (Affiliate URL):");
-            if (!link) return;
-            const image = prompt("Image URL (Right click image on Amazon -> Copy Image Address):");
-
-            let stock = JSON.parse(localStorage.getItem('workshop_amazon_stock')) || [];
-            const newId = stock.length > 0 ? Math.max(...stock.map(s => s.id)) + 1 : 1;
-
-            stock.push({
-                id: newId,
-                name: name,
-                link: link,
-                image: image || "https://placehold.co/400x400?text=No+Image"
-            });
-
-            localStorage.setItem('workshop_amazon_stock', JSON.stringify(stock));
-            alert("Item added to Workshop Stockroom!");
+            openAffiliateModal();
         }
 
         function logout() {
