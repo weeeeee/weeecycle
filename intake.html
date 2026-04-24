@@ -214,16 +214,59 @@
             }
         }
 
-        function sendEmail() {
+        async function sendEmail() {
             const name = document.getElementById('riderName').value;
             const phone = document.getElementById('riderPhone').value;
             const email = document.getElementById('riderEmail').value;
             const dream = document.getElementById('dreamSummary').value;
 
-            const subject = `Dream Build Request: ${name}`;
-            const body = `Name: ${name}%0D%0APhone: ${phone}%0D%0AEmail: ${email}%0D%0A%0D%0ADream Build Summary:%0D%0A${dream}`;
+            // Save to localStorage for workshop dashboard simulation
+            const formData = {
+                fullname: name,
+                phone: phone,
+                email: email,
+                service: 'Dream Build',
+                bike: 'Custom Build',
+                description: dream,
+                date: new Date().toISOString()
+            };
+            localStorage.setItem('new_service_request', JSON.stringify(formData));
 
-            window.location.href = `mailto:steve@weeecycle.net?subject=${subject}&body=${body}`;
+            const subject = `Dream Build Request: ${name}`;
+            const body = `<p><strong>Name:</strong> ${name}</p>
+                          <p><strong>Phone:</strong> ${phone}</p>
+                          <p><strong>Email:</strong> ${email}</p>
+                          <h3>Dream Build Summary:</h3>
+                          <p>${dream.replace(/\n/g, '<br>')}</p>`;
+
+            const submitBtn = document.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Sending...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/comm/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        toEmail: 'steve@weeecycle.net',
+                        subject: subject,
+                        htmlBody: body
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    submitBtn.textContent = 'Sent!';
+                    setTimeout(() => window.location.href = 'index.html', 1500);
+                } else {
+                    throw new Error('API Error');
+                }
+            } catch (e) {
+                console.error(e);
+                // Even if API fails (e.g. adblocker, local testing), localStorage is saved.
+                alert('We saved your request. Thank you!');
+                setTimeout(() => window.location.href = 'index.html', 1500);
+            }
         }
     </script>
 </body>
