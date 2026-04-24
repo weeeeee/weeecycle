@@ -108,7 +108,9 @@
                         class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
                         <div class="absolute top-0 left-0 h-1 bg-brand-orange transition-all duration-500"
                             id="progressBar" style="width: 50%"></div>
-                        <form class="relative" id="intakeForm" onsubmit="event.preventDefault(); sendEmail();">
+                        <form class="relative" id="intakeForm" name="contact" method="POST" data-netlify="true" action="index.html">
+                            <input type="hidden" name="form-name" value="contact" />
+                            <input type="hidden" name="subject" value="New Dream Build Request - Weeecycle.net" />
                             <div class="form-step transition-all duration-500" id="step1">
                                 <h3
                                     class="text-2xl font-display font-bold text-white mb-6 uppercase flex items-center gap-2">
@@ -120,18 +122,18 @@
                                     <div><label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Full
                                             Name</label><input id="riderName"
                                             class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition"
-                                            placeholder="Eddy Merckx" required type="text" /></div>
+                                            placeholder="Eddy Merckx" required type="text" name="riderName" /></div>
                                     <div class="grid grid-cols-2 gap-4">
                                         <div><label
                                                 class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Phone</label><input
                                                 id="riderPhone"
                                                 class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition"
-                                                placeholder="XXX-XXX-XXXX" required type="tel" /></div>
+                                                placeholder="XXX-XXX-XXXX" required type="tel" name="riderPhone" /></div>
                                         <div><label
                                                 class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Email</label><input
                                                 id="riderEmail"
                                                 class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition"
-                                                placeholder="enter email address" required type="email" /></div>
+                                                placeholder="enter email address" required type="email" name="riderEmail" /></div>
                                     </div>
                                 </div>
                                 <button
@@ -154,7 +156,7 @@
                                         <textarea id="dreamSummary"
                                             class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition"
                                             placeholder="Tell us briefly what you want in your dream build"
-                                            rows="4"></textarea>
+                                            rows="4" name="dreamSummary"></textarea>
                                     </div>
                                 </div>
                                 <div class="flex gap-4 mt-8"><button
@@ -215,7 +217,9 @@
             }
         }
 
-        async function sendEmail() {
+        // Netlify Forms handles the email notification automatically.
+        // We just listen to submit to backup to localStorage 
+        document.getElementById('intakeForm').addEventListener('submit', function (e) {
             const name = document.getElementById('riderName').value;
             const phone = document.getElementById('riderPhone').value;
             const email = document.getElementById('riderEmail').value;
@@ -232,43 +236,9 @@
                 date: new Date().toISOString()
             };
             localStorage.setItem('new_service_request', JSON.stringify(formData));
-
-            const subject = `Dream Build Request: ${name}`;
-            const body = `<p><strong>Name:</strong> ${name}</p>
-                          <p><strong>Phone:</strong> ${phone}</p>
-                          <p><strong>Email:</strong> ${email}</p>
-                          <h3>Dream Build Summary:</h3>
-                          <p>${dream.replace(/\n/g, '<br>')}</p>`;
-
-            const submitBtn = document.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Sending...';
-            submitBtn.disabled = true;
-
-            try {
-                const response = await fetch('/api/comm/send', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        toEmail: 'steve@weeecycle.net',
-                        subject: subject,
-                        htmlBody: body
-                    })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    submitBtn.textContent = 'Sent!';
-                    setTimeout(() => window.location.href = 'index.html', 1500);
-                } else {
-                    throw new Error('API Error');
-                }
-            } catch (e) {
-                console.error(e);
-                // Even if API fails (e.g. adblocker, local testing), localStorage is saved.
-                alert('We saved your request. Thank you!');
-                setTimeout(() => window.location.href = 'index.html', 1500);
-            }
-        }
+            
+            // Note: form submits natively so e.preventDefault() is NOT called.
+        });
     </script>
 </body>
 
