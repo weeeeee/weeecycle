@@ -237,6 +237,22 @@
             };
             localStorage.setItem('new_service_request', JSON.stringify(formData));
             
+            // Also send to the server API so other devices get notified via SSE
+            fetch('http://localhost:3000/api/jobs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: Date.now().toString(),
+                    customer: formData.fullname,
+                    bike: formData.bike,
+                    service: formData.service,
+                    status: 'booked',
+                    date: formData.date.split('T')[0], // YYYY-MM-DD
+                    checklist: {}
+                }),
+                keepalive: true
+            }).catch(e => console.error("Could not reach API:", e));
+
             // Note: form submits natively so e.preventDefault() is NOT called.
         });
     </script>

@@ -23,6 +23,9 @@ const upload = multer({ storage: storage });
 const app = express();
 const PORT = 3000;
 
+// SSE Clients
+let sseClients = [];
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -201,6 +204,21 @@ app.post('/api/contacts/batch-delete', async (req, res) => {
     }
 });
 
+// REAL-TIME SSE ENDPOINT
+app.get('/api/stream', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    // Add this client to the stream pool
+    sseClients.push(res);
+
+    // Remove client when connection drops
+    req.on('close', () => {
+        sseClients = sseClients.filter(client => client !== res);
+    });
+});
+
 // JOBS (Basic Proxy)
 app.get('/api/jobs', async (req, res) => {
     try {
@@ -218,6 +236,12 @@ app.post('/api/jobs', async (req, res) => {
             INSERT OR REPLACE INTO jobs (id, customer, bike, service, status, date, checklist)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `, [job.id, job.customer, job.bike, job.service, job.status, job.date, JSON.stringify(job.checklist || {})]);
+        
+        // Broadcast new job to all connected SSE clients
+        sseClients.forEach(client => {
+            client.write(`data: ${JSON.stringify({ type: 'new_service_request', data: job })}\n\n`);
+        });
+
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: e.message });

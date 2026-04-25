@@ -167,12 +167,23 @@
                             </div>
 
                             <!-- Address -->
-                            <div class="md:col-span-2">
-                                <label for="address"
-                                    class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Address</label>
-                                <input type="text" id="address" name="address"
-                                    class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
-                                    placeholder="Street Address, City, Zip">
+                            <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-6 gap-4">
+                                <div class="md:col-span-6">
+                                    <label for="address" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Address</label>
+                                    <input type="text" id="address" name="address" class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition" placeholder="Street Address">
+                                </div>
+                                <div class="md:col-span-3">
+                                    <label for="city" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">City</label>
+                                    <input type="text" id="city" name="city" class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition" placeholder="City">
+                                </div>
+                                <div class="md:col-span-1">
+                                    <label for="state" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">State</label>
+                                    <input type="text" id="state" name="state" class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition" placeholder="KY">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label for="zip" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Zip Code</label>
+                                    <input type="text" id="zip" name="zip" class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition" placeholder="Zip Code">
+                                </div>
                             </div>
                         </div>
 
@@ -191,14 +202,7 @@
                             </select>
                         </div>
 
-                        <!-- Expected Time -->
-                        <div>
-                            <label for="repair-time"
-                                class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Expected
-                                Time of Repair</label>
-                            <input type="datetime-local" id="repair-time" name="repair-time"
-                                class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition [color-scheme:dark]">
-                        </div>
+
 
 
                         <!-- Make/Model -->
@@ -266,11 +270,18 @@
             // In a real app with Netlify forms, we might not want to prevent default if we want Netlify to catch it.
             // But for this "simulation" dashboard to work on localhost/same-machine, we save to localStorage.
 
+            const addr = document.getElementById('address') ? document.getElementById('address').value : '';
+            const city = document.getElementById('city') ? document.getElementById('city').value : '';
+            const state = document.getElementById('state') ? document.getElementById('state').value : '';
+            const zip = document.getElementById('zip') ? document.getElementById('zip').value : '';
+            const fullAddress = [addr, city, state, zip].filter(item => item.trim() !== '').join(', ');
+
             const formData = {
                 fullname: document.getElementById('fullname').value,
                 phone: document.getElementById('phone').value,
                 email: document.getElementById('email').value,
-                service: document.getElementById('service-menu').value,
+                address: fullAddress,
+                service: document.getElementById('service-menu') ? document.getElementById('service-menu').value : '',
                 bike: document.getElementById('bike-model').value,
                 description: document.getElementById('description').value,
                 date: new Date().toISOString()
@@ -278,6 +289,22 @@
 
             // Save to localStorage for workshop.html to pick up
             localStorage.setItem('new_service_request', JSON.stringify(formData));
+
+            // Also send to the server API so other devices get notified via SSE
+            fetch('http://localhost:3000/api/jobs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: Date.now().toString(),
+                    customer: formData.fullname,
+                    bike: formData.bike,
+                    service: formData.service,
+                    status: 'booked',
+                    date: formData.date.split('T')[0], // YYYY-MM-DD
+                    checklist: {}
+                }),
+                keepalive: true
+            }).catch(e => console.error("Could not reach API:", e));
 
             // We want the form to still actually submit to Netlify (or show a success page)
             // So we don't preventDefault() here unless we are purely testing locally without a backend.

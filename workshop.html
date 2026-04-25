@@ -450,11 +450,23 @@
                 </div>
             </div>
 
-            <div>
-                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Address</label>
-                <input type="text" id="new-job-address"
-                    class="w-full bg-[#0B0B2B] text-white rounded border border-gray-700 p-2 focus:border-brand-orange focus:outline-none placeholder-gray-600"
-                    placeholder="Optional">
+            <div class="grid grid-cols-6 gap-2">
+                <div class="col-span-6">
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Address</label>
+                    <input type="text" id="new-job-street" class="w-full bg-[#0B0B2B] text-white rounded border border-gray-700 p-2 focus:border-brand-orange focus:outline-none placeholder-gray-600" placeholder="Street Address">
+                </div>
+                <div class="col-span-3">
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">City</label>
+                    <input type="text" id="new-job-city" class="w-full bg-[#0B0B2B] text-white rounded border border-gray-700 p-2 focus:border-brand-orange focus:outline-none placeholder-gray-600" placeholder="City">
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">State</label>
+                    <input type="text" id="new-job-state" class="w-full bg-[#0B0B2B] text-white rounded border border-gray-700 p-2 focus:border-brand-orange focus:outline-none placeholder-gray-600" placeholder="KY">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Zip Code</label>
+                    <input type="text" id="new-job-zip" class="w-full bg-[#0B0B2B] text-white rounded border border-gray-700 p-2 focus:border-brand-orange focus:outline-none placeholder-gray-600" placeholder="Zip">
+                </div>
             </div>
 
             <div>
@@ -511,10 +523,23 @@
                 <input type="text" id="edit-contact-phone"
                     class="w-full bg-[#050511] border border-gray-700 rounded px-3 py-2 text-white focus:border-brand-orange focus:outline-none">
             </div>
-            <div>
-                <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Address</label>
-                <input type="text" id="edit-contact-address"
-                    class="w-full bg-[#050511] border border-gray-700 rounded px-3 py-2 text-white focus:border-brand-orange focus:outline-none">
+            <div class="grid grid-cols-6 gap-2">
+                <div class="col-span-6">
+                    <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Address</label>
+                    <input type="text" id="edit-contact-street" class="w-full bg-[#050511] border border-gray-700 rounded px-3 py-2 text-white focus:border-brand-orange focus:outline-none" placeholder="Street Address">
+                </div>
+                <div class="col-span-3">
+                    <label class="block text-brand-orange text-sm font-bold uppercase mb-1">City</label>
+                    <input type="text" id="edit-contact-city" class="w-full bg-[#050511] border border-gray-700 rounded px-3 py-2 text-white focus:border-brand-orange focus:outline-none" placeholder="City">
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-brand-orange text-sm font-bold uppercase mb-1">State</label>
+                    <input type="text" id="edit-contact-state" class="w-full bg-[#050511] border border-gray-700 rounded px-3 py-2 text-white focus:border-brand-orange focus:outline-none" placeholder="KY">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Zip Code</label>
+                    <input type="text" id="edit-contact-zip" class="w-full bg-[#050511] border border-gray-700 rounded px-3 py-2 text-white focus:border-brand-orange focus:outline-none" placeholder="Zip Code">
+                </div>
             </div>
         </div>
         <div class="p-6 border-t border-gray-700 flex justify-end gap-3 bg-[#151535]">
@@ -2208,7 +2233,11 @@
             document.getElementById('edit-contact-name').value = contact.name;
             document.getElementById('edit-contact-email').value = contact.email;
             document.getElementById('edit-contact-phone').value = contact.phone;
-            document.getElementById('edit-contact-address').value = contact.address || '';
+            const parts = (contact.address || '').split(',').map(s => s.trim());
+            document.getElementById('edit-contact-street').value = parts[0] || '';
+            document.getElementById('edit-contact-city').value = parts[1] || '';
+            document.getElementById('edit-contact-state').value = (parts[2] || '').split(' ')[0] || '';
+            document.getElementById('edit-contact-zip').value = ((parts[2] || '').split(' ')[1]) || parts[3] || '';
 
             document.getElementById('edit-contact-modal').showModal();
         }
@@ -2218,7 +2247,11 @@
             const name = document.getElementById('edit-contact-name').value;
             const email = document.getElementById('edit-contact-email').value;
             const phone = document.getElementById('edit-contact-phone').value;
-            const address = document.getElementById('edit-contact-address').value;
+            const street = document.getElementById('edit-contact-street').value;
+            const city = document.getElementById('edit-contact-city').value;
+            const state = document.getElementById('edit-contact-state').value;
+            const zip = document.getElementById('edit-contact-zip').value;
+            const address = [street, city, state, zip].filter(item => item.trim() !== '').join(', ');
 
             // Optimistic UI update
             await saveContactAPI({
@@ -2332,7 +2365,11 @@
 
             document.getElementById('new-job-email').value = contact.email || '';
             document.getElementById('new-job-phone').value = contact.phone || '';
-            document.getElementById('new-job-address').value = contact.address || '';
+            const newParts = (contact.address || '').split(',').map(s => s.trim());
+            document.getElementById('new-job-street').value = newParts[0] || '';
+            document.getElementById('new-job-city').value = newParts[1] || '';
+            document.getElementById('new-job-state').value = (newParts[2] || '').split(' ')[0] || '';
+            document.getElementById('new-job-zip').value = ((newParts[2] || '').split(' ')[1]) || newParts[3] || '';
 
             // Clear job details
             document.getElementById('new-job-bike').value = '';
@@ -2352,7 +2389,10 @@
 
             document.getElementById('new-job-email').value = '';
             document.getElementById('new-job-phone').value = '';
-            document.getElementById('new-job-address').value = '';
+            document.getElementById('new-job-street').value = '';
+            document.getElementById('new-job-city').value = '';
+            document.getElementById('new-job-state').value = '';
+            document.getElementById('new-job-zip').value = '';
             document.getElementById('new-job-bike').value = '';
             document.getElementById('new-job-service').selectedIndex = 0;
 
@@ -2376,7 +2416,11 @@
             const nameInput = document.getElementById('new-job-name').value;
             const emailInput = document.getElementById('new-job-email').value;
             const phoneInput = document.getElementById('new-job-phone').value;
-            const addressInput = document.getElementById('new-job-address').value;
+            const streetIn = document.getElementById('new-job-street').value;
+            const cityIn = document.getElementById('new-job-city').value;
+            const stateIn = document.getElementById('new-job-state').value;
+            const zipIn = document.getElementById('new-job-zip').value;
+            const addressInput = [streetIn, cityIn, stateIn, zipIn].filter(item => item.trim() !== '').join(', ');
             const bike = document.getElementById('new-job-bike').value;
             const serviceSelect = document.getElementById('new-job-service');
             let service = serviceSelect.value;
@@ -2927,15 +2971,38 @@
         }
 
         // REAL-TIME SYNC
+        if (window.EventSource) {
+            const eventSource = new EventSource(`${API_URL}/stream`);
+            eventSource.onmessage = function(event) {
+                const payload = JSON.parse(event.data);
+                if (payload.type === 'new_service_request') {
+                    const newJob = payload.data;
+                    
+                    // Add to local jobs array if not already present
+                    let jobs = JSON.parse(localStorage.getItem('workshop_jobs')) || [];
+                    if (!jobs.find(j => j.id === newJob.id)) {
+                        jobs.push(newJob);
+                        localStorage.setItem('workshop_jobs', JSON.stringify(jobs));
+                        
+                        // Show notification (Visual Toast)
+                        const toast = document.createElement('div');
+                        toast.className = "fixed bottom-4 right-4 bg-brand-orange text-white px-6 py-4 rounded shadow-2xl z-50 text-xl font-bold uppercase tracking-wide animate-bounce";
+                        toast.innerHTML = `<i class="fa-solid fa-bell mr-2"></i> New Job: ${newJob.customer}!`;
+                        document.body.appendChild(toast);
+                        
+                        setTimeout(() => toast.remove(), 7000);
+                        
+                        renderDashboard();
+                        renderKanban();
+                        renderActionRequired();
+                    }
+                }
+            };
+        }
+
         window.addEventListener('storage', (e) => {
             if (e.key === 'new_service_request') {
                 checkNewSubmissions();
-                // Show notification
-                const toast = document.createElement('div');
-                toast.className = "fixed bottom-4 right-4 bg-brand-orange text-white px-6 py-4 rounded shadow-2xl z-50 text-xl font-bold uppercase tracking-wide animate-bounce";
-                toast.innerHTML = '<i class="fa-solid fa-bell mr-2"></i> New Job Received!';
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 5000);
             }
         });
 
