@@ -486,7 +486,21 @@
                     <option value="Dream Build">Dream Build</option>
                     <option value="A La Carte">A La Carte</option>
                 </select>
-                <input type="text" id="new-job-custom-service" placeholder="Specify Service (e.g. Wheel True)"
+                <select id="new-job-custom-service" onchange="toggleAlaCarteOther()" class="w-full bg-[#0B0B2B] text-white p-3 rounded border border-gray-700 focus:border-brand-orange outline-none mb-3 font-mono text-sm hidden">
+                    <option value="" disabled selected>Select Ala Carte Service</option>
+                    <option value="Gear indexing">Gear indexing ($20.00)</option>
+                    <option value="Tubeless tire setup (labor only)">Tubeless tire setup (labor only) ($30.00)</option>
+                    <option value="Tire tubed setup">Tire tubed setup ($10.00)</option>
+                    <option value="Pedal Install">Pedal Install ($5.00)</option>
+                    <option value="Brake adjustments">Brake adjustments ($10.00)</option>
+                    <option value="Shift adjustments">Shift adjustments ($15.00)</option>
+                    <option value="Disassemble / Assemble bike for shipping">Disassemble / Assemble bike for shipping ($125.00)</option>
+                    <option value="Chain installation">Chain installation ($10.00)</option>
+                    <option value="Bike assembly from box - Single speed (child's bike)">Bike assembly from box - Single speed (child's bike) ($50.00)</option>
+                    <option value="Bike assembly from box - Multi Speed bike">Bike assembly from box - Multi Speed bike ($80.00)</option>
+                    <option value="Other">Other (Priced as quoted)</option>
+                </select>
+                <input type="text" id="new-job-custom-other" placeholder="Specify Other Service"
                     class="w-full bg-[#0B0B2B] text-white p-3 rounded border border-gray-700 focus:border-brand-orange outline-none mb-3 font-mono text-sm hidden">
             </div>
         </div>
@@ -985,7 +999,17 @@
             "The Tune-Up": 75.00,
             "Overhaul": 125.00,
             "Dream Build": 400,
-            "A La Carte": 0 // Calculated manually or per item
+            "A La Carte": 0, // Calculated manually or per item
+            "A La Carte - Gear indexing": 20.00,
+            "A La Carte - Tubeless tire setup (labor only)": 30.00,
+            "A La Carte - Tire tubed setup": 10.00,
+            "A La Carte - Pedal Install": 5.00,
+            "A La Carte - Brake adjustments": 10.00,
+            "A La Carte - Shift adjustments": 15.00,
+            "A La Carte - Disassemble / Assemble bike for shipping": 125.00,
+            "A La Carte - Chain installation": 10.00,
+            "A La Carte - Bike assembly from box - Single speed (child's bike)": 50.00,
+            "A La Carte - Bike assembly from box - Multi Speed bike": 80.00
         };
 
         const SERVICE_CHECKLISTS = {
@@ -2402,12 +2426,27 @@
         function toggleCustomService() {
             const notify = document.getElementById('new-job-service');
             const custom = document.getElementById('new-job-custom-service');
+            const other = document.getElementById('new-job-custom-other');
             if (notify.value === 'A La Carte') {
                 custom.classList.remove('hidden');
                 custom.focus();
             } else {
                 custom.classList.add('hidden');
                 custom.value = '';
+                other.classList.add('hidden');
+                other.value = '';
+            }
+        }
+
+        function toggleAlaCarteOther() {
+            const custom = document.getElementById('new-job-custom-service');
+            const other = document.getElementById('new-job-custom-other');
+            if (custom.value === 'Other') {
+                other.classList.remove('hidden');
+                other.focus();
+            } else {
+                other.classList.add('hidden');
+                other.value = '';
             }
         }
 
@@ -2427,13 +2466,23 @@
 
             if (service === 'A La Carte') {
                 const custom = document.getElementById('new-job-custom-service').value.trim();
-                if (custom) {
-                    service = `A La Carte: ${custom}`;
+                let exactService = "";
+                if (custom === 'Other') {
+                    const customOther = document.getElementById('new-job-custom-other').value.trim();
+                    if (!customOther) {
+                        alert("Please enter a custom service description.");
+                        document.getElementById('new-job-custom-other').focus();
+                        return;
+                    }
+                    exactService = `A La Carte: Other - ${customOther}`;
+                } else if (custom) {
+                    exactService = `A La Carte - ${custom}`; // Matches SERVICE_PRICES perfectly
                 } else {
-                    alert("Please enter a custom service description.");
-                    document.getElementById('new-job-custom-service').focus();
-                    return;
+                     alert("Please select an Ala Carte service.");
+                     document.getElementById('new-job-custom-service').focus();
+                     return;
                 }
+                service = exactService;
             }
 
             if (!bike || !service) {
