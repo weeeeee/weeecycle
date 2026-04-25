@@ -192,14 +192,31 @@
                             <label for="service-menu"
                                 class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">The
                                 Menu Selection</label>
-                            <select id="service-menu" name="service-menu"
+                            <select id="service-menu" name="service-menu" onchange="toggleCustomerAlaCarte()"
                                 class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition">
                                 <option value="Safety Check">1. Safety Check</option>
                                 <option value="The Tune-Up">2. The Tune-Up</option>
-                                <option value="The Overhaul">3. The Overhaul</option>
+                                <option value="Overhaul">3. The Overhaul</option>
                                 <option value="Dream Build">4. Dream Build</option>
-                                <option value="Al A Carte">5. Al A Carte</option>
+                                <option value="A La Carte">5. A La Carte</option>
                             </select>
+
+                            <select id="contact-custom-service" onchange="toggleCustomerAlaCarteOther()" class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition mt-3 hidden">
+                                <option value="" disabled selected>Select A La Carte Service</option>
+                                <option value="Gear indexing">Gear indexing</option>
+                                <option value="Tubeless tire setup (labor only)">Tubeless tire setup (labor only)</option>
+                                <option value="Tire tubed setup">Tire tubed setup</option>
+                                <option value="Pedal Install">Pedal Install</option>
+                                <option value="Brake adjustments">Brake adjustments</option>
+                                <option value="Shift adjustments">Shift adjustments</option>
+                                <option value="Disassemble / Assemble bike for shipping">Disassemble / Assemble bike for shipping</option>
+                                <option value="Chain installation">Chain installation</option>
+                                <option value="Bike assembly from box - Single speed (child's bike)">Bike assembly from box - Single speed (child's bike)</option>
+                                <option value="Bike assembly from box - Multi Speed bike">Bike assembly from box - Multi Speed bike</option>
+                                <option value="Other">Other (Please describe)</option>
+                            </select>
+                            <input type="text" id="contact-custom-other" placeholder="Specify Other Service"
+                                class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition mt-3 hidden">
                         </div>
 
 
@@ -265,6 +282,33 @@
             }
         });
 
+        function toggleCustomerAlaCarte() {
+            const notify = document.getElementById('service-menu');
+            const custom = document.getElementById('contact-custom-service');
+            const other = document.getElementById('contact-custom-other');
+            if (notify.value === 'A La Carte') {
+                custom.classList.remove('hidden');
+                custom.focus();
+            } else {
+                custom.classList.add('hidden');
+                custom.value = '';
+                other.classList.add('hidden');
+                other.value = '';
+            }
+        }
+
+        function toggleCustomerAlaCarteOther() {
+            const custom = document.getElementById('contact-custom-service');
+            const other = document.getElementById('contact-custom-other');
+            if (custom.value === 'Other') {
+                other.classList.remove('hidden');
+                other.focus();
+            } else {
+                other.classList.add('hidden');
+                other.value = '';
+            }
+        }
+
         // Intercept form submission to simulate database push
         document.getElementById('contactForm').addEventListener('submit', function (e) {
             // In a real app with Netlify forms, we might not want to prevent default if we want Netlify to catch it.
@@ -276,12 +320,34 @@
             const zip = document.getElementById('zip') ? document.getElementById('zip').value : '';
             const fullAddress = [addr, city, state, zip].filter(item => item.trim() !== '').join(', ');
 
+            let service = document.getElementById('service-menu') ? document.getElementById('service-menu').value : '';
+            if (service === 'A La Carte') {
+                const custom = document.getElementById('contact-custom-service').value.trim();
+                if (custom === 'Other') {
+                    const customOther = document.getElementById('contact-custom-other').value.trim();
+                    if (!customOther) {
+                        e.preventDefault();
+                        alert("Please enter a custom service description.");
+                        document.getElementById('contact-custom-other').focus();
+                        return;
+                    }
+                    service = `A La Carte: Other - ${customOther}`;
+                } else if (custom) {
+                    service = `A La Carte - ${custom}`;
+                } else {
+                     e.preventDefault();
+                     alert("Please select an Ala Carte service.");
+                     document.getElementById('contact-custom-service').focus();
+                     return;
+                }
+            }
+
             const formData = {
                 fullname: document.getElementById('fullname').value,
                 phone: document.getElementById('phone').value,
                 email: document.getElementById('email').value,
                 address: fullAddress,
-                service: document.getElementById('service-menu') ? document.getElementById('service-menu').value : '',
+                service: service,
                 bike: document.getElementById('bike-model').value,
                 description: document.getElementById('description').value,
                 date: new Date().toISOString()
