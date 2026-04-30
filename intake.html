@@ -223,6 +223,41 @@
                                         </select>
                                     </div>
 
+                                    <!-- Specific Frame Selection (Conditional) -->
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-specific-frame">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Alloy Frame</label>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <!-- Frame 1 -->
+                                            <div class="frame-card bg-brand-dark border border-gray-700 rounded-lg p-3 flex flex-col gap-2 transition hover:border-brand-orange cursor-pointer">
+                                                <img src="/images/alloy_placeholder.png" alt="Alloy Frame 1" class="w-full h-32 object-cover rounded bg-gray-800">
+                                                <div class="text-white font-bold text-sm">Aero Alloy Mk1</div>
+                                                <a href="#" target="_blank" class="text-xs text-blue-400 hover:text-blue-300">View on Amazon</a>
+                                                <button type="button" class="mt-auto bg-gray-700 text-white text-xs py-2 rounded hover:bg-brand-orange transition" onclick="selectSpecificFrame('Aero Alloy Mk1', this)">Select Frame</button>
+                                            </div>
+                                            <!-- Frame 2 -->
+                                            <div class="frame-card bg-brand-dark border border-gray-700 rounded-lg p-3 flex flex-col gap-2 transition hover:border-brand-orange cursor-pointer">
+                                                <img src="/images/alloy_placeholder.png" alt="Alloy Frame 2" class="w-full h-32 object-cover rounded bg-gray-800">
+                                                <div class="text-white font-bold text-sm">Endurance Alloy Pro</div>
+                                                <a href="#" target="_blank" class="text-xs text-blue-400 hover:text-blue-300">View on Amazon</a>
+                                                <button type="button" class="mt-auto bg-gray-700 text-white text-xs py-2 rounded hover:bg-brand-orange transition" onclick="selectSpecificFrame('Endurance Alloy Pro', this)">Select Frame</button>
+                                            </div>
+                                            <!-- Frame 3 -->
+                                            <div class="frame-card bg-brand-dark border border-gray-700 rounded-lg p-3 flex flex-col gap-2 transition hover:border-brand-orange cursor-pointer">
+                                                <img src="/images/alloy_placeholder.png" alt="Alloy Frame 3" class="w-full h-32 object-cover rounded bg-gray-800">
+                                                <div class="text-white font-bold text-sm">Sprint Alloy 500</div>
+                                                <a href="#" target="_blank" class="text-xs text-blue-400 hover:text-blue-300">View on Amazon</a>
+                                                <button type="button" class="mt-auto bg-gray-700 text-white text-xs py-2 rounded hover:bg-brand-orange transition" onclick="selectSpecificFrame('Sprint Alloy 500', this)">Select Frame</button>
+                                            </div>
+                                            <!-- Frame 4 -->
+                                            <div class="frame-card bg-brand-dark border border-gray-700 rounded-lg p-3 flex flex-col gap-2 transition hover:border-brand-orange cursor-pointer">
+                                                <img src="/images/alloy_placeholder.png" alt="Alloy Frame 4" class="w-full h-32 object-cover rounded bg-gray-800">
+                                                <div class="text-white font-bold text-sm">Crit Alloy Team</div>
+                                                <a href="#" target="_blank" class="text-xs text-blue-400 hover:text-blue-300">View on Amazon</a>
+                                                <button type="button" class="mt-auto bg-gray-700 text-white text-xs py-2 rounded hover:bg-brand-orange transition" onclick="selectSpecificFrame('Crit Alloy Team', this)">Select Frame</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <!-- Handlebar -->
                                     <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-handlebar">
                                         <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Handlebar</label>
@@ -385,11 +420,43 @@
             }
         }
 
+        let specificFrameChoice = "";
+
         function showNextField(currentFieldId, nextFieldId) {
             // Highlight current SVG part
             const svgPart = document.getElementById('svg-' + currentFieldId);
             if (svgPart) {
                 svgPart.classList.add('highlight');
+            }
+
+            // Check if we need to show the specific frame gallery
+            if (currentFieldId === 'frame') {
+                const frameValue = document.getElementById('spec-frame').value;
+                if (frameValue === 'Road Alloy') {
+                    // Show gallery instead of nextField
+                    const gallery = document.getElementById('field-specific-frame');
+                    if (gallery && gallery.classList.contains('hidden')) {
+                        gallery.classList.remove('hidden');
+                        setTimeout(() => {
+                            gallery.classList.remove('opacity-0');
+                        }, 50);
+                    }
+                    
+                    // If they previously selected a specific frame but changed the dropdown back to Road Alloy, 
+                    // we need to revalidate.
+                    validateForm();
+                    return; // Stop here, wait for them to click a frame in the gallery
+                } else {
+                    // If they changed to something else, hide the gallery and clear selection
+                    const gallery = document.getElementById('field-specific-frame');
+                    if (gallery && !gallery.classList.contains('hidden')) {
+                        gallery.classList.add('opacity-0');
+                        setTimeout(() => {
+                            gallery.classList.add('hidden');
+                        }, 500);
+                    }
+                    specificFrameChoice = "";
+                }
             }
 
             // Show next field
@@ -406,6 +473,27 @@
             validateForm();
         }
 
+        function selectSpecificFrame(frameName, element) {
+            specificFrameChoice = frameName;
+            
+            // Visual highlight for the selected card
+            document.querySelectorAll('.frame-card').forEach(card => {
+                card.classList.remove('ring-2', 'ring-brand-orange');
+            });
+            element.closest('.frame-card').classList.add('ring-2', 'ring-brand-orange');
+
+            // Now show the Handlebar field
+            const nextField = document.getElementById('field-handlebar');
+            if (nextField && nextField.classList.contains('hidden')) {
+                nextField.classList.remove('hidden');
+                setTimeout(() => {
+                    nextField.classList.remove('opacity-0');
+                }, 50);
+            }
+            
+            validateForm();
+        }
+
         function validateForm() {
             // "Other" is optional, the rest are required physical parts
             const reqs = ['spec-frame', 'spec-handlebar', 'spec-stem', 'spec-wheelset', 'spec-groupset', 'spec-seatpost', 'spec-saddle', 'spec-tires'];
@@ -413,6 +501,11 @@
             reqs.forEach(id => {
                 const el = document.getElementById(id);
                 if (!el || !el.value) {
+                    complete = false;
+                }
+                
+                // Extra check for Road Alloy
+                if (id === 'spec-frame' && el && el.value === 'Road Alloy' && !specificFrameChoice) {
                     complete = false;
                 }
             });
@@ -452,7 +545,7 @@
             
             // Collect all build specs
             const specs = {
-                Frame: document.getElementById('spec-frame').value,
+                Frame: specificFrameChoice ? specificFrameChoice : document.getElementById('spec-frame').value,
                 Handlebar: document.getElementById('spec-handlebar').value,
                 Stem: document.getElementById('spec-stem').value,
                 Wheelset: document.getElementById('spec-wheelset').value,
