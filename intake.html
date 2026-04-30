@@ -215,15 +215,14 @@
                                     <div class="spec-field" id="field-frame">
                                         <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Frame</label>
                                         <select id="spec-frame" name="specFrame" onchange="showNextField('frame', 'handlebar')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
-                                            <option value="" disabled selected>Select Frame Type...</option>
-                                            <option value="Carbon Frame">Carbon Frame</option>
-                                            <option value="Alloy Frame">Alloy Frame</option>
+                                            <option value="" disabled selected>Select Frame...</option>
+                                            <option value="Frame">Frame</option>
                                         </select>
                                     </div>
 
                                     <!-- Specific Frame Selection (Conditional) -->
                                     <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-specific-frame">
-                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Alloy Frame</label>
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Frame</label>
                                         <div class="grid grid-cols-2 gap-4" id="specific-frames-grid">
                                             <!-- Dynamically populated from localStorage via JS -->
                                         </div>
@@ -439,7 +438,7 @@
             // Check if we need to show the specific frame gallery
             if (currentFieldId === 'frame') {
                 const frameValue = document.getElementById('spec-frame').value;
-                if (frameValue === 'Alloy Frame') {
+                if (frameValue === 'Frame') {
                     // Show gallery instead of nextField
                     const gallery = document.getElementById('field-specific-frame');
                     if (gallery && gallery.classList.contains('hidden')) {
@@ -449,7 +448,7 @@
                         }, 50);
                     }
                     
-                    // If they previously selected a specific frame but changed the dropdown back to Alloy Frame, 
+                    // If they previously selected a specific frame but changed the dropdown back to Frame, 
                     // we need to revalidate.
                     validateForm();
                     return; // Stop here, wait for them to click a frame in the gallery
@@ -511,8 +510,8 @@
                     complete = false;
                 }
                 
-                // Extra check for Alloy Frame
-                if (id === 'spec-frame' && el && el.value === 'Alloy Frame' && !specificFrameChoice) {
+                // Extra check for Frame
+                if (id === 'spec-frame' && el && el.value === 'Frame' && !specificFrameChoice) {
                     complete = false;
                 }
             });
