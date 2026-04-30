@@ -2795,10 +2795,26 @@
                 </div>
 
                 <!-- Add New Part Form -->
-                <div class="flex gap-2">
-                    <input type="text" id="part-desc" placeholder="Add Item (e.g. Inner Tube)" class="flex-grow bg-[#151535] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
-                    <input type="number" id="part-price" placeholder="0.00" class="w-32 bg-[#151535] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none font-mono">
-                    <button onclick="addJobPart('${job.id}')" class="bg-gray-700 hover:bg-brand-orange text-white px-4 py-2 rounded transition font-bold"><i class="fa-solid fa-plus"></i></button>
+                <div class="flex flex-col gap-2 mb-2 mt-4">
+                    <select id="quick-add-service" onchange="if(this.value==='other'){ document.getElementById('part-desc').value=''; document.getElementById('part-price').value=''; document.getElementById('part-desc').focus(); } else { document.getElementById('part-desc').value = this.options[this.selectedIndex].dataset.name; document.getElementById('part-price').value = this.value; } this.value='';" class="w-full bg-[#151535] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none font-mono text-sm">
+                        <option value="" disabled selected>+ Quick Add Service Item...</option>
+                        <option value="20.00" data-name="Gear indexing">Gear indexing ($20.00)</option>
+                        <option value="30.00" data-name="Tubeless tire setup (labor only)">Tubeless tire setup (labor only) ($30.00)</option>
+                        <option value="10.00" data-name="Tire tubed setup">Tire tubed setup ($10.00)</option>
+                        <option value="5.00" data-name="Pedal Install">Pedal Install ($5.00)</option>
+                        <option value="10.00" data-name="Brake adjustments">Brake adjustments ($10.00)</option>
+                        <option value="15.00" data-name="Shift adjustments">Shift adjustments ($15.00)</option>
+                        <option value="125.00" data-name="Disassemble / Assemble bike for shipping">Disassemble / Assemble bike for shipping ($125.00)</option>
+                        <option value="10.00" data-name="Chain installation">Chain installation ($10.00)</option>
+                        <option value="50.00" data-name="Bike assembly from box - Single speed (child's bike)">Bike assembly from box - Single speed (child's bike) ($50.00)</option>
+                        <option value="80.00" data-name="Bike assembly from box - Multi Speed bike">Bike assembly from box - Multi Speed bike ($80.00)</option>
+                        <option value="other">Other (Custom Service & Pricing)</option>
+                    </select>
+                    <div class="flex gap-2">
+                        <input type="text" id="part-desc" placeholder="Add Item (e.g. Inner Tube)" class="flex-grow bg-[#151535] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
+                        <input type="number" id="part-price" placeholder="0.00" class="w-32 bg-[#151535] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none font-mono">
+                        <button onclick="addJobPart('${job.id}')" class="bg-gray-700 hover:bg-brand-orange text-white px-4 py-2 rounded transition font-bold"><i class="fa-solid fa-plus"></i></button>
+                    </div>
                 </div>
             `;
 
