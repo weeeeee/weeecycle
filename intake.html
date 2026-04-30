@@ -226,35 +226,8 @@
                                     <!-- Specific Frame Selection (Conditional) -->
                                     <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-specific-frame">
                                         <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Alloy Frame</label>
-                                        <div class="grid grid-cols-2 gap-4">
-                                            <!-- Frame 1 -->
-                                            <div class="frame-card bg-brand-dark border border-gray-700 rounded-lg p-3 flex flex-col gap-2 transition hover:border-brand-orange cursor-pointer">
-                                                <img src="/images/alloy_placeholder.png" alt="Alloy Frame 1" class="w-full h-32 object-cover rounded bg-gray-800">
-                                                <div class="text-white font-bold text-sm">Aero Alloy Mk1</div>
-                                                <a href="#" target="_blank" class="text-xs text-blue-400 hover:text-blue-300">View on Amazon</a>
-                                                <button type="button" class="mt-auto bg-gray-700 text-white text-xs py-2 rounded hover:bg-brand-orange transition" onclick="selectSpecificFrame('Aero Alloy Mk1', this)">Select Frame</button>
-                                            </div>
-                                            <!-- Frame 2 -->
-                                            <div class="frame-card bg-brand-dark border border-gray-700 rounded-lg p-3 flex flex-col gap-2 transition hover:border-brand-orange cursor-pointer">
-                                                <img src="/images/alloy_placeholder.png" alt="Alloy Frame 2" class="w-full h-32 object-cover rounded bg-gray-800">
-                                                <div class="text-white font-bold text-sm">Endurance Alloy Pro</div>
-                                                <a href="#" target="_blank" class="text-xs text-blue-400 hover:text-blue-300">View on Amazon</a>
-                                                <button type="button" class="mt-auto bg-gray-700 text-white text-xs py-2 rounded hover:bg-brand-orange transition" onclick="selectSpecificFrame('Endurance Alloy Pro', this)">Select Frame</button>
-                                            </div>
-                                            <!-- Frame 3 -->
-                                            <div class="frame-card bg-brand-dark border border-gray-700 rounded-lg p-3 flex flex-col gap-2 transition hover:border-brand-orange cursor-pointer">
-                                                <img src="/images/alloy_placeholder.png" alt="Alloy Frame 3" class="w-full h-32 object-cover rounded bg-gray-800">
-                                                <div class="text-white font-bold text-sm">Sprint Alloy 500</div>
-                                                <a href="#" target="_blank" class="text-xs text-blue-400 hover:text-blue-300">View on Amazon</a>
-                                                <button type="button" class="mt-auto bg-gray-700 text-white text-xs py-2 rounded hover:bg-brand-orange transition" onclick="selectSpecificFrame('Sprint Alloy 500', this)">Select Frame</button>
-                                            </div>
-                                            <!-- Frame 4 -->
-                                            <div class="frame-card bg-brand-dark border border-gray-700 rounded-lg p-3 flex flex-col gap-2 transition hover:border-brand-orange cursor-pointer">
-                                                <img src="/images/alloy_placeholder.png" alt="Alloy Frame 4" class="w-full h-32 object-cover rounded bg-gray-800">
-                                                <div class="text-white font-bold text-sm">Crit Alloy Team</div>
-                                                <a href="#" target="_blank" class="text-xs text-blue-400 hover:text-blue-300">View on Amazon</a>
-                                                <button type="button" class="mt-auto bg-gray-700 text-white text-xs py-2 rounded hover:bg-brand-orange transition" onclick="selectSpecificFrame('Crit Alloy Team', this)">Select Frame</button>
-                                            </div>
+                                        <div class="grid grid-cols-2 gap-4" id="specific-frames-grid">
+                                            <!-- Dynamically populated from localStorage via JS -->
                                         </div>
                                     </div>
 
@@ -418,6 +391,42 @@
                 // If service is passed, we could pre-fill something, but for now we just let them start at step 1
                 // or optionally jump to step 2 if we wanted, but rider details are always needed.
             }
+            
+            // Load dynamic frames from dashboard config
+            loadCustomFrames();
+        }
+
+        function loadCustomFrames() {
+            const stored = localStorage.getItem('alloy_frames_config');
+            let frames = [];
+            if (stored) {
+                frames = JSON.parse(stored);
+            } else {
+                // Fallback to defaults
+                frames = [
+                    { id: '1', name: 'Aero Alloy Mk1', image: '/images/alloy_placeholder.png', url: '#' },
+                    { id: '2', name: 'Endurance Alloy Pro', image: '/images/alloy_placeholder.png', url: '#' },
+                    { id: '3', name: 'Sprint Alloy 500', image: '/images/alloy_placeholder.png', url: '#' },
+                    { id: '4', name: 'Crit Alloy Team', image: '/images/alloy_placeholder.png', url: '#' }
+                ];
+            }
+            
+            const grid = document.getElementById('specific-frames-grid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            frames.forEach(frame => {
+                // Escape name to handle apostrophes in the inline onclick handler
+                const safeName = frame.name.replace(/'/g, "\\'");
+                grid.innerHTML += `
+                    <div class="frame-card bg-brand-dark border border-gray-700 rounded-lg p-3 flex flex-col gap-2 transition hover:border-brand-orange cursor-pointer">
+                        <img src="${frame.image}" alt="${frame.name}" class="w-full h-32 object-cover rounded bg-gray-800">
+                        <div class="text-white font-bold text-sm">${frame.name}</div>
+                        <a href="${frame.url}" target="_blank" class="text-xs text-blue-400 hover:text-blue-300">View on Amazon</a>
+                        <button type="button" class="mt-auto bg-gray-700 text-white text-xs py-2 rounded hover:bg-brand-orange transition" onclick="selectSpecificFrame('${safeName}', this)">Select Frame</button>
+                    </div>
+                `;
+            });
         }
 
         let specificFrameChoice = "";

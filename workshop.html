@@ -670,6 +670,15 @@
                 </button>
                 <p class="text-xs text-gray-500 mt-2 text-center">Instantly adds items to your live Amazon Store.</p>
             </div>
+            <!-- Frame Manager Toggle -->
+            <div class="border-t border-gray-700 pt-4 mt-4">
+                <h4 class="font-bold text-lg border-b border-gray-700 pb-2 mb-4">Intake Form Frames</h4>
+                <button onclick="openFrameManagerModal(); document.getElementById('settings-modal').close()"
+                    class="w-full bg-[#1e1e3f] hover:bg-brand-orange text-white py-2 rounded border border-gray-600 transition flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-bicycle"></i> Manage Alloy Frames
+                </button>
+                <p class="text-xs text-gray-500 mt-2 text-center">Customize the specific frames shown on the intake form.</p>
+            </div>
         </div>
         <div class="bg-[#0f0f1f] p-4 flex justify-end gap-2 rounded-b-xl border-t border-gray-700">
             <button onclick="changePassword()"
@@ -807,6 +816,41 @@
                     class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-6 py-2 rounded transition">Save</button>
             </div>
         </form>
+    <!-- FRAME MANAGER MODAL -->
+    <dialog id="frame-manager-modal" class="bg-[#12122b] border border-gray-700 rounded-xl shadow-2xl w-full max-w-2xl backdrop:bg-black/80 text-white p-0">
+        <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-[#0f0f1f] rounded-t-xl">
+            <h3 class="font-display font-bold text-xl uppercase tracking-wider text-brand-orange"><i class="fa-solid fa-bicycle mr-2"></i> Manage Alloy Frames</h3>
+            <button type="button" onclick="document.getElementById('frame-manager-modal').close()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <div class="p-6">
+            <!-- Add New Frame Form -->
+            <form id="frame-form" onsubmit="saveFrameConfig(event)" class="space-y-4 bg-[#0a0a1a] p-4 rounded border border-gray-800 mb-6">
+                <h4 class="font-bold text-sm text-gray-300 border-b border-gray-800 pb-2 mb-2">Add New Frame</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Frame Name</label>
+                        <input type="text" id="frame-name" required class="w-full bg-[#12122b] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Amazon Link</label>
+                        <input type="url" id="frame-url" required class="w-full bg-[#12122b] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Image URL</label>
+                        <input type="url" id="frame-image" required placeholder="https://..." class="w-full bg-[#12122b] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
+                    </div>
+                </div>
+                <div class="flex justify-end mt-2">
+                    <button type="submit" class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider text-xs px-4 py-2 rounded transition">Add Frame</button>
+                </div>
+            </form>
+
+            <!-- List of Configured Frames -->
+            <h4 class="font-bold text-sm text-gray-300 border-b border-gray-800 pb-2 mb-4">Current Frames</h4>
+            <div id="frames-list" class="space-y-3 max-h-64 overflow-y-auto pr-2">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
     </dialog>
 
     <script>
@@ -966,6 +1010,84 @@
             } catch (err) {
                 alert('Request failed');
             }
+        }
+
+        // --- FRAME MANAGER LOGIC ---
+        function openFrameManagerModal() {
+            renderFramesList();
+            document.getElementById('frame-manager-modal').showModal();
+        }
+
+        function getFramesConfig() {
+            const stored = localStorage.getItem('alloy_frames_config');
+            if (stored) return JSON.parse(stored);
+            return [
+                { id: '1', name: 'Aero Alloy Mk1', image: '/images/alloy_placeholder.png', url: '#' },
+                { id: '2', name: 'Endurance Alloy Pro', image: '/images/alloy_placeholder.png', url: '#' },
+                { id: '3', name: 'Sprint Alloy 500', image: '/images/alloy_placeholder.png', url: '#' },
+                { id: '4', name: 'Crit Alloy Team', image: '/images/alloy_placeholder.png', url: '#' }
+            ];
+        }
+
+        function saveFramesConfig(frames) {
+            localStorage.setItem('alloy_frames_config', JSON.stringify(frames));
+        }
+
+        function renderFramesList() {
+            const frames = getFramesConfig();
+            const list = document.getElementById('frames-list');
+            list.innerHTML = '';
+            
+            if (frames.length === 0) {
+                list.innerHTML = '<div class="text-sm text-gray-500 text-center py-4">No frames configured.</div>';
+                return;
+            }
+
+            frames.forEach(frame => {
+                list.innerHTML += `
+                    <div class="flex items-center gap-3 bg-[#12122b] p-2 rounded border border-gray-700">
+                        <img src="${frame.image}" class="w-12 h-12 object-cover rounded bg-gray-800">
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-bold text-white truncate">${frame.name}</div>
+                            <div class="text-xs text-blue-400 truncate">${frame.url}</div>
+                        </div>
+                        <button type="button" onclick="deleteFrameConfig('${frame.id}')" class="text-red-400 hover:text-red-300 p-2">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function saveFrameConfig(e) {
+            e.preventDefault();
+            const name = document.getElementById('frame-name').value;
+            const url = document.getElementById('frame-url').value;
+            const image = document.getElementById('frame-image').value;
+            
+            const frames = getFramesConfig();
+            frames.push({
+                id: Date.now().toString(),
+                name,
+                url,
+                image
+            });
+            
+            saveFramesConfig(frames);
+            
+            // Reset form
+            document.getElementById('frame-name').value = '';
+            document.getElementById('frame-url').value = '';
+            document.getElementById('frame-image').value = '';
+            
+            renderFramesList();
+        }
+
+        function deleteFrameConfig(id) {
+            let frames = getFramesConfig();
+            frames = frames.filter(f => f.id !== id);
+            saveFramesConfig(frames);
+            renderFramesList();
         }
 
         async function deleteAffiliate(id) {
