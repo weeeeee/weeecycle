@@ -216,10 +216,8 @@
                                         <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Frame</label>
                                         <select id="spec-frame" name="specFrame" onchange="showNextField('frame', 'handlebar')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
                                             <option value="" disabled selected>Select Frame Type...</option>
-                                            <option value="Road Carbon">Road Carbon</option>
-                                            <option value="Road Alloy">Road Alloy</option>
-                                            <option value="Gravel Carbon">Gravel Carbon</option>
-                                            <option value="Gravel Aluminium">Gravel Aluminium</option>
+                                            <option value="Carbon Frame">Carbon Frame</option>
+                                            <option value="Alloy Frame">Alloy Frame</option>
                                         </select>
                                     </div>
 
@@ -441,7 +439,7 @@
             // Check if we need to show the specific frame gallery
             if (currentFieldId === 'frame') {
                 const frameValue = document.getElementById('spec-frame').value;
-                if (frameValue === 'Road Alloy') {
+                if (frameValue === 'Alloy Frame') {
                     // Show gallery instead of nextField
                     const gallery = document.getElementById('field-specific-frame');
                     if (gallery && gallery.classList.contains('hidden')) {
@@ -451,7 +449,7 @@
                         }, 50);
                     }
                     
-                    // If they previously selected a specific frame but changed the dropdown back to Road Alloy, 
+                    // If they previously selected a specific frame but changed the dropdown back to Alloy Frame, 
                     // we need to revalidate.
                     validateForm();
                     return; // Stop here, wait for them to click a frame in the gallery
@@ -513,8 +511,8 @@
                     complete = false;
                 }
                 
-                // Extra check for Road Alloy
-                if (id === 'spec-frame' && el && el.value === 'Road Alloy' && !specificFrameChoice) {
+                // Extra check for Alloy Frame
+                if (id === 'spec-frame' && el && el.value === 'Alloy Frame' && !specificFrameChoice) {
                     complete = false;
                 }
             });
