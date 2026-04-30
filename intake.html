@@ -141,29 +141,138 @@
                                     onclick="changeStep(2)" type="button">Next: What's your Dream?</button>
                             </div>
 
-                            <div class="form-step hidden opacity-0 transition-all duration-500 absolute top-0 w-full"
-                                id="step2">
-                                <h3
-                                    class="text-2xl font-display font-bold text-white mb-6 uppercase flex items-center gap-2">
-                                    <span
-                                        class="bg-brand-orange text-brand-dark w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
-                                    What's your Dream?
+                            <div class="form-step hidden opacity-0 transition-all duration-500 absolute top-0 w-full" id="step2">
+                                <h3 class="text-2xl font-display font-bold text-white mb-6 uppercase flex items-center gap-2">
+                                    <span class="bg-brand-orange text-brand-dark w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
+                                    The Dream Build Specs
                                 </h3>
-                                <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Brief
-                                            Summary</label>
-                                        <textarea id="dreamSummary"
-                                            class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition"
-                                            placeholder="Tell us briefly what you want in your dream build"
-                                            rows="4" name="dreamSummary"></textarea>
+                                <div class="space-y-4" id="dream-specs-container">
+                                    
+                                    <!-- Frame -->
+                                    <div class="spec-field" id="field-frame">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Frame</label>
+                                        <select id="spec-frame" name="specFrame" onchange="showNextField('handlebar')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
+                                            <option value="" disabled selected>Select Frame Type...</option>
+                                            <option value="Road Carbon">Road Carbon</option>
+                                            <option value="Road Alloy">Road Alloy</option>
+                                            <option value="Gravel/CX">Gravel/CX</option>
+                                            <option value="Mountain Hardtail">Mountain Hardtail</option>
+                                            <option value="Mountain Full Suspension">Mountain Full Suspension</option>
+                                            <option value="Track/Fixed">Track/Fixed</option>
+                                            <option value="BMX/Dirt Jump">BMX/Dirt Jump</option>
+                                            <option value="Other/Not Sure">Other/Not Sure</option>
+                                        </select>
                                     </div>
+
+                                    <!-- Handlebar -->
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-handlebar">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Handlebar</label>
+                                        <select id="spec-handlebar" name="specHandlebar" onchange="showNextField('stem')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
+                                            <option value="" disabled selected>Select Handlebar...</option>
+                                            <option value="Drop Bars (Road)">Drop Bars (Road)</option>
+                                            <option value="Flared Drop Bars (Gravel)">Flared Drop Bars (Gravel)</option>
+                                            <option value="Flat Bars (MTB/City)">Flat Bars (MTB/City)</option>
+                                            <option value="Riser Bars (MTB)">Riser Bars (MTB)</option>
+                                            <option value="Aero/TT Bars">Aero/TT Bars</option>
+                                            <option value="Bullhorn Bars">Bullhorn Bars</option>
+                                            <option value="Other/Not Sure">Other/Not Sure</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Stem -->
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-stem">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Stem</label>
+                                        <select id="spec-stem" name="specStem" onchange="showNextField('wheelset')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
+                                            <option value="" disabled selected>Select Stem Length/Type...</option>
+                                            <option value="Short (35-60mm) - MTB">Short (35-60mm) - MTB</option>
+                                            <option value="Medium (70-90mm)">Medium (70-90mm)</option>
+                                            <option value="Long (100-130mm) - Road">Long (100-130mm) - Road</option>
+                                            <option value="Adjustable">Adjustable</option>
+                                            <option value="Integrated Bar/Stem Combo">Integrated Bar/Stem Combo</option>
+                                            <option value="Other/Not Sure">Other/Not Sure</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Wheelset -->
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-wheelset">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Wheelset</label>
+                                        <select id="spec-wheelset" name="specWheelset" onchange="showNextField('groupset')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
+                                            <option value="" disabled selected>Select Wheelset...</option>
+                                            <option value="700c Road/Gravel">700c Road/Gravel</option>
+                                            <option value="650b / 27.5 inch">650b / 27.5 inch</option>
+                                            <option value="29 inch MTB">29 inch MTB</option>
+                                            <option value="Carbon Aero (Deep Section)">Carbon Aero (Deep Section)</option>
+                                            <option value="Alloy Endurance">Alloy Endurance</option>
+                                            <option value="Other/Not Sure">Other/Not Sure</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Groupset -->
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-groupset">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Groupset</label>
+                                        <select id="spec-groupset" name="specGroupset" onchange="showNextField('seatpost')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
+                                            <option value="" disabled selected>Select Groupset...</option>
+                                            <option value="Shimano Electronic (Di2)">Shimano Electronic (Di2)</option>
+                                            <option value="Shimano Mechanical">Shimano Mechanical</option>
+                                            <option value="SRAM Electronic (AXS)">SRAM Electronic (AXS)</option>
+                                            <option value="SRAM Mechanical">SRAM Mechanical</option>
+                                            <option value="Campagnolo">Campagnolo</option>
+                                            <option value="Single Speed/Fixed">Single Speed/Fixed</option>
+                                            <option value="Other/Not Sure">Other/Not Sure</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Seatpost -->
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-seatpost">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Seatpost</label>
+                                        <select id="spec-seatpost" name="specSeatpost" onchange="showNextField('saddle')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
+                                            <option value="" disabled selected>Select Seatpost...</option>
+                                            <option value="Rigid Carbon">Rigid Carbon</option>
+                                            <option value="Rigid Alloy">Rigid Alloy</option>
+                                            <option value="Dropper Post">Dropper Post</option>
+                                            <option value="Suspension Seatpost">Suspension Seatpost</option>
+                                            <option value="Other/Not Sure">Other/Not Sure</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Saddle -->
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-saddle">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Saddle</label>
+                                        <select id="spec-saddle" name="specSaddle" onchange="showNextField('tires')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
+                                            <option value="" disabled selected>Select Saddle...</option>
+                                            <option value="Racing/Performance">Racing/Performance (Narrow, Stiff)</option>
+                                            <option value="Endurance">Endurance (Medium Padding)</option>
+                                            <option value="Comfort">Comfort (Wide, Extra Padding)</option>
+                                            <option value="Cut-out/Relief Channel">Cut-out/Relief Channel</option>
+                                            <option value="Other/Not Sure">Other/Not Sure</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Tires -->
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-tires">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Tires</label>
+                                        <select id="spec-tires" name="specTires" onchange="showNextField('other')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
+                                            <option value="" disabled selected>Select Tires...</option>
+                                            <option value="Road Slicks (25c-30c)">Road Slicks (25c-30c)</option>
+                                            <option value="Gravel/All-Road (32c-45c)">Gravel/All-Road (32c-45c)</option>
+                                            <option value="MTB Cross Country">MTB Cross Country</option>
+                                            <option value="MTB Trail/Enduro">MTB Trail/Enduro</option>
+                                            <option value="Commuter/Puncture Resistant">Commuter/Puncture Resistant</option>
+                                            <option value="Other/Not Sure">Other/Not Sure</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Other -->
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-other">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Other Details / Additional Requests</label>
+                                        <textarea id="spec-other" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition" placeholder="Any specific brands, colors, accessories, or other notes?" rows="3" name="specOther"></textarea>
+                                    </div>
+
                                 </div>
-                                <div class="flex gap-4 mt-8"><button
-                                        class="w-1/3 bg-transparent border border-gray-600 text-gray-300 font-display font-bold text-xl uppercase py-3 rounded hover:border-white transition"
-                                        onclick="changeStep(1)" type="button">Back</button><button
-                                        class="w-2/3 bg-brand-orange text-white font-display font-bold text-xl uppercase py-3 rounded hover:bg-orange-600 transition shadow-lg"
-                                        type="submit">Build the Dream</button></div>
+                                <div class="flex gap-4 mt-8">
+                                    <button class="w-1/3 bg-transparent border border-gray-600 text-gray-300 font-display font-bold text-xl uppercase py-3 rounded hover:border-white transition" onclick="changeStep(1)" type="button">Back</button>
+                                    <button class="w-2/3 bg-brand-orange text-white font-display font-bold text-xl uppercase py-3 rounded hover:bg-orange-600 transition shadow-lg" type="submit">Build the Dream</button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -217,13 +326,41 @@
             }
         }
 
+        function showNextField(nextFieldId) {
+            const nextField = document.getElementById('field-' + nextFieldId);
+            if (nextField && nextField.classList.contains('hidden')) {
+                nextField.classList.remove('hidden');
+                setTimeout(() => {
+                    nextField.classList.remove('opacity-0');
+                }, 50);
+            }
+        }
+
         // Netlify Forms handles the email notification automatically.
         // We just listen to submit to backup to localStorage 
         document.getElementById('intakeForm').addEventListener('submit', function (e) {
             const name = document.getElementById('riderName').value;
             const phone = document.getElementById('riderPhone').value;
             const email = document.getElementById('riderEmail').value;
-            const dream = document.getElementById('dreamSummary').value;
+            
+            // Collect all build specs
+            const specs = {
+                Frame: document.getElementById('spec-frame').value,
+                Handlebar: document.getElementById('spec-handlebar').value,
+                Stem: document.getElementById('spec-stem').value,
+                Wheelset: document.getElementById('spec-wheelset').value,
+                Groupset: document.getElementById('spec-groupset').value,
+                Seatpost: document.getElementById('spec-seatpost').value,
+                Saddle: document.getElementById('spec-saddle').value,
+                Tires: document.getElementById('spec-tires').value,
+                Other: document.getElementById('spec-other').value
+            };
+
+            // Format into a single description summary
+            let dream = "Dream Build Specs:\n";
+            for (const [key, value] of Object.entries(specs)) {
+                if (value) dream += `- ${key}: ${value}\n`;
+            }
 
             // Save to localStorage for workshop dashboard simulation
             const formData = {
