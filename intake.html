@@ -211,119 +211,52 @@
                                         </g>
                                     </svg>
 
-                                    <!-- Frame -->
-                                    <div class="spec-field" id="field-frame">
-                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Frame</label>
-                                        <select id="spec-frame" name="specFrame" onchange="showNextField('frame', 'handlebar')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
-                                            <option value="" disabled selected>Select Frame...</option>
-                                            <option value="Frame">Frame</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Specific Frame Selection (Conditional) -->
-                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-specific-frame">
+                                                                        <!-- Frame -->
+                                    <div class="spec-field transition-all duration-500" id="field-specific-frame">
                                         <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Frame</label>
-                                        <div class="grid grid-cols-2 gap-4" id="specific-frames-grid">
-                                            <!-- Dynamically populated from localStorage via JS -->
-                                        </div>
+                                        <div class="grid grid-cols-2 gap-4" id="specific-frame-grid"></div>
                                     </div>
 
                                     <!-- Handlebar -->
-                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-handlebar">
-                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Handlebar</label>
-                                        <select id="spec-handlebar" name="specHandlebar" onchange="showNextField('handlebar', 'stem')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
-                                            <option value="" disabled selected>Select Handlebar...</option>
-                                            <option value="Drop Bars (Road)">Drop Bars (Road)</option>
-                                            <option value="Flared Drop Bars (Gravel)">Flared Drop Bars (Gravel)</option>
-                                            <option value="Flat Bars (MTB/City)">Flat Bars (MTB/City)</option>
-                                            <option value="Riser Bars (MTB)">Riser Bars (MTB)</option>
-                                            <option value="Aero/TT Bars">Aero/TT Bars</option>
-                                            <option value="Bullhorn Bars">Bullhorn Bars</option>
-                                            <option value="Other/Not Sure">Other/Not Sure</option>
-                                        </select>
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500 mt-6" id="field-specific-handlebar">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Handlebar</label>
+                                        <div class="grid grid-cols-2 gap-4" id="specific-handlebar-grid"></div>
                                     </div>
 
                                     <!-- Stem -->
-                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-stem">
-                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Stem</label>
-                                        <select id="spec-stem" name="specStem" onchange="showNextField('stem', 'wheelset')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
-                                            <option value="" disabled selected>Select Stem Length/Type...</option>
-                                            <option value="Short (35-60mm) - MTB">Short (35-60mm) - MTB</option>
-                                            <option value="Medium (70-90mm)">Medium (70-90mm)</option>
-                                            <option value="Long (100-130mm) - Road">Long (100-130mm) - Road</option>
-                                            <option value="Adjustable">Adjustable</option>
-                                            <option value="Integrated Bar/Stem Combo">Integrated Bar/Stem Combo</option>
-                                            <option value="Other/Not Sure">Other/Not Sure</option>
-                                        </select>
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500 mt-6" id="field-specific-stem">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Stem</label>
+                                        <div class="grid grid-cols-2 gap-4" id="specific-stem-grid"></div>
                                     </div>
 
                                     <!-- Wheelset -->
-                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-wheelset">
-                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Wheelset</label>
-                                        <select id="spec-wheelset" name="specWheelset" onchange="showNextField('wheelset', 'groupset')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
-                                            <option value="" disabled selected>Select Wheelset...</option>
-                                            <option value="700c Road/Gravel">700c Road/Gravel</option>
-                                            <option value="650b / 27.5 inch">650b / 27.5 inch</option>
-                                            <option value="29 inch MTB">29 inch MTB</option>
-                                            <option value="Carbon Aero (Deep Section)">Carbon Aero (Deep Section)</option>
-                                            <option value="Alloy Endurance">Alloy Endurance</option>
-                                            <option value="Other/Not Sure">Other/Not Sure</option>
-                                        </select>
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500 mt-6" id="field-specific-wheelset">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Wheelset</label>
+                                        <div class="grid grid-cols-2 gap-4" id="specific-wheelset-grid"></div>
                                     </div>
 
                                     <!-- Groupset -->
-                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-groupset">
-                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Groupset</label>
-                                        <select id="spec-groupset" name="specGroupset" onchange="showNextField('groupset', 'seatpost')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
-                                            <option value="" disabled selected>Select Groupset...</option>
-                                            <option value="Shimano Electronic (Di2)">Shimano Electronic (Di2)</option>
-                                            <option value="Shimano Mechanical">Shimano Mechanical</option>
-                                            <option value="SRAM Electronic (AXS)">SRAM Electronic (AXS)</option>
-                                            <option value="SRAM Mechanical">SRAM Mechanical</option>
-                                            <option value="Campagnolo">Campagnolo</option>
-                                            <option value="Single Speed/Fixed">Single Speed/Fixed</option>
-                                            <option value="Other/Not Sure">Other/Not Sure</option>
-                                        </select>
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500 mt-6" id="field-specific-groupset">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Groupset</label>
+                                        <div class="grid grid-cols-2 gap-4" id="specific-groupset-grid"></div>
                                     </div>
 
                                     <!-- Seatpost -->
-                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-seatpost">
-                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Seatpost</label>
-                                        <select id="spec-seatpost" name="specSeatpost" onchange="showNextField('seatpost', 'saddle')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
-                                            <option value="" disabled selected>Select Seatpost...</option>
-                                            <option value="Rigid Carbon">Rigid Carbon</option>
-                                            <option value="Rigid Alloy">Rigid Alloy</option>
-                                            <option value="Dropper Post">Dropper Post</option>
-                                            <option value="Suspension Seatpost">Suspension Seatpost</option>
-                                            <option value="Other/Not Sure">Other/Not Sure</option>
-                                        </select>
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500 mt-6" id="field-specific-seatpost">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Seatpost</label>
+                                        <div class="grid grid-cols-2 gap-4" id="specific-seatpost-grid"></div>
                                     </div>
 
                                     <!-- Saddle -->
-                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-saddle">
-                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Saddle</label>
-                                        <select id="spec-saddle" name="specSaddle" onchange="showNextField('saddle', 'tires')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
-                                            <option value="" disabled selected>Select Saddle...</option>
-                                            <option value="Racing/Performance">Racing/Performance (Narrow, Stiff)</option>
-                                            <option value="Endurance">Endurance (Medium Padding)</option>
-                                            <option value="Comfort">Comfort (Wide, Extra Padding)</option>
-                                            <option value="Cut-out/Relief Channel">Cut-out/Relief Channel</option>
-                                            <option value="Other/Not Sure">Other/Not Sure</option>
-                                        </select>
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500 mt-6" id="field-specific-saddle">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Saddle</label>
+                                        <div class="grid grid-cols-2 gap-4" id="specific-saddle-grid"></div>
                                     </div>
 
                                     <!-- Tires -->
-                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-tires">
-                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Tires</label>
-                                        <select id="spec-tires" name="specTires" onchange="showNextField('tires', 'other')" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition appearance-none">
-                                            <option value="" disabled selected>Select Tires...</option>
-                                            <option value="Road Slicks (25c-30c)">Road Slicks (25c-30c)</option>
-                                            <option value="Gravel/All-Road (32c-45c)">Gravel/All-Road (32c-45c)</option>
-                                            <option value="MTB Cross Country">MTB Cross Country</option>
-                                            <option value="MTB Trail/Enduro">MTB Trail/Enduro</option>
-                                            <option value="Commuter/Puncture Resistant">Commuter/Puncture Resistant</option>
-                                            <option value="Other/Not Sure">Other/Not Sure</option>
-                                        </select>
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500 mt-6" id="field-specific-tires">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Tires</label>
+                                        <div class="grid grid-cols-2 gap-4" id="specific-tires-grid"></div>
                                     </div>
 
                                     <!-- Other -->
@@ -380,6 +313,21 @@
             if (step === 2) progress.style.width = '100%';
         }
 
+
+        // State for components
+        const componentChoices = {
+            frame: "",
+            handlebar: "",
+            stem: "",
+            wheelset: "",
+            groupset: "",
+            seatpost: "",
+            saddle: "",
+            tires: ""
+        };
+
+        const categories = Object.keys(componentChoices);
+
         // Check for URL params to prefill service (kept for compatibility, though we jump to step 2 now)
         window.onload = function () {
             const urlParams = new URLSearchParams(window.location.search);
@@ -390,134 +338,120 @@
             }
             
             // Load dynamic frames from dashboard config
-            loadCustomFrames();
+            loadCustomComponents();
         }
 
-        function loadCustomFrames() {
-            const stored = localStorage.getItem('alloy_frames_config');
-            let frames = [];
+        function loadCustomComponents() {
+            const stored = localStorage.getItem('intake_components_config');
+            let config = {};
             if (stored) {
-                frames = JSON.parse(stored);
+                config = JSON.parse(stored);
             } else {
                 // Fallback to defaults
-                frames = [
-                    { id: '1', name: 'Aero Alloy Mk1', image: '/images/alloy_placeholder.png', url: '#' },
-                    { id: '2', name: 'Endurance Alloy Pro', image: '/images/alloy_placeholder.png', url: '#' },
-                    { id: '3', name: 'Sprint Alloy 500', image: '/images/alloy_placeholder.png', url: '#' },
-                    { id: '4', name: 'Crit Alloy Team', image: '/images/alloy_placeholder.png', url: '#' }
-                ];
+                config = {
+                    frame: [
+                        { id: '1', name: 'Aero Carbon Mk1', image: '/images/alloy_placeholder.png', url: '#' },
+                        { id: '2', name: 'Endurance Pro', image: '/images/alloy_placeholder.png', url: '#' }
+                    ],
+                    handlebar: [{ id: '1', name: 'Carbon Drop Bars', image: '/images/placeholder_handlebar.png', url: '#' }],
+                    stem: [{ id: '1', name: 'Alloy Stem', image: '/images/placeholder_stem.png', url: '#' }],
+                    wheelset: [{ id: '1', name: 'Aero Carbon Wheels', image: '/images/placeholder_wheelset.png', url: '#' }],
+                    groupset: [{ id: '1', name: 'Electronic Groupset', image: '/images/placeholder_groupset.png', url: '#' }],
+                    seatpost: [{ id: '1', name: 'Carbon Seatpost', image: '/images/placeholder_seatpost.png', url: '#' }],
+                    saddle: [{ id: '1', name: 'Racing Saddle', image: '/images/placeholder_saddle.png', url: '#' }],
+                    tires: [{ id: '1', name: 'Tan Wall Tires', image: '/images/placeholder_tires.png', url: '#' }]
+                };
             }
             
-            const grid = document.getElementById('specific-frames-grid');
-            if (!grid) return;
-            
-            grid.innerHTML = '';
-            frames.forEach(frame => {
-                // Escape name to handle apostrophes in the inline onclick handler
-                const safeName = frame.name.replace(/'/g, "\\'");
-                grid.innerHTML += `
-                    <div class="frame-card bg-brand-dark border border-gray-700 rounded-lg p-3 flex flex-col gap-2 transition hover:border-brand-orange cursor-pointer">
-                        <img src="${frame.image}" alt="${frame.name}" class="w-full h-32 object-cover rounded bg-gray-800">
-                        <div class="text-white font-bold text-sm">${frame.name}</div>
-                        <a href="${frame.url}" target="_blank" class="text-xs text-blue-400 hover:text-blue-300">View on Amazon</a>
-                        <button type="button" class="mt-auto bg-gray-700 text-white text-xs py-2 rounded hover:bg-brand-orange transition" onclick="selectSpecificFrame('${safeName}', this)">Select Frame</button>
-                    </div>
-                `;
+            categories.forEach(cat => {
+                const grid = document.getElementById('specific-' + cat + '-grid');
+                if (!grid) return;
+                
+                grid.innerHTML = '';
+                const items = config[cat] || [];
+                
+                if (items.length === 0) {
+                    grid.innerHTML = '<div class="col-span-2 text-gray-500 text-sm">No items configured. Please use Workshop Dashboard.</div>';
+                }
+
+                items.forEach(item => {
+                    const safeName = item.name.replace(/'/g, "\'");
+                    grid.innerHTML += `
+                        <div class="component-card bg-brand-dark border border-gray-700 rounded-lg p-3 flex flex-col gap-2 transition hover:border-brand-orange cursor-pointer" 
+                             onclick="selectSpecificComponent('${cat}', '${safeName}', this)">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-32 object-cover rounded bg-gray-800">
+                            <div class="text-white font-bold text-sm">${item.name}</div>
+                            <a href="${item.url}" target="_blank" class="text-xs text-blue-400 hover:text-blue-300" onclick="event.stopPropagation()">View on Amazon</a>
+                            <button type="button" class="mt-auto bg-gray-700 text-white text-xs py-2 rounded hover:bg-brand-orange transition select-btn">Select</button>
+                        </div>
+                    `;
+                });
             });
         }
 
-        let specificFrameChoice = "";
+        function selectSpecificComponent(category, itemName, element) {
+            componentChoices[category] = itemName;
+            
+            // Visual highlight for the selected card within this category
+            const grid = document.getElementById('specific-' + category + '-grid');
+            grid.querySelectorAll('.component-card').forEach(card => {
+                card.classList.remove('ring-2', 'ring-brand-orange');
+                card.querySelector('.select-btn').classList.remove('bg-brand-orange');
+                card.querySelector('.select-btn').classList.add('bg-gray-700');
+                card.querySelector('.select-btn').textContent = 'Select';
+            });
+            element.classList.add('ring-2', 'ring-brand-orange');
+            element.querySelector('.select-btn').classList.remove('bg-gray-700');
+            element.querySelector('.select-btn').classList.add('bg-brand-orange');
+            element.querySelector('.select-btn').textContent = 'Selected';
 
-        function showNextField(currentFieldId, nextFieldId) {
-            // Highlight current SVG part
-            const svgPart = document.getElementById('svg-' + currentFieldId);
+            // Highlight SVG part
+            const svgPart = document.getElementById('svg-' + category);
             if (svgPart) {
                 svgPart.classList.add('highlight');
             }
 
-            // Check if we need to show the specific frame gallery
-            if (currentFieldId === 'frame') {
-                const frameValue = document.getElementById('spec-frame').value;
-                if (frameValue === 'Frame') {
-                    // Show gallery instead of nextField
-                    const gallery = document.getElementById('field-specific-frame');
-                    if (gallery && gallery.classList.contains('hidden')) {
-                        gallery.classList.remove('hidden');
-                        setTimeout(() => {
-                            gallery.classList.remove('opacity-0');
-                        }, 50);
-                    }
-                    
-                    // If they previously selected a specific frame but changed the dropdown back to Frame, 
-                    // we need to revalidate.
-                    validateForm();
-                    return; // Stop here, wait for them to click a frame in the gallery
-                } else {
-                    // If they changed to something else, hide the gallery and clear selection
-                    const gallery = document.getElementById('field-specific-frame');
-                    if (gallery && !gallery.classList.contains('hidden')) {
-                        gallery.classList.add('opacity-0');
-                        setTimeout(() => {
-                            gallery.classList.add('hidden');
-                        }, 500);
-                    }
-                    specificFrameChoice = "";
-                }
-            }
-
-            // Show next field
-            if (nextFieldId) {
-                const nextField = document.getElementById('field-' + nextFieldId);
+            // Show next category grid
+            const currentIndex = categories.indexOf(category);
+            if (currentIndex !== -1 && currentIndex < categories.length - 1) {
+                const nextCategory = categories[currentIndex + 1];
+                const nextField = document.getElementById('field-specific-' + nextCategory);
                 if (nextField && nextField.classList.contains('hidden')) {
                     nextField.classList.remove('hidden');
                     setTimeout(() => {
                         nextField.classList.remove('opacity-0');
                     }, 50);
+                    
+                    // Auto-scroll slightly so the new section is visible
+                    setTimeout(() => {
+                        nextField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
                 }
-            }
-
-            validateForm();
-        }
-
-        function selectSpecificFrame(frameName, element) {
-            specificFrameChoice = frameName;
-            
-            // Visual highlight for the selected card
-            document.querySelectorAll('.frame-card').forEach(card => {
-                card.classList.remove('ring-2', 'ring-brand-orange');
-            });
-            element.closest('.frame-card').classList.add('ring-2', 'ring-brand-orange');
-
-            // Now show the Handlebar field
-            const nextField = document.getElementById('field-handlebar');
-            if (nextField && nextField.classList.contains('hidden')) {
-                nextField.classList.remove('hidden');
-                setTimeout(() => {
-                    nextField.classList.remove('opacity-0');
-                }, 50);
+            } else if (currentIndex === categories.length - 1) {
+                // If it's the last one (tires), show "Other" field
+                const otherField = document.getElementById('field-other');
+                if (otherField && otherField.classList.contains('hidden')) {
+                    otherField.classList.remove('hidden');
+                    setTimeout(() => {
+                        otherField.classList.remove('opacity-0');
+                    }, 50);
+                }
             }
             
             validateForm();
         }
 
         function validateForm() {
-            // "Other" is optional, the rest are required physical parts
-            const reqs = ['spec-frame', 'spec-handlebar', 'spec-stem', 'spec-wheelset', 'spec-groupset', 'spec-seatpost', 'spec-saddle', 'spec-tires'];
             let complete = true;
-            reqs.forEach(id => {
-                const el = document.getElementById(id);
-                if (!el || !el.value) {
-                    complete = false;
-                }
-                
-                // Extra check for Frame
-                if (id === 'spec-frame' && el && el.value === 'Frame' && !specificFrameChoice) {
+            categories.forEach(cat => {
+                if (!componentChoices[cat]) {
                     complete = false;
                 }
             });
 
             const btn = document.getElementById('build-submit-btn');
             const spinElements = ['spin-rear-tire', 'spin-front-tire', 'spin-rear-spokes', 'spin-front-spokes'];
+
 
             if (complete) {
                 btn.disabled = false;
