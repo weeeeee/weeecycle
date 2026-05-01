@@ -657,6 +657,12 @@
                             class="form-checkbox h-5 w-5 rounded text-brand-orange bg-gray-800 border-gray-700"
                             onchange="toggleSiteSection('reviews', this.checked)">
                     </label>
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="text-sm font-bold text-gray-300">Show "Bikes For Sale"</span>
+                        <input type="checkbox" id="toggle-bikes-for-sale"
+                            class="form-checkbox h-5 w-5 rounded text-brand-orange bg-gray-800 border-gray-700"
+                            onchange="toggleSiteSection('bikes-for-sale', this.checked)">
+                    </label>
                     <p class="text-xs text-gray-500 mt-2 text-center" id="toggle-status-msg">Changes automatically sync
                         to live website.</p>
                 </div>
@@ -678,6 +684,15 @@
                     <i class="fa-solid fa-bicycle"></i> Manage Components
                 </button>
                 <p class="text-xs text-gray-500 mt-2 text-center">Customize the frames, wheels, and parts shown on the intake form.</p>
+            </div>
+            <!-- Bikes For Sale Manager Toggle -->
+            <div class="border-t border-gray-700 pt-4 mt-4">
+                <h4 class="font-bold text-lg border-b border-gray-700 pb-2 mb-4">Bikes For Sale</h4>
+                <button onclick="openBikesManager(); document.getElementById('settings-modal').close()"
+                    class="w-full bg-[#1e1e3f] hover:bg-brand-orange text-white py-2 rounded border border-gray-600 transition flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-store"></i> Manage Bikes for Sale
+                </button>
+                <p class="text-xs text-gray-500 mt-2 text-center">Upload images, set prices, and manage available bikes.</p>
             </div>
         </div>
         <div class="bg-[#0f0f1f] p-4 flex justify-end gap-2 rounded-b-xl border-t border-gray-700">
@@ -722,6 +737,74 @@
             <button onclick="saveNewContact()"
                 class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-6 py-2 rounded transition">Save
                 Contact</button>
+        </div>
+    </dialog>
+
+    <!-- Bikes Manager Modal -->
+    <dialog id="bikes-manager-modal"
+        class="bg-[#0B0B2B] text-white p-0 rounded-xl shadow-2xl backdrop:bg-black/80 w-full max-w-6xl border border-gray-700 h-[85vh]">
+        <div class="h-full flex flex-col">
+            <div class="border-b border-gray-700 p-6 flex justify-between items-center bg-[#151535]">
+                <h3 class="font-display font-bold text-3xl uppercase tracking-wider text-brand-orange"><i
+                        class="fa-solid fa-store mr-2"></i> Bikes For Sale Manager</h3>
+                <button onclick="document.getElementById('bikes-manager-modal').close()"
+                    class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            </div>
+            <div class="flex-grow flex flex-col md:flex-row overflow-hidden">
+                <!-- List of Bikes -->
+                <div class="w-full md:w-1/3 border-r border-gray-700 bg-[#0B0B2B] flex flex-col overflow-y-auto" id="bikes-list">
+                    <!-- Injected via JS -->
+                </div>
+                
+                <!-- Editor -->
+                <div class="w-full md:w-2/3 p-6 overflow-y-auto bg-[#050511] flex flex-col gap-4">
+                    <input type="hidden" id="bike-id">
+                    
+                    <div>
+                        <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Bike Title</label>
+                        <input type="text" id="bike-title" class="w-full bg-[#0B0B2B] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange">
+                    </div>
+
+                    <div>
+                        <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Price</label>
+                        <input type="text" id="bike-price" class="w-full bg-[#0B0B2B] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange" placeholder="e.g. $3,450">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Description</label>
+                        <textarea id="bike-description" rows="4" class="w-full bg-[#0B0B2B] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange"></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="border border-gray-700 rounded p-4 bg-[#0B0B2B]">
+                            <label class="block text-brand-orange text-sm font-bold uppercase mb-2">Upload Image</label>
+                            <input type="file" id="bike-image-file" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-brand-orange file:text-white hover:file:bg-orange-600 mb-2">
+                            <p class="text-xs text-gray-500 mb-2">Or paste URL:</p>
+                            <input type="text" id="bike-image-url" class="w-full bg-[#151535] border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-brand-orange text-sm" placeholder="https://...">
+                        </div>
+                        
+                        <div class="border border-gray-700 rounded p-4 bg-[#0B0B2B]">
+                            <label class="block text-brand-orange text-sm font-bold uppercase mb-2">Upload Video</label>
+                            <input type="file" id="bike-video-file" accept="video/mp4,video/webm" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-white hover:file:bg-gray-600 mb-2">
+                            <p class="text-xs text-gray-500 mb-2">Or paste URL:</p>
+                            <input type="text" id="bike-video-url" class="w-full bg-[#151535] border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-brand-orange text-sm" placeholder="https://...">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 mt-2">
+                        <input type="checkbox" id="bike-highlighted" class="w-5 h-5 accent-brand-orange cursor-pointer">
+                        <label for="bike-highlighted" class="text-white cursor-pointer font-bold uppercase text-sm tracking-wider">Highlight on Homepage</label>
+                    </div>
+
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-700 bg-[#151535] flex justify-between">
+                <button onclick="clearBikeEditor()" class="text-gray-400 hover:text-white font-bold uppercase tracking-wider px-4 py-2 transition"><i class="fa-solid fa-plus mr-1"></i> New Bike</button>
+                <div class="flex gap-2">
+                    <button onclick="document.getElementById('bikes-manager-modal').close()" class="bg-gray-800 hover:bg-gray-700 text-white font-bold uppercase tracking-wider px-6 py-2 rounded transition">Close</button>
+                    <button onclick="saveBike()" id="save-bike-btn" class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-6 py-2 rounded transition shadow-lg shadow-orange-900/50">Save Bike</button>
+                </div>
+            </div>
         </div>
     </dialog>
 
@@ -3495,6 +3578,126 @@
             setTimeout(() => toast.remove(), 3000);
 
             renderContacts();
+        }
+
+        // --- BIKES FOR SALE MANAGER ---
+        let allBikes = [];
+        async function fetchBikes() {
+            try {
+                const res = await fetch('/api/bikes');
+                const data = await res.json();
+                if (data.success) {
+                    allBikes = data.data;
+                    renderBikesList();
+                }
+            } catch (e) {
+                console.error("Error fetching bikes", e);
+            }
+        }
+
+        function renderBikesList() {
+            const list = document.getElementById('bikes-list');
+            list.innerHTML = allBikes.map(b => `
+                <div class="p-4 border-b border-gray-800 hover:bg-gray-900 cursor-pointer flex justify-between items-center group transition" onclick="editBike(${b.id})">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-gray-800 rounded overflow-hidden flex-shrink-0">
+                            <img src="${b.image_url || 'images/placeholder_frame.png'}" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-white group-hover:text-brand-orange transition">${b.title}</div>
+                            <div class="text-xs text-brand-orange">${b.price}</div>
+                            ${b.is_highlighted ? '<span class="bg-brand-orange text-black text-[10px] font-bold px-1 rounded uppercase tracking-wider">Highlighted</span>' : ''}
+                        </div>
+                    </div>
+                    <button onclick="event.stopPropagation(); deleteBike(${b.id})" class="text-gray-500 hover:text-red-500 p-2"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function editBike(id) {
+            const b = allBikes.find(x => x.id === id);
+            if (!b) return;
+            document.getElementById('bike-id').value = b.id;
+            document.getElementById('bike-title').value = b.title;
+            document.getElementById('bike-price').value = b.price;
+            document.getElementById('bike-description').value = b.description;
+            document.getElementById('bike-image-url').value = b.image_url || '';
+            document.getElementById('bike-video-url').value = b.video_url || '';
+            document.getElementById('bike-highlighted').checked = b.is_highlighted === 1;
+            document.getElementById('bike-image-file').value = '';
+            document.getElementById('bike-video-file').value = '';
+        }
+
+        function clearBikeEditor() {
+            document.getElementById('bike-id').value = '';
+            document.getElementById('bike-title').value = '';
+            document.getElementById('bike-price').value = '';
+            document.getElementById('bike-description').value = '';
+            document.getElementById('bike-image-url').value = '';
+            document.getElementById('bike-video-url').value = '';
+            document.getElementById('bike-highlighted').checked = false;
+            document.getElementById('bike-image-file').value = '';
+            document.getElementById('bike-video-file').value = '';
+        }
+
+        function openBikesManager() {
+            fetchBikes();
+            clearBikeEditor();
+            document.getElementById('bikes-manager-modal').showModal();
+        }
+
+        async function uploadFile(fileInputId) {
+            const fileInput = document.getElementById(fileInputId);
+            if (!fileInput.files.length) return null;
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            try {
+                const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.success) return data.url;
+            } catch(e) { console.error("Upload error", e); }
+            return null;
+        }
+
+        async function saveBike() {
+            const btn = document.getElementById('save-bike-btn');
+            btn.textContent = "Saving...";
+            
+            const id = document.getElementById('bike-id').value;
+            const title = document.getElementById('bike-title').value;
+            const price = document.getElementById('bike-price').value;
+            const description = document.getElementById('bike-description').value;
+            const isHighlighted = document.getElementById('bike-highlighted').checked;
+            
+            let imageUrl = document.getElementById('bike-image-url').value;
+            let videoUrl = document.getElementById('bike-video-url').value;
+
+            // Handle uploads
+            const uploadedImage = await uploadFile('bike-image-file');
+            if (uploadedImage) imageUrl = uploadedImage;
+            
+            const uploadedVideo = await uploadFile('bike-video-file');
+            if (uploadedVideo) videoUrl = uploadedVideo;
+
+            const payload = { title, price, description, imageUrl, videoUrl, isHighlighted };
+            
+            try {
+                if (id) {
+                    await fetch('/api/bikes/' + id, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                } else {
+                    await fetch('/api/bikes', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                }
+                clearBikeEditor();
+                await fetchBikes();
+            } catch(e) { console.error(e); }
+            finally { btn.textContent = "Save Bike"; }
+        }
+
+        async function deleteBike(id) {
+            if(confirm("Delete this bike?")) {
+                await fetch('/api/bikes/' + id, { method: 'DELETE' });
+                fetchBikes();
+            }
         }
 
         // START

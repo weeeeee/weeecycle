@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bikes For Sale | Weeecycle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#FF8000',
+                            dark: '#050511',
+                        }
+                    },
+                    fontFamily: {
+                        display: ['Anton', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-brand-dark text-white font-body antialiased">
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-[#0B0B2B]/90 backdrop-blur border-b border-gray-800">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2">
+                <span class="font-display font-bold text-3xl tracking-widest text-white leading-none">WEEECYCLE<span class="text-brand-orange">.NET</span></span>
+            </a>
+            <div class="hidden md:flex gap-8 items-center">
+                <a class="text-xs font-bold uppercase tracking-widest hover:text-brand-orange transition" href="index.html">Home</a>
+                <a class="text-xs font-bold uppercase tracking-widest hover:text-brand-orange transition" href="amazonstore.html">Amazon Store</a>
+                <a class="bg-brand-orange hover:bg-orange-600 text-white text-xs font-bold uppercase tracking-wider py-2 px-6 rounded transition" href="intake.html">Start Your Build</a>
+            </div>
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-white hover:text-brand-orange" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                <i class="fa-solid fa-bars text-2xl"></i>
+            </button>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-[#0B0B2B] border-b border-gray-800 p-4 flex flex-col gap-4">
+            <a class="text-sm font-bold uppercase tracking-widest text-gray-300 hover:text-white" href="index.html">Home</a>
+            <a class="text-sm font-bold uppercase tracking-widest text-gray-300 hover:text-white" href="amazonstore.html">Amazon Store</a>
+            <a class="bg-brand-orange text-center text-white text-sm font-bold uppercase py-3 rounded" href="intake.html">Start Your Build</a>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="py-20 bg-[#0B0B2B] relative border-b border-gray-900">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="font-display font-bold text-6xl md:text-8xl uppercase tracking-tight text-white mb-6">
+                Bikes <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-orange-300">For Sale</span>
+            </h1>
+            <p class="font-body text-xl text-gray-400 max-w-2xl mx-auto font-light">
+                Browse our selection of meticulously built and pro-tuned road and gravel bikes, ready for your next adventure.
+            </p>
+        </div>
+    </header>
+
+    <!-- Bikes List -->
+    <section class="py-20 relative">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- BIKES_LIST_START -->
+                <!-- Dynamic content injected here -->
+                <!-- BIKES_LIST_END -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black border-t border-gray-900 py-12">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex flex-col items-center md:items-start">
+                <span class="font-display font-bold text-3xl tracking-widest text-white leading-none">WEEECYCLE<span class="text-brand-orange">.NET</span></span>
+                <span class="text-gray-500 text-xs uppercase tracking-[0.2em] mt-2">Building Speed. Fixing Fun.</span>
+            </div>
+            <div class="text-gray-600 text-xs uppercase tracking-wider">
+                &copy; 2025 Weeecycle. All rights reserved.
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

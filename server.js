@@ -143,9 +143,27 @@ db.serialize(() => {
             date TEXT
         )
     `);
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS bikes_for_sale (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT,
+            description TEXT,
+            price TEXT,
+            image_url TEXT,
+            video_url TEXT,
+            is_highlighted INTEGER DEFAULT 0
+        )
+    `);
 });
 
 // --- API ROUTES ---
+
+// FILE UPLOADS
+app.post('/api/upload', upload.single('file'), (req, res) => {
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+    res.json({ success: true, url: 'images/' + req.file.filename });
+});
 
 // CONTACTS
 app.get('/api/contacts', async (req, res) => {
@@ -504,18 +522,22 @@ app.get('/api/settings/site-status', (req, res) => {
         // Define regex to match the sections
         const servicesRegex = /<section\s+(?:[^>]*?\s+)?class="([^"]*)"[^>]*id="services"/;
         const reviewsRegex = /<section\s+(?:[^>]*?\s+)?class="([^"]*)"[^>]*id="reviews"/;
+        const bikesRegex = /<section\s+(?:[^>]*?\s+)?class="([^"]*)"[^>]*id="bikes-for-sale"/;
 
         const servicesMatch = html.match(servicesRegex);
         const reviewsMatch = html.match(reviewsRegex);
+        const bikesMatch = html.match(bikesRegex);
 
         const isServicesHidden = servicesMatch ? servicesMatch[1].includes('hidden') : false;
         const isReviewsHidden = reviewsMatch ? reviewsMatch[1].includes('hidden') : false;
+        const isBikesHidden = bikesMatch ? bikesMatch[1].includes('hidden') : false;
 
         res.json({
             success: true,
             status: {
                 services: !isServicesHidden, // True if showing, false if hidden
-                reviews: !isReviewsHidden
+                reviews: !isReviewsHidden,
+                bikes: !isBikesHidden
             }
         });
     } catch (e) {
@@ -525,8 +547,8 @@ app.get('/api/settings/site-status', (req, res) => {
 });
 
 app.post('/api/settings/toggle-section', (req, res) => {
-    const { section, isVisible } = req.body; // section: 'services' | 'reviews', isVisible: boolean
-    if (!['services', 'reviews'].includes(section)) return res.status(400).json({ error: "Invalid section" });
+    const { section, isVisible } = req.body; // section: 'services' | 'reviews' | 'bikes-for-sale', isVisible: boolean
+    if (!['services', 'reviews', 'bikes-for-sale'].includes(section)) return res.status(400).json({ error: "Invalid section" });
 
     try {
         const indexPath = path.join(__dirname, 'index.html');
@@ -685,6 +707,151 @@ app.delete('/api/affiliates/:id', (req, res) => {
             syncAmazonStore();
             res.json({ success: true });
         });
+    });
+});
+
+// --- BIKES FOR SALE ---
+function syncBikesForSale() {
+    db.all("SELECT * FROM bikes_for_sale ORDER BY id DESC", [], (err, rows) => {
+        if (err) return;
+        
+        const highlightedBike = rows.find(b => b.is_highlighted === 1) || rows[0];
+        
+        // 1. Update index.html
+        if (highlightedBike) {
+            const indexHtmlStr = `
+            <!-- Highlighted Bike Module -->
+            <div class="max-w-6xl mx-auto bg-[#0B0B2B] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col lg:flex-row">
+                <!-- Media Area -->
+                <div class="w-full lg:w-3/5 relative flex flex-col">
+                    <div class="relative w-full h-64 sm:h-80 lg:h-96 bg-gray-900 overflow-hidden group">
+                        <img src="${highlightedBike.image_url || 'images/placeholder_frame.png'}" alt="${highlightedBike.title}" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700 opacity-80 mix-blend-screen" onerror="this.src='images/alloy_placeholder.png'" />
+                    </div>
+                    ${highlightedBike.video_url ? `
+                    <div class="relative w-full h-48 sm:h-64 bg-black overflow-hidden border-t border-gray-800 group">
+                        <video class="w-full h-full object-cover opacity-80" loop muted playsinline autoplay>
+                            <source src="${highlightedBike.video_url}" type="video/mp4">
+                        </video>
+                    </div>` : ''}
+                </div>
+                <!-- Content Area -->
+                <div class="w-full ${highlightedBike.video_url ? 'lg:w-2/5' : 'lg:w-2/5'} p-8 lg:p-12 flex flex-col justify-between relative bg-gradient-to-b from-[#12122b] to-[#0a0a1a]">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="bg-brand-orange text-brand-dark text-xs font-bold uppercase py-1 px-3 rounded font-display tracking-wider shadow-[0_0_10px_rgba(255,128,0,0.4)]">Available Now</span>
+                        </div>
+                        <h3 class="font-display font-bold text-4xl md:text-5xl text-white uppercase leading-none mb-6">${highlightedBike.title}</h3>
+                        <div class="space-y-4 mb-8">
+                            <p class="text-gray-300 font-light leading-relaxed whitespace-pre-wrap">${highlightedBike.description}</p>
+                        </div>
+                    </div>
+                    <div class="mt-auto border-t border-gray-800 pt-6">
+                        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <div class="text-brand-orange font-display font-bold text-5xl tracking-tight leading-none drop-shadow-[0_0_15px_rgba(255,128,0,0.2)]">
+                                ${highlightedBike.price}
+                            </div>
+                            <a href="contact.html?subject=Inquiry:%20${encodeURIComponent(highlightedBike.title)}" class="w-full sm:w-auto text-center bg-gray-200 hover:bg-white text-black font-display font-bold uppercase tracking-widest py-3 px-8 rounded transition transform hover:-translate-y-1 shadow-xl">
+                                Inquire Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            
+            const indexPath = path.join(__dirname, 'index.html');
+            let indexHtml = fs.readFileSync(indexPath, 'utf8');
+            const indexRegex = /(<!-- BIKES_FOR_SALE_START -->)[\s\S]*?(<!-- BIKES_FOR_SALE_END -->)/;
+            indexHtml = indexHtml.replace(indexRegex, `$1\n${indexHtmlStr}\n            $2`);
+            fs.writeFileSync(indexPath, indexHtml);
+        }
+
+        // 2. Update bikes-for-sale.html
+        let listHtml = '';
+        rows.forEach(row => {
+            listHtml += `
+            <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl overflow-hidden shadow-xl flex flex-col hover:border-brand-orange transition duration-300">
+                <div class="relative h-64 bg-gray-900">
+                    <img src="${row.image_url || 'images/placeholder_frame.png'}" alt="${row.title}" class="w-full h-full object-cover opacity-80" />
+                </div>
+                <div class="p-6 flex flex-col flex-grow">
+                    <h3 class="text-2xl font-display font-bold text-white uppercase mb-2">${row.title}</h3>
+                    <div class="text-brand-orange font-display font-bold text-3xl mb-4">${row.price}</div>
+                    <p class="text-gray-400 text-sm mb-6 flex-grow whitespace-pre-wrap">${row.description}</p>
+                    <a href="contact.html?subject=Inquiry:%20${encodeURIComponent(row.title)}" class="w-full bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase py-3 rounded transition text-center mt-auto">
+                        Inquire
+                    </a>
+                </div>
+            </div>`;
+        });
+
+        const listPath = path.join(__dirname, 'bikes-for-sale.html');
+        if (fs.existsSync(listPath)) {
+            let pageHtml = fs.readFileSync(listPath, 'utf8');
+            const listRegex = /(<!-- BIKES_LIST_START -->)[\s\S]*?(<!-- BIKES_LIST_END -->)/;
+            pageHtml = pageHtml.replace(listRegex, `$1\n${listHtml}\n                $2`);
+            fs.writeFileSync(listPath, pageHtml);
+        }
+
+        exec(`git add index.html bikes-for-sale.html && git commit -m "chore: sync bikes for sale" && git push`, { cwd: __dirname });
+    });
+}
+
+app.get('/api/bikes', (req, res) => {
+    db.all("SELECT * FROM bikes_for_sale ORDER BY id DESC", [], (err, rows) => {
+        if (err) res.status(500).json({ error: err.message });
+        else res.json({ success: true, data: rows });
+    });
+});
+
+app.post('/api/bikes', (req, res) => {
+    const { title, description, price, imageUrl, videoUrl, isHighlighted } = req.body;
+    db.run("INSERT INTO bikes_for_sale (title, description, price, image_url, video_url, is_highlighted) VALUES (?, ?, ?, ?, ?, ?)", 
+        [title, description, price, imageUrl || '', videoUrl || '', isHighlighted ? 1 : 0], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        if (isHighlighted) {
+            db.run("UPDATE bikes_for_sale SET is_highlighted = 0 WHERE id != ?", [this.lastID], () => {
+                syncBikesForSale();
+            });
+        } else {
+            syncBikesForSale();
+        }
+        res.json({ success: true, id: this.lastID });
+    });
+});
+
+app.put('/api/bikes/:id', (req, res) => {
+    const { title, description, price, imageUrl, videoUrl, isHighlighted } = req.body;
+    const { id } = req.params;
+    
+    let query = "UPDATE bikes_for_sale SET title = ?, description = ?, price = ?";
+    let params = [title, description, price];
+
+    if (imageUrl !== undefined) { query += ", image_url = ?"; params.push(imageUrl); }
+    if (videoUrl !== undefined) { query += ", video_url = ?"; params.push(videoUrl); }
+    if (isHighlighted !== undefined) { query += ", is_highlighted = ?"; params.push(isHighlighted ? 1 : 0); }
+    
+    query += " WHERE id = ?";
+    params.push(id);
+
+    db.run(query, params, function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        if (isHighlighted) {
+            db.run("UPDATE bikes_for_sale SET is_highlighted = 0 WHERE id != ?", [id], () => {
+                syncBikesForSale();
+            });
+        } else {
+            syncBikesForSale();
+        }
+        res.json({ success: true });
+    });
+});
+
+app.delete('/api/bikes/:id', (req, res) => {
+    const { id } = req.params;
+    db.run("DELETE FROM bikes_for_sale WHERE id = ?", [id], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        syncBikesForSale();
+        res.json({ success: true });
     });
 });
 
