@@ -88,7 +88,8 @@
                 </div>
             </a>
             <div class="hidden md:flex items-center gap-8">
-                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="#services">Services</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="#services">Services</a>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
                     href="https://weeecycle.substack.com" target="_blank">Substack</a>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
@@ -168,12 +169,83 @@
                     class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-orange-300">Race
                     Ready.</span></h1>
             <p class="font-body text-lg md:text-2xl text-gray-300 max-w-2xl mx-auto mb-10 font-light drop-shadow-md">
-                Expert road and gravel bike building, repairing, and tuning from a dedicated garage specialist.</p>
+                Expert road and gravel bike sales, building, repairing, and tuning from a dedicated garage specialist.
+            </p>
             <div class="flex flex-col md:flex-row gap-4 justify-center items-center"><a
                     class="w-full md:w-auto bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-2xl uppercase tracking-wider py-4 px-10 rounded shadow-lg shadow-orange-900/50 transition transform hover:scale-105"
-                    href="intake.html">Start Your Build</a></div>
+                    href="#bikes-for-sale">Bikes for Sale</a></div>
         </div>
     </header>
+
+    <section class="py-20 bg-brand-dark relative border-b border-gray-900" id="bikes-for-sale">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="font-display font-bold text-5xl text-white uppercase tracking-wide mb-2">Bikes <span class="text-brand-orange">For Sale</span></h2>
+                <p class="text-gray-400 text-lg font-light tracking-wide">Hand-built and pro-tuned. Ready for your next adventure.</p>
+            </div>
+
+            <!-- Highlighted Bike Module -->
+            <div class="max-w-6xl mx-auto bg-[#0B0B2B] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col lg:flex-row">
+                
+                <!-- Media Area -->
+                <div class="w-full lg:w-3/5 relative flex flex-col">
+                    <!-- Image Placeholder -->
+                    <div class="relative w-full h-64 sm:h-80 lg:h-96 bg-gray-900 overflow-hidden group">
+                        <img src="images/placeholder_frame.png" alt="Highlighted Bike" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700 opacity-80 mix-blend-screen" onerror="this.src='images/alloy_placeholder.png'" />
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <span class="text-white/50 font-display text-4xl uppercase tracking-widest border-2 border-white/30 px-6 py-2 rounded shadow-lg backdrop-blur-sm bg-black/30">Photo Placeholder</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Video Placeholder -->
+                    <div class="relative w-full h-48 sm:h-64 bg-black overflow-hidden border-t border-gray-800 group">
+                        <div class="absolute inset-0 bg-brand-dark/80 z-10 flex items-center justify-center flex-col gap-2 pointer-events-none">
+                            <i class="fa-solid fa-play text-4xl text-white/50 group-hover:text-brand-orange transition"></i>
+                            <span class="text-white/50 font-display text-2xl uppercase tracking-widest border border-white/20 px-4 py-1 rounded backdrop-blur-sm">Video Placeholder</span>
+                        </div>
+                        <video class="w-full h-full object-cover opacity-30" loop muted playsinline>
+                            <source src="" type="video/mp4">
+                        </video>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div class="w-full lg:w-2/5 p-8 lg:p-12 flex flex-col justify-between relative bg-gradient-to-b from-[#12122b] to-[#0a0a1a]">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="bg-brand-orange text-brand-dark text-xs font-bold uppercase py-1 px-3 rounded font-display tracking-wider shadow-[0_0_10px_rgba(255,128,0,0.4)]">Available Now</span>
+                            <span class="text-gray-400 text-sm font-display uppercase tracking-widest">Custom Gravel Build</span>
+                        </div>
+                        
+                        <h3 class="font-display font-bold text-4xl md:text-5xl text-white uppercase leading-none mb-6">Titanium Adventure Series</h3>
+                        
+                        <div class="space-y-4 mb-8">
+                            <p class="text-gray-300 font-light leading-relaxed">
+                                A meticulously assembled, do-it-all gravel machine. Hand-tuned to perfection with electronic shifting and a lightweight titanium frame that absorbs chatter while responding instantly to your power.
+                            </p>
+                            <ul class="text-gray-400 text-sm space-y-2 border-t border-gray-800 pt-4">
+                                <li class="flex gap-2 items-start"><i class="fa-solid fa-gear text-brand-orange mt-1"></i> <span class="font-bold text-gray-200">Groupset:</span> SRAM Rival AXS 1x12</li>
+                                <li class="flex gap-2 items-start"><i class="fa-solid fa-circle-notch text-brand-orange mt-1"></i> <span class="font-bold text-gray-200">Wheelset:</span> Hunt 40 Carbon Gravel</li>
+                                <li class="flex gap-2 items-start"><i class="fa-solid fa-weight-hanging text-brand-orange mt-1"></i> <span class="font-bold text-gray-200">Weight:</span> 18.5 lbs (Size 56)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mt-auto border-t border-gray-800 pt-6">
+                        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <div class="text-brand-orange font-display font-bold text-6xl tracking-tight leading-none drop-shadow-[0_0_15px_rgba(255,128,0,0.2)]">
+                                $3,450
+                            </div>
+                            <a href="contact.html?subject=Inquiry:%20Titanium%20Adventure%20Series" class="w-full sm:w-auto text-center bg-gray-200 hover:bg-white text-black font-display font-bold uppercase tracking-widest py-3 px-8 rounded transition transform hover:-translate-y-1 shadow-xl">
+                                Inquire Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
 
     <section class="py-20 bg-[#0B0B2B] relative" id="services">
         <div class="container mx-auto px-4">
@@ -256,7 +328,8 @@
                         </div>
                         <p class="text-gray-400 mb-6 flex-grow">Stripped to the frame. Deep clean, full relubrication,
                             and
-                            replacement of cables and housing.</p>
+                            replacement of cables and housing. Full bearing service in wheels, headset and bottom
+                            Bracket</p>
                         <a href="overhaul.html"
                             class="w-full border border-gray-600 group-hover:bg-brand-orange group-hover:border-brand-orange group-hover:text-white text-gray-300 font-display uppercase tracking-wider py-2 transition text-center block">Select</a>
                     </div>
@@ -341,18 +414,18 @@
                     <h3 class="font-display font-bold text-3xl text-white uppercase mb-2">Share Your Experience</h3>
                     <p class="text-gray-400">We'd love to hear from you! Your review will be sent directly to us.</p>
                 </div>
-                <form action="mailto:steve@weeecycle.net" method="post" enctype="text/plain" class="space-y-6">
+                <form id="review-form" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label for="name"
+                            <label for="review-name"
                                 class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Name</label>
-                            <input type="text" id="name" name="name" required
+                            <input type="text" id="review-name" name="name" required
                                 class="w-full bg-[#0B0B2B] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition">
                         </div>
                         <div>
-                            <label for="rating"
+                            <label for="review-rating"
                                 class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Rating</label>
-                            <select id="rating" name="rating"
+                            <select id="review-rating" name="rating"
                                 class="w-full bg-[#0B0B2B] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition">
                                 <option value="5 Stars">5 Stars - Excellent</option>
                                 <option value="4 Stars">4 Stars - Good</option>
@@ -363,16 +436,57 @@
                         </div>
                     </div>
                     <div>
-                        <label for="message"
+                        <label for="review-message"
                             class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Your
                             Review</label>
-                        <textarea id="message" name="message" rows="4" required
+                        <textarea id="review-message" name="message" rows="4" required
                             class="w-full bg-[#0B0B2B] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"></textarea>
                     </div>
-                    <button type="submit"
+                    <div id="review-status" class="hidden text-center font-bold p-3 rounded"></div>
+                    <button type="submit" id="review-submit-btn"
                         class="w-full bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-xl uppercase tracking-wider py-3 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50">Submit
                         Review</button>
                 </form>
+
+                <script>
+                    document.getElementById('review-form').addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        const btn = document.getElementById('review-submit-btn');
+                        const status = document.getElementById('review-status');
+                        const name = document.getElementById('review-name').value;
+                        const rating = document.getElementById('review-rating').value;
+                        const message = document.getElementById('review-message').value;
+
+                        btn.disabled = true;
+                        btn.textContent = "Submitting...";
+                        btn.classList.add('opacity-50', 'cursor-not-allowed');
+                        status.classList.add('hidden');
+
+                        try {
+                            const res = await fetch('/api/reviews', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ name, rating, message })
+                            });
+                            
+                            const data = await res.json();
+                            if (data.success) {
+                                status.textContent = "Thank you! Your review has been submitted.";
+                                status.className = "text-center font-bold p-3 rounded bg-green-500/20 text-green-400 border border-green-500/50";
+                                document.getElementById('review-form').reset();
+                            } else {
+                                throw new Error(data.error || "Submission failed");
+                            }
+                        } catch (err) {
+                            status.textContent = "Oops! Something went wrong. Please try again.";
+                            status.className = "text-center font-bold p-3 rounded bg-red-500/20 text-red-400 border border-red-500/50";
+                        } finally {
+                            btn.disabled = false;
+                            btn.textContent = "Submit Review";
+                            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        }
+                    });
+                </script>
             </div>
         </div>
     </section>
@@ -401,58 +515,56 @@
                                 Weekly Newsletter</li>
                             <li class="flex items-center gap-2"><i class="fa-solid fa-check text-brand-orange"></i> Shop
                                 Updates</li>
-                            </ul>
-                            <a href="https://weeecycle.substack.com/subscribe" target="_blank"
-                                class="w-full bg-transparent border border-gray-600 group-hover:bg-brand-orange group-hover:border-brand-orange group-hover:text-white text-gray-300 font-display font-bold uppercase py-2 rounded transition text-center">Subscribe</a>
-                        </div>
-
-                        <!-- Annual -->
-                        <div
-                            class="bg-[#0B0B2B] border border-brand-orange/50 rounded-xl p-6 flex flex-col hover:border-brand-orange transition duration-300 shadow-xl group relative overflow-hidden">
-                            <div
-                                class="absolute top-3 right-[-35px] rotate-45 bg-brand-orange text-white text-[10px] font-bold py-1 px-10 uppercase tracking-wider">
-                                20% Off</div>
-                            <h3 class="font-display font-bold text-2xl text-white uppercase mb-2">Annual</h3>
-                            <div class="text-3xl font-display font-bold text-brand-orange mb-4">$40.00<span
-                                    class="text-gray-500 text-lg font-normal">/yr</span></div>
-                            <ul class="text-gray-400 text-sm space-y-2 mb-6 flex-grow">
-                                <li class="flex items-center gap-2"><i class="fa-solid fa-check text-brand-orange"></i>
-                                    All
-                                    Subscriber Perks</li>
-                                <li class="flex items-center gap-2"><i class="fa-solid fa-check text-brand-orange"></i>
-                                    Priority Booking</li>
-                            </ul>
-                            <a href="https://weeecycle.substack.com/subscribe" target="_blank"
-                                class="w-full bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase py-2 rounded transition text-center shadow-lg shadow-orange-900/40">Join
-                                Annual</a>
-                        </div>
-
-                        <!-- Founding -->
-                        <div
-                            class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 flex flex-col hover:border-brand-orange transition duration-300 shadow-xl group">
-                            <h3 class="font-display font-bold text-2xl text-white uppercase mb-2">Founding Member</h3>
-                            <div class="text-3xl font-display font-bold text-brand-orange mb-4">$200.00</div>
-                            <ul class="text-gray-400 text-sm space-y-2 mb-6 flex-grow">
-                                <li class="flex items-start gap-2"><i
-                                        class="fa-solid fa-star text-brand-orange mt-1"></i>
-                                    <span>Swag Bag Included</span>
-                                </li>
-                                <li class="flex items-start gap-2"><i
-                                        class="fa-solid fa-star text-brand-orange mt-1"></i>
-                                    <span>3-Day Repair Clinic ($450 Value)</span>
-                                </li>
-                                <li class="text-xs italic text-gray-500 mt-2">More info coming March 2026</li>
-                            </ul>
-                            <a href="https://weeecycle.substack.com/subscribe" target="_blank"
-                                class="w-full bg-transparent border border-gray-600 group-hover:bg-brand-orange group-hover:border-brand-orange group-hover:text-white text-gray-300 font-display font-bold uppercase py-2 rounded transition text-center">Learn
-                                More</a>
-                        </div>
+                        </ul>
+                        <a href="https://weeecycle.substack.com/subscribe" target="_blank"
+                            class="w-full bg-transparent border border-gray-600 group-hover:bg-brand-orange group-hover:border-brand-orange group-hover:text-white text-gray-300 font-display font-bold uppercase py-2 rounded transition text-center">Subscribe</a>
                     </div>
 
+                    <!-- Annual -->
+                    <div
+                        class="bg-[#0B0B2B] border border-brand-orange/50 rounded-xl p-6 flex flex-col hover:border-brand-orange transition duration-300 shadow-xl group relative overflow-hidden">
+                        <div
+                            class="absolute top-3 right-[-35px] rotate-45 bg-brand-orange text-white text-[10px] font-bold py-1 px-10 uppercase tracking-wider">
+                            20% Off</div>
+                        <h3 class="font-display font-bold text-2xl text-white uppercase mb-2">Annual</h3>
+                        <div class="text-3xl font-display font-bold text-brand-orange mb-4">$40.00<span
+                                class="text-gray-500 text-lg font-normal">/yr</span></div>
+                        <ul class="text-gray-400 text-sm space-y-2 mb-6 flex-grow">
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-brand-orange"></i>
+                                All
+                                Subscriber Perks</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-brand-orange"></i>
+                                Priority Booking</li>
+                        </ul>
+                        <a href="https://weeecycle.substack.com/subscribe" target="_blank"
+                            class="w-full bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase py-2 rounded transition text-center shadow-lg shadow-orange-900/40">Join
+                            Annual</a>
+                    </div>
 
-
+                    <!-- Founding -->
+                    <div
+                        class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 flex flex-col hover:border-brand-orange transition duration-300 shadow-xl group">
+                        <h3 class="font-display font-bold text-2xl text-white uppercase mb-2">Founding Member</h3>
+                        <div class="text-3xl font-display font-bold text-brand-orange mb-4">$200.00</div>
+                        <ul class="text-gray-400 text-sm space-y-2 mb-6 flex-grow">
+                            <li class="flex items-start gap-2"><i class="fa-solid fa-star text-brand-orange mt-1"></i>
+                                <span>Swag Bag Included</span>
+                            </li>
+                            <li class="flex items-start gap-2"><i class="fa-solid fa-star text-brand-orange mt-1"></i>
+                                <span>3-Day Repair Clinic ($450 Value)</span>
+                            </li>
+                            <li class="text-xs italic text-gray-500 mt-2">More info coming March 2026</li>
+                        </ul>
+                        <a href="https://weeecycle.substack.com/subscribe" target="_blank"
+                            class="w-full bg-transparent border border-gray-600 group-hover:bg-brand-orange group-hover:border-brand-orange group-hover:text-white text-gray-300 font-display font-bold uppercase py-2 rounded transition text-center">Learn
+                            More</a>
+                    </div>
                 </div>
+
+
+
             </div>
+        </div>
     </section>
 
 
@@ -467,36 +579,56 @@
 
             <!-- Added id="shop-grid" for dynamic daily updates -->
             <div id="shop-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-                <div class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
                     <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
-                        <img src="images/garmin_headlight.png" class="object-contain h-full w-full" alt="Garmin Varia Vue Headlight/Camera">
+                        <img src="images/garmin_headlight.png" class="object-contain h-full w-full"
+                            alt="Garmin Varia Vue Headlight/Camera">
                     </div>
-                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Garmin Varia Vue Headlight/Camera</h3>
-                    <a href="https://amzn.to/4suGBb2" target="_blank" class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy on Amazon</a>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Garmin Varia Vue
+                        Headlight/Camera</h3>
+                    <a href="https://amzn.to/4suGBb2" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
                 </div>
 
-                <div class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
                     <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
-                        <img src="images/heart_rate_monitor.png" class="object-contain h-full w-full" alt="Heart Rate Monitor Strap">
+                        <img src="images/heart_rate_monitor.png" class="object-contain h-full w-full"
+                            alt="Heart Rate Monitor Strap">
                     </div>
-                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Heart Rate Monitor Strap</h3>
-                    <a href="https://amzn.to/3PEE5a2" target="_blank" class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy on Amazon</a>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Heart Rate
+                        Monitor Strap</h3>
+                    <a href="https://amzn.to/3PEE5a2" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
                 </div>
 
-                <div class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
                     <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
-                        <img src="images/carbon_handlebars.png" class="object-contain h-full w-full" alt="Integrated Carbon Handlebar">
+                        <img src="images/carbon_handlebars.png" class="object-contain h-full w-full"
+                            alt="Integrated Carbon Handlebar">
                     </div>
-                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Integrated Carbon Handlebar</h3>
-                    <a href="https://amzn.to/4q1Fi2G" target="_blank" class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy on Amazon</a>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Integrated
+                        Carbon Handlebar</h3>
+                    <a href="https://amzn.to/4q1Fi2G" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
                 </div>
 
-                <div class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
+                <div
+                    class="bg-[#151535] border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center group hover:border-brand-orange transition duration-300 shadow-xl">
                     <div class="bg-white w-full h-40 rounded mb-6 flex items-center justify-center overflow-hidden p-4">
-                        <img src="images/electric_pump.png" class="object-contain h-full w-full" alt="Electric Bike Pump">
+                        <img src="images/electric_pump.png" class="object-contain h-full w-full"
+                            alt="Electric Bike Pump">
                     </div>
-                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Electric Bike Pump</h3>
-                    <a href="https://amzn.to/3PEv2lW" target="_blank" class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy on Amazon</a>
+                    <h3 class="text-white font-display font-bold text-xl uppercase tracking-wider mb-6">Electric Bike
+                        Pump</h3>
+                    <a href="https://amzn.to/3PEv2lW" target="_blank"
+                        class="mt-auto bg-brand-orange hover:bg-white text-brand-dark font-display font-bold text-lg uppercase py-2 px-8 rounded transition w-full shadow-lg shadow-orange-900/20">Buy
+                        on Amazon</a>
                 </div>
             </div>
             <div class="mt-12 text-center">
@@ -513,7 +645,8 @@
                 <i class="fab fa-ebay text-7xl text-brand-orange mb-4 opacity-80"></i>
                 <h2 class="font-display font-bold text-5xl text-brand-orange uppercase tracking-wide mb-2">eBay Auctions
                 </h2>
-                <p class="text-gray-300 text-lg font-light">Discover unique frames, quality parts, and cycling odds and ends.</p>
+                <p class="text-gray-300 text-lg font-light">Discover unique frames, quality parts, and cycling odds and
+                    ends.</p>
             </div>
 
             <div class="text-center">
@@ -549,30 +682,30 @@
                 const res = await fetch('amazonstore.html');
                 if (!res.ok) return;
                 const html = await res.text();
-                
+
                 // Parse the HTML to extract the affiliate cards
                 const parser = new DOMParser();
                 const doc = parser.parseString(html, 'text/html');
-                
+
                 // Select all the affiliate item cards from the store
                 let items = Array.from(doc.querySelectorAll('#shop .bg-\\[\\#151535\\]'));
-                
+
                 if (items.length >= 4) {
                     // Use a day-of-year calculation to pick 4 items consistently for everyone on the same day
                     const now = new Date();
                     const start = new Date(now.getFullYear(), 0, 0);
                     const diff = (now - start) + ((start.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000);
                     const dayOfYear = Math.floor(diff / 86400000);
-                    
+
                     // Shift the array so the items rotate sequentially every day
                     const shiftAmount = dayOfYear % items.length;
                     for (let i = 0; i < shiftAmount; i++) {
                         items.push(items.shift()); // Move first item to the end
                     }
-                    
+
                     // Take the first 4 items after shifting
                     const dailyItems = items.slice(0, 4);
-                    
+
                     // Replace the fallback items with the 4 daily items
                     shopGrid.innerHTML = '';
                     dailyItems.forEach(item => {

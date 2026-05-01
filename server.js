@@ -133,6 +133,16 @@ db.serialize(() => {
             checklist TEXT
         )
     `);
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS reviews (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            rating TEXT,
+            message TEXT,
+            date TEXT
+        )
+    `);
 });
 
 // --- API ROUTES ---
@@ -245,6 +255,49 @@ app.post('/api/jobs', async (req, res) => {
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: e.message });
+    }
+});
+
+// REVIEWS
+app.post('/api/reviews', async (req, res) => {
+    const { name, rating, message } = req.body;
+
+    if (!name || !rating || !message) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const date = new Date().toISOString();
+
+    try {
+        // Save to DB
+        await dbRun(`
+            INSERT INTO reviews (name, rating, message, date)
+            VALUES (?, ?, ?, ?)
+        `, [name, rating, message, date]);
+
+        // Send Email
+        const mailOptions = {
+            from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
+            to: 'steve@weeecycle.net',
+            subject: 'New Website Review Received',
+            html: `
+                <h3>New Review from Weeecycle.net</h3>
+                <p><strong>Name:</strong> ${name}</p>
+                <p><strong>Rating:</strong> ${rating}</p>
+                <p><strong>Message:</strong></p>
+                <blockquote style="border-left: 4px solid #FF8000; padding-left: 10px; margin-left: 0;">
+                    ${message.replace(/\n/g, '<br>')}
+                </blockquote>
+                <p><small>Submitted on: ${new Date(date).toLocaleString()}</small></p>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.json({ success: true });
+    } catch (e) {
+        console.error("Review processing error:", e);
+        res.status(500).json({ error: "Internal server error while processing review" });
     }
 });
 
