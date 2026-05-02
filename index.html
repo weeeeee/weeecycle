@@ -496,7 +496,7 @@
                                 throw new Error(data.error || "Submission failed");
                             }
                         } catch (err) {
-                            status.textContent = "Oops! Something went wrong. Please try again.";
+                            status.textContent = "Oops! Something went wrong: " + err.message;
                             status.className = "text-center font-bold p-3 rounded bg-red-500/20 text-red-400 border border-red-500/50";
                         } finally {
                             btn.disabled = false;
