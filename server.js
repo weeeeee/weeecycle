@@ -21,7 +21,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 80;
 
 // SSE Clients
 let sseClients = [];
@@ -29,6 +29,12 @@ let sseClients = [];
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use((req, res, next) => {
+    if (req.path.endsWith('.html') || req.path === '/') {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+    next();
+});
 app.use(express.static(path.join(__dirname, '/')));
 
 // Email Transporter Setup
