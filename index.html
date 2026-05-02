@@ -245,10 +245,10 @@
                                 class="text-brand-orange font-display font-bold text-6xl tracking-tight leading-none drop-shadow-[0_0_15px_rgba(255,128,0,0.2)]">
                                 $800.00
                             </div>
-                            <a href="contact.html?subject=Inquiry:%20Titanium%20Adventure%20Series"
+                            <button onclick="document.getElementById('bike-inquiry-modal').classList.remove('hidden')"
                                 class="w-full sm:w-auto text-center bg-gray-200 hover:bg-white text-black font-display font-bold uppercase tracking-widest py-3 px-8 rounded transition transform hover:-translate-y-1 shadow-xl">
                                 Inquire Now
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -688,6 +688,169 @@
             </div>
         </div>
     </footer>
+
+    <!-- Bike Inquiry Modal -->
+    <div id="bike-inquiry-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div class="relative w-full max-w-2xl bg-[#0B0B2B] border border-gray-700 rounded-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between px-8 pt-8 pb-4 border-b border-gray-800">
+                <h2 class="font-display font-bold text-2xl text-white uppercase tracking-wide">Inquire About This Bike</h2>
+                <button onclick="closeBikeModal()" class="text-gray-400 hover:text-white transition text-2xl leading-none">&times;</button>
+            </div>
+
+            <!-- Form -->
+            <form id="bike-inquiry-form" class="px-8 py-6 space-y-5" onsubmit="submitBikeInquiry(event)">
+
+                <div>
+                    <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">Full Name <span class="text-brand-orange">*</span></label>
+                    <input type="text" name="fullName" required
+                        class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition"
+                        placeholder="Jane Doe" />
+                </div>
+
+                <div>
+                    <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">Street Address <span class="text-brand-orange">*</span></label>
+                    <input type="text" name="address" required
+                        class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition"
+                        placeholder="123 Main St" />
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">City <span class="text-brand-orange">*</span></label>
+                        <input type="text" name="city" required
+                            class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition"
+                            placeholder="Springfield" />
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">Zip Code <span class="text-brand-orange">*</span></label>
+                        <input type="text" name="zip" required pattern="\d{5}(-\d{4})?"
+                            class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition"
+                            placeholder="12345" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">State <span class="text-brand-orange">*</span></label>
+                    <select name="state" required
+                        class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition appearance-none">
+                        <option value="" disabled selected>Select a state…</option>
+                        <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option>
+                        <option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option>
+                        <option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option>
+                        <option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option>
+                        <option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option>
+                        <option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option>
+                        <option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option>
+                        <option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option>
+                        <option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option>
+                        <option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option>
+                        <option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option>
+                        <option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option>
+                        <option>Wisconsin</option><option>Wyoming</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">Mobile Phone <span class="text-brand-orange">*</span></label>
+                    <input type="tel" name="phone" required
+                        class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition"
+                        placeholder="(555) 555-5555" />
+                </div>
+
+                <div>
+                    <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">Questions / Comments</label>
+                    <textarea name="questions" rows="4"
+                        class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition resize-none"
+                        placeholder="Any questions about the bike, pickup, payment, etc…"></textarea>
+                </div>
+
+                <!-- Status message -->
+                <p id="bike-inquiry-status" class="text-sm text-center hidden"></p>
+
+                <div class="flex gap-4 pt-2">
+                    <button type="button" onclick="closeBikeModal()"
+                        class="flex-1 border border-gray-600 text-gray-400 hover:text-white hover:border-white font-display uppercase tracking-widest py-3 rounded-lg transition">
+                        Cancel
+                    </button>
+                    <button type="submit" id="bike-inquiry-submit"
+                        class="flex-1 bg-brand-orange hover:bg-orange-500 text-brand-dark font-display font-bold uppercase tracking-widest py-3 rounded-lg transition shadow-xl">
+                        Send Inquiry
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function closeBikeModal() {
+            document.getElementById('bike-inquiry-modal').classList.add('hidden');
+            document.getElementById('bike-inquiry-form').reset();
+            const status = document.getElementById('bike-inquiry-status');
+            status.textContent = '';
+            status.classList.add('hidden');
+            document.getElementById('bike-inquiry-submit').disabled = false;
+            document.getElementById('bike-inquiry-submit').textContent = 'Send Inquiry';
+        }
+
+        document.getElementById('bike-inquiry-modal').addEventListener('click', function (e) {
+            if (e.target === this) closeBikeModal();
+        });
+
+        async function submitBikeInquiry(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = Object.fromEntries(new FormData(form));
+            const status = document.getElementById('bike-inquiry-status');
+            const submitBtn = document.getElementById('bike-inquiry-submit');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending…';
+            status.classList.add('hidden');
+
+            const htmlBody = `
+                <h2 style="font-family:sans-serif;color:#ff8000;">New Bike Inquiry — GT Avalanche 1.0</h2>
+                <table style="font-family:sans-serif;font-size:15px;border-collapse:collapse;width:100%;max-width:560px;">
+                    <tr><td style="padding:8px 12px;color:#888;width:140px;">Full Name</td><td style="padding:8px 12px;color:#222;">${data.fullName}</td></tr>
+                    <tr style="background:#f9f9f9;"><td style="padding:8px 12px;color:#888;">Address</td><td style="padding:8px 12px;color:#222;">${data.address}</td></tr>
+                    <tr><td style="padding:8px 12px;color:#888;">City</td><td style="padding:8px 12px;color:#222;">${data.city}</td></tr>
+                    <tr style="background:#f9f9f9;"><td style="padding:8px 12px;color:#888;">State</td><td style="padding:8px 12px;color:#222;">${data.state}</td></tr>
+                    <tr><td style="padding:8px 12px;color:#888;">Zip Code</td><td style="padding:8px 12px;color:#222;">${data.zip}</td></tr>
+                    <tr style="background:#f9f9f9;"><td style="padding:8px 12px;color:#888;">Mobile Phone</td><td style="padding:8px 12px;color:#222;">${data.phone}</td></tr>
+                    <tr><td style="padding:8px 12px;color:#888;vertical-align:top;">Questions</td><td style="padding:8px 12px;color:#222;">${data.questions ? data.questions.replace(/\n/g, '<br>') : '—'}</td></tr>
+                </table>
+            `;
+
+            try {
+                const res = await fetch('/api/comm/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        toEmail: 'steve@weeecycle.net',
+                        subject: 'Bike Inquiry: GT Avalanche 1.0 Disc',
+                        htmlBody
+                    })
+                });
+                const json = await res.json();
+                if (res.ok && json.success) {
+                    status.textContent = 'Your inquiry was sent! We\'ll be in touch soon.';
+                    status.className = 'text-sm text-center text-green-400';
+                    status.classList.remove('hidden');
+                    form.reset();
+                    submitBtn.textContent = 'Sent!';
+                } else {
+                    throw new Error(json.error || 'Unknown error');
+                }
+            } catch (err) {
+                status.textContent = 'Something went wrong. Please try again or email steve@weeecycle.net directly.';
+                status.className = 'text-sm text-center text-red-400';
+                status.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Inquiry';
+            }
+        }
+    </script>
 
     <script>
         // Daily Refresh Shop My Bench Script
