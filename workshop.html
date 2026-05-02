@@ -746,7 +746,7 @@
         <div class="h-full flex flex-col">
             <div class="border-b border-gray-700 p-6 flex justify-between items-center bg-[#151535]">
                 <h3 class="font-display font-bold text-3xl uppercase tracking-wider text-brand-orange"><i
-                        class="fa-solid fa-store mr-2"></i> Cycling Products for Sale Manager</h3>
+                        class="fa-solid fa-store mr-2"></i> Cycling Products Manager</h3>
                 <button onclick="document.getElementById('bikes-manager-modal').close()"
                     class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-2xl"></i></button>
             </div>
@@ -802,7 +802,7 @@
                 <button onclick="clearBikeEditor()" class="text-gray-400 hover:text-white font-bold uppercase tracking-wider px-4 py-2 transition"><i class="fa-solid fa-plus mr-1"></i> New Bike</button>
                 <div class="flex gap-2">
                     <button onclick="document.getElementById('bikes-manager-modal').close()" class="bg-gray-800 hover:bg-gray-700 text-white font-bold uppercase tracking-wider px-6 py-2 rounded transition">Close</button>
-                    <button onclick="saveBike()" id="save-bike-btn" class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-6 py-2 rounded transition shadow-lg shadow-orange-900/50">Save Bike</button>
+                    <button onclick="saveBike()" id="save-bike-btn" class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-6 py-2 rounded transition shadow-lg shadow-orange-900/50">Save</button>
                 </div>
             </div>
         </div>
@@ -3690,7 +3690,7 @@
                 clearBikeEditor();
                 await fetchBikes();
             } catch(e) { console.error(e); }
-            finally { btn.textContent = "Save Bike"; }
+            finally { btn.textContent = "Save"; }
         }
 
         async function deleteBike(id) {
