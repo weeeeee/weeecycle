@@ -1,0 +1,7 @@
+{
+  "name": "weeecycle-functions",
+  "version": "1.0.0",
+  "dependencies": {
+    "nodemailer": "^8.0.1"
+  }
+}

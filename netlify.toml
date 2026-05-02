@@ -1,5 +1,5 @@
 [build]
-  command = "echo 'skipping npm install for static site'"
+  command = "cd netlify/functions && npm install"
   publish = "/"
   functions = "netlify/functions"
 
