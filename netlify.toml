@@ -1,7 +1,9 @@
 [build]
-  # We are setting the build command to "echo 'skipping npm install for static site'" 
-  # This prevents Netlify from looking at package.json and crashing on node-gyp C++ errors
   command = "echo 'skipping npm install for static site'"
-  
-  # Publish the root directory since all the .html files are there
   publish = "/"
+
+[[redirects]]
+  from = "/api/*"
+  to = "http://46.110.130.68:80/api/:splat"
+  status = 200
+  force = true
