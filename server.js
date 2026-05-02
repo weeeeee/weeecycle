@@ -765,7 +765,7 @@ function syncBikesForSale() {
             const indexPath = path.join(__dirname, 'index.html');
             let indexHtml = fs.readFileSync(indexPath, 'utf8');
             const indexRegex = /(<!-- BIKES_FOR_SALE_START -->)[\s\S]*?(<!-- BIKES_FOR_SALE_END -->)/;
-            indexHtml = indexHtml.replace(indexRegex, `$1\n${indexHtmlStr}\n            $2`);
+            indexHtml = indexHtml.replace(indexRegex, (m, start, end) => `${start}\n${indexHtmlStr}\n            ${end}`);
             fs.writeFileSync(indexPath, indexHtml);
         }
 
@@ -792,7 +792,7 @@ function syncBikesForSale() {
         if (fs.existsSync(listPath)) {
             let pageHtml = fs.readFileSync(listPath, 'utf8');
             const listRegex = /(<!-- BIKES_LIST_START -->)[\s\S]*?(<!-- BIKES_LIST_END -->)/;
-            pageHtml = pageHtml.replace(listRegex, `$1\n${listHtml}\n                $2`);
+            pageHtml = pageHtml.replace(listRegex, (m, start, end) => `${start}\n${listHtml}\n                ${end}`);
             fs.writeFileSync(listPath, pageHtml);
         }
 

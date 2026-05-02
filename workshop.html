@@ -3583,29 +3583,39 @@
         // --- BIKES FOR SALE MANAGER ---
         let allBikes = [];
         async function fetchBikes() {
+            const list = document.getElementById('bikes-list');
+            list.innerHTML = '<div class="p-4 text-gray-400 text-sm text-center animate-pulse">Loading...</div>';
             try {
                 const res = await fetch('/api/bikes');
+                if (!res.ok) throw new Error('Server returned ' + res.status);
                 const data = await res.json();
                 if (data.success) {
                     allBikes = data.data;
                     renderBikesList();
+                } else {
+                    list.innerHTML = '<div class="p-4 text-red-400 text-sm text-center">Failed to load products.</div>';
                 }
             } catch (e) {
                 console.error("Error fetching bikes", e);
+                list.innerHTML = '<div class="p-4 text-red-400 text-sm text-center">Error: ' + e.message + '</div>';
             }
         }
 
         function renderBikesList() {
             const list = document.getElementById('bikes-list');
+            if (!allBikes.length) {
+                list.innerHTML = '<div class="p-4 text-gray-500 text-sm text-center italic">No products yet. Use the form to add one.</div>';
+                return;
+            }
             list.innerHTML = allBikes.map(b => `
                 <div class="p-4 border-b border-gray-800 hover:bg-gray-900 cursor-pointer flex justify-between items-center group transition" onclick="editBike(${b.id})">
                     <div class="flex items-center gap-3">
                         <div class="w-12 h-12 bg-gray-800 rounded overflow-hidden flex-shrink-0">
-                            <img src="${b.image_url || 'images/placeholder_frame.png'}" class="w-full h-full object-cover">
+                            <img src="${b.image_url || 'images/placeholder_frame.png'}" class="w-full h-full object-cover" onerror="this.src='images/placeholder_frame.png'">
                         </div>
                         <div>
-                            <div class="font-bold text-sm text-white group-hover:text-brand-orange transition">${b.title}</div>
-                            <div class="text-xs text-brand-orange">${b.price}</div>
+                            <div class="font-bold text-sm text-white group-hover:text-brand-orange transition">${b.title || '(no title)'}</div>
+                            <div class="text-xs text-brand-orange">${b.price || '(no price)'}</div>
                             ${b.is_highlighted ? '<span class="bg-brand-orange text-black text-[10px] font-bold px-1 rounded uppercase tracking-wider">Highlighted</span>' : ''}
                         </div>
                     </div>
@@ -3682,15 +3692,24 @@
             const payload = { title, price, description, imageUrl, videoUrl, isHighlighted };
             
             try {
+                let res;
                 if (id) {
-                    await fetch('/api/bikes/' + id, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                    res = await fetch('/api/bikes/' + id, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
                 } else {
-                    await fetch('/api/bikes', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                    res = await fetch('/api/bikes', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
                 }
+                if (!res.ok) throw new Error('Server error ' + res.status);
+                const result = await res.json();
+                if (!result.success) throw new Error('Save failed');
+                btn.textContent = "Saved!";
+                setTimeout(() => { btn.textContent = "Save"; }, 1500);
                 clearBikeEditor();
                 await fetchBikes();
-            } catch(e) { console.error(e); }
-            finally { btn.textContent = "Save"; }
+            } catch(e) {
+                console.error(e);
+                btn.textContent = "Error: " + e.message;
+                setTimeout(() => { btn.textContent = "Save"; }, 3000);
+            }
         }
 
         async function deleteBike(id) {
