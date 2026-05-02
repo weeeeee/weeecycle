@@ -4,11 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bikes For Sale | Weeecycle</title>
+    <title>Cycling Products For Sale | Weeecycle</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         tailwind.config = {
@@ -35,23 +36,31 @@
     <nav class="sticky top-0 z-50 bg-[#0B0B2B]/90 backdrop-blur border-b border-gray-800">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <a href="index.html" class="flex items-center gap-2">
-                <span class="font-display font-bold text-3xl tracking-widest text-white leading-none">WEEECYCLE<span class="text-brand-orange">.NET</span></span>
+                <span class="font-display font-bold text-3xl tracking-widest text-white leading-none">WEEECYCLE<span
+                        class="text-brand-orange">.NET</span></span>
             </a>
             <div class="hidden md:flex gap-8 items-center">
-                <a class="text-xs font-bold uppercase tracking-widest hover:text-brand-orange transition" href="index.html">Home</a>
-                <a class="text-xs font-bold uppercase tracking-widest hover:text-brand-orange transition" href="amazonstore.html">Amazon Store</a>
-                <a class="bg-brand-orange hover:bg-orange-600 text-white text-xs font-bold uppercase tracking-wider py-2 px-6 rounded transition" href="intake.html">Start Your Build</a>
+                <a class="text-xs font-bold uppercase tracking-widest hover:text-brand-orange transition"
+                    href="index.html">Home</a>
+                <a class="text-xs font-bold uppercase tracking-widest hover:text-brand-orange transition"
+                    href="amazonstore.html">Amazon Store</a>
+                <a class="bg-brand-orange hover:bg-orange-600 text-white text-xs font-bold uppercase tracking-wider py-2 px-6 rounded transition"
+                    href="intake.html">Start Your Build</a>
             </div>
             <!-- Mobile Menu Button -->
-            <button class="md:hidden text-white hover:text-brand-orange" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+            <button class="md:hidden text-white hover:text-brand-orange"
+                onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
                 <i class="fa-solid fa-bars text-2xl"></i>
             </button>
         </div>
         <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden md:hidden bg-[#0B0B2B] border-b border-gray-800 p-4 flex flex-col gap-4">
-            <a class="text-sm font-bold uppercase tracking-widest text-gray-300 hover:text-white" href="index.html">Home</a>
-            <a class="text-sm font-bold uppercase tracking-widest text-gray-300 hover:text-white" href="amazonstore.html">Amazon Store</a>
-            <a class="bg-brand-orange text-center text-white text-sm font-bold uppercase py-3 rounded" href="intake.html">Start Your Build</a>
+            <a class="text-sm font-bold uppercase tracking-widest text-gray-300 hover:text-white"
+                href="index.html">Home</a>
+            <a class="text-sm font-bold uppercase tracking-widest text-gray-300 hover:text-white"
+                href="amazonstore.html">Amazon Store</a>
+            <a class="bg-brand-orange text-center text-white text-sm font-bold uppercase py-3 rounded"
+                href="intake.html">Start Your Build</a>
         </div>
     </nav>
 
@@ -59,10 +68,10 @@
     <header class="py-20 bg-[#0B0B2B] relative border-b border-gray-900">
         <div class="container mx-auto px-4 text-center">
             <h1 class="font-display font-bold text-6xl md:text-8xl uppercase tracking-tight text-white mb-6">
-                Bikes <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-orange-300">For Sale</span>
+                Cycling <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-orange-300">Products for Sale</span>
             </h1>
             <p class="font-body text-xl text-gray-400 max-w-2xl mx-auto font-light">
-                Browse our selection of meticulously built and pro-tuned road and gravel bikes, ready for your next adventure.
+                Browse our selection of meticulously built and pro-tuned cycling products, ready for your next adventure.
             </p>
         </div>
     </header>
@@ -73,19 +82,27 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- BIKES_LIST_START -->
 
-            <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl overflow-hidden shadow-xl flex flex-col hover:border-brand-orange transition duration-300">
-                <div class="relative h-64 bg-gray-900">
-                    <img src="images/GT Avalanche 1.0 ver1.jpg" alt="Showroom Condition GT Avalanche 1.0 Disc - Restomod 1x drivetrain" class="w-full h-full object-cover opacity-80" />
+                <div
+                    class="bg-[#0B0B2B] border border-gray-800 rounded-xl overflow-hidden shadow-xl flex flex-col hover:border-brand-orange transition duration-300">
+                    <div class="relative h-64 bg-gray-900">
+                        <img src="images/GT Avalanche 1.0 ver1.jpg"
+                            alt="Showroom Condition GT Avalanche 1.0 Disc - Restomod 1x drivetrain"
+                            class="w-full h-full object-cover opacity-80" />
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <h3 class="text-2xl font-display font-bold text-white uppercase mb-2">Showroom Condition GT
+                            Avalanche 1.0 Disc - Restomod 1x drivetrain</h3>
+                        <div class="text-brand-orange font-display font-bold text-3xl mb-4">$800.00</div>
+                        <p class="text-gray-400 text-sm mb-6 flex-grow whitespace-pre-wrap">The ultimate Retro-Modern
+                            Hardtail. A rare opportunity to own a collector-grade 2009 GT Avalanche 1.0 Disc that looks
+                            and rides like it just rolled off the showroom floor.</p>
+                        <button
+                            onclick="openBikeModal('Showroom Condition GT Avalanche 1.0 Disc - Restomod 1x drivetrain')"
+                            class="w-full bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase py-3 rounded transition text-center mt-auto">
+                            Inquire
+                        </button>
+                    </div>
                 </div>
-                <div class="p-6 flex flex-col flex-grow">
-                    <h3 class="text-2xl font-display font-bold text-white uppercase mb-2">Showroom Condition GT Avalanche 1.0 Disc - Restomod 1x drivetrain</h3>
-                    <div class="text-brand-orange font-display font-bold text-3xl mb-4">$800.00</div>
-                    <p class="text-gray-400 text-sm mb-6 flex-grow whitespace-pre-wrap">The ultimate Retro-Modern Hardtail. A rare opportunity to own a collector-grade 2009 GT Avalanche 1.0 Disc that looks and rides like it just rolled off the showroom floor.</p>
-                    <button onclick="openBikeModal('Showroom Condition GT Avalanche 1.0 Disc - Restomod 1x drivetrain')" class="w-full bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase py-3 rounded transition text-center mt-auto">
-                        Inquire
-                    </button>
-                </div>
-            </div>
                 <!-- BIKES_LIST_END -->
             </div>
         </div>
@@ -95,7 +112,8 @@
     <footer class="bg-black border-t border-gray-900 py-12">
         <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="flex flex-col items-center md:items-start">
-                <span class="font-display font-bold text-3xl tracking-widest text-white leading-none">WEEECYCLE<span class="text-brand-orange">.NET</span></span>
+                <span class="font-display font-bold text-3xl tracking-widest text-white leading-none">WEEECYCLE<span
+                        class="text-brand-orange">.NET</span></span>
                 <span class="text-gray-500 text-xs uppercase tracking-[0.2em] mt-2">Building Speed. Fixing Fun.</span>
             </div>
             <div class="text-gray-600 text-xs uppercase tracking-wider">
@@ -104,63 +122,127 @@
         </div>
     </footer>
     <!-- Bike Inquiry Modal -->
-    <div id="bike-inquiry-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-        <div class="relative w-full max-w-2xl bg-[#0B0B2B] border border-gray-700 rounded-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
+    <div id="bike-inquiry-modal"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div
+            class="relative w-full max-w-2xl bg-[#0B0B2B] border border-gray-700 rounded-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
             <div class="flex items-center justify-between px-8 pt-8 pb-4 border-b border-gray-800">
-                <h2 class="font-display font-bold text-2xl text-white uppercase tracking-wide">Inquire About This Bike</h2>
-                <button onclick="closeBikeModal()" class="text-gray-400 hover:text-white transition text-2xl leading-none">&times;</button>
+                <h2 class="font-display font-bold text-2xl text-white uppercase tracking-wide">Inquire About This Bike
+                </h2>
+                <button onclick="closeBikeModal()"
+                    class="text-gray-400 hover:text-white transition text-2xl leading-none">&times;</button>
             </div>
             <form id="bike-inquiry-form" class="px-8 py-6 space-y-5" onsubmit="submitBikeInquiry(event)">
                 <input type="hidden" id="bike-inquiry-title" name="bikeTitle" />
                 <div>
-                    <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">Full Name <span class="text-brand-orange">*</span></label>
-                    <input type="text" name="fullName" required class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition" placeholder="Jane Doe" />
+                    <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">Full Name
+                        <span class="text-brand-orange">*</span></label>
+                    <input type="text" name="fullName" required
+                        class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition"
+                        placeholder="Jane Doe" />
                 </div>
                 <div>
-                    <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">Street Address <span class="text-brand-orange">*</span></label>
-                    <input type="text" name="address" required class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition" placeholder="123 Main St" />
+                    <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">Street Address
+                        <span class="text-brand-orange">*</span></label>
+                    <input type="text" name="address" required
+                        class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition"
+                        placeholder="123 Main St" />
                 </div>
                 <div>
-                    <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">City <span class="text-brand-orange">*</span></label>
-                    <input type="text" name="city" required class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition" placeholder="Springfield" />
+                    <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">City <span
+                            class="text-brand-orange">*</span></label>
+                    <input type="text" name="city" required
+                        class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition"
+                        placeholder="Springfield" />
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">State <span class="text-brand-orange">*</span></label>
-                        <select name="state" required class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition appearance-none">
+                        <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">State
+                            <span class="text-brand-orange">*</span></label>
+                        <select name="state" required
+                            class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition appearance-none">
                             <option value="" disabled selected>Select a state…</option>
-                            <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option>
-                            <option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option>
-                            <option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option>
-                            <option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option>
-                            <option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option>
-                            <option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option>
-                            <option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option>
-                            <option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option>
-                            <option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option>
-                            <option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option>
-                            <option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option>
-                            <option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option>
-                            <option>Wisconsin</option><option>Wyoming</option>
+                            <option>Alabama</option>
+                            <option>Alaska</option>
+                            <option>Arizona</option>
+                            <option>Arkansas</option>
+                            <option>California</option>
+                            <option>Colorado</option>
+                            <option>Connecticut</option>
+                            <option>Delaware</option>
+                            <option>Florida</option>
+                            <option>Georgia</option>
+                            <option>Hawaii</option>
+                            <option>Idaho</option>
+                            <option>Illinois</option>
+                            <option>Indiana</option>
+                            <option>Iowa</option>
+                            <option>Kansas</option>
+                            <option>Kentucky</option>
+                            <option>Louisiana</option>
+                            <option>Maine</option>
+                            <option>Maryland</option>
+                            <option>Massachusetts</option>
+                            <option>Michigan</option>
+                            <option>Minnesota</option>
+                            <option>Mississippi</option>
+                            <option>Missouri</option>
+                            <option>Montana</option>
+                            <option>Nebraska</option>
+                            <option>Nevada</option>
+                            <option>New Hampshire</option>
+                            <option>New Jersey</option>
+                            <option>New Mexico</option>
+                            <option>New York</option>
+                            <option>North Carolina</option>
+                            <option>North Dakota</option>
+                            <option>Ohio</option>
+                            <option>Oklahoma</option>
+                            <option>Oregon</option>
+                            <option>Pennsylvania</option>
+                            <option>Rhode Island</option>
+                            <option>South Carolina</option>
+                            <option>South Dakota</option>
+                            <option>Tennessee</option>
+                            <option>Texas</option>
+                            <option>Utah</option>
+                            <option>Vermont</option>
+                            <option>Virginia</option>
+                            <option>Washington</option>
+                            <option>West Virginia</option>
+                            <option>Wisconsin</option>
+                            <option>Wyoming</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">Zip Code <span class="text-brand-orange">*</span></label>
-                        <input type="text" name="zip" required pattern="\d{5}(-\d{4})?" class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition" placeholder="12345" />
+                        <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">Zip Code
+                            <span class="text-brand-orange">*</span></label>
+                        <input type="text" name="zip" required pattern="\d{5}(-\d{4})?"
+                            class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition"
+                            placeholder="12345" />
                     </div>
                 </div>
                 <div>
-                    <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">Mobile Phone <span class="text-brand-orange">*</span></label>
-                    <input type="tel" name="phone" required class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition" placeholder="(555) 555-5555" />
+                    <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">Mobile Phone
+                        <span class="text-brand-orange">*</span></label>
+                    <input type="tel" name="phone" required
+                        class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition"
+                        placeholder="(555) 555-5555" />
                 </div>
                 <div>
-                    <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">Questions / Comments</label>
-                    <textarea name="questions" rows="4" class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition resize-none" placeholder="Any questions about the bike, pickup, payment, etc…"></textarea>
+                    <label class="block text-gray-400 text-sm font-display uppercase tracking-wider mb-1">Questions /
+                        Comments</label>
+                    <textarea name="questions" rows="4"
+                        class="w-full bg-[#12122b] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-orange transition resize-none"
+                        placeholder="Any questions about the bike, pickup, payment, etc…"></textarea>
                 </div>
                 <p id="bike-inquiry-status" class="text-sm text-center hidden"></p>
                 <div class="flex gap-4 pt-2">
-                    <button type="button" onclick="closeBikeModal()" class="flex-1 border border-gray-600 text-gray-400 hover:text-white hover:border-white font-display uppercase tracking-widest py-3 rounded-lg transition">Cancel</button>
-                    <button type="submit" id="bike-inquiry-submit" class="flex-1 bg-brand-orange hover:bg-orange-500 text-brand-dark font-display font-bold uppercase tracking-widest py-3 rounded-lg transition shadow-xl">Send Inquiry</button>
+                    <button type="button" onclick="closeBikeModal()"
+                        class="flex-1 border border-gray-600 text-gray-400 hover:text-white hover:border-white font-display uppercase tracking-widest py-3 rounded-lg transition">Cancel</button>
+                    <button type="submit" id="bike-inquiry-submit"
+                        class="flex-1 bg-brand-orange hover:bg-orange-500 text-brand-dark font-display font-bold uppercase tracking-widest py-3 rounded-lg transition shadow-xl">Send
+                        Inquiry</button>
                 </div>
             </form>
         </div>
@@ -180,7 +262,7 @@
             document.getElementById('bike-inquiry-submit').disabled = false;
             document.getElementById('bike-inquiry-submit').textContent = 'Send Inquiry';
         }
-        document.getElementById('bike-inquiry-modal').addEventListener('click', function(e) {
+        document.getElementById('bike-inquiry-modal').addEventListener('click', function (e) {
             if (e.target === this) closeBikeModal();
         });
         async function submitBikeInquiry(e) {
@@ -234,4 +316,5 @@
         }
     </script>
 </body>
+
 </html>

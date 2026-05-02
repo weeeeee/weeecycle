@@ -61,7 +61,18 @@
       "Bash(git -C /home/swhitelex/weeecycle add netlify.toml netlify/functions/package.json)",
       "Bash(git -C /home/swhitelex/weeecycle add netlify/functions/submit-review.js)",
       "Bash(git rm *)",
-      "Bash(git reset *)"
+      "Bash(git reset *)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(curl -s http://localhost:3000/api/bikes)",
+      "Bash(node -e \"const d=[]; process.stdin.on\\('data',c=>d.push\\(c\\)\\); process.stdin.on\\('end',\\(\\)=>console.log\\(JSON.stringify\\(JSON.parse\\(d.join\\(''\\)\\), null, 2\\)\\)\\)\")",
+      "Bash(journalctl -u weeecycle -n 10 --no-pager)",
+      "Read(//etc/systemd/system/**)",
+      "Bash(sudo curl *)",
+      "Bash(sudo kill *)",
+      "Bash(curl -s http://localhost:80/)",
+      "Bash(curl -s -X POST http://localhost:3000/api/bikes -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(curl -s -X PUT http://localhost:3000/api/bikes/1 -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(curl -s http://localhost:80/bikes-for-sale.html)"
     ],
     "additionalDirectories": [
       "/home/swhitelex/weeecycle/images"
