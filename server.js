@@ -754,9 +754,9 @@ function syncBikesForSale() {
                             <div class="text-brand-orange font-display font-bold text-5xl tracking-tight leading-none drop-shadow-[0_0_15px_rgba(255,128,0,0.2)]">
                                 ${highlightedBike.price}
                             </div>
-                            <a href="contact.html?subject=Inquiry:%20${encodeURIComponent(highlightedBike.title)}" class="w-full sm:w-auto text-center bg-gray-200 hover:bg-white text-black font-display font-bold uppercase tracking-widest py-3 px-8 rounded transition transform hover:-translate-y-1 shadow-xl">
+                            <button onclick="document.getElementById('bike-inquiry-modal').classList.remove('hidden')" class="w-full sm:w-auto text-center bg-gray-200 hover:bg-white text-black font-display font-bold uppercase tracking-widest py-3 px-8 rounded transition transform hover:-translate-y-1 shadow-xl">
                                 Inquire Now
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -781,9 +781,9 @@ function syncBikesForSale() {
                     <h3 class="text-2xl font-display font-bold text-white uppercase mb-2">${row.title}</h3>
                     <div class="text-brand-orange font-display font-bold text-3xl mb-4">${row.price}</div>
                     <p class="text-gray-400 text-sm mb-6 flex-grow whitespace-pre-wrap">${row.description}</p>
-                    <a href="contact.html?subject=Inquiry:%20${encodeURIComponent(row.title)}" class="w-full bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase py-3 rounded transition text-center mt-auto">
+                    <button onclick="openBikeModal('${row.title.replace(/'/g, "\\'")}')" class="w-full bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase py-3 rounded transition text-center mt-auto">
                         Inquire
-                    </a>
+                    </button>
                 </div>
             </div>`;
         });
