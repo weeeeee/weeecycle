@@ -33,6 +33,7 @@ exports.handler = async (event) => {
         await transporter.sendMail({
             from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
             to: 'steve@weeecycle.net',
+            bcc: 'weeecycle.net+44226a0150@invite.trustpilot.com',
             subject: `New Review from ${name} — ${stars}`,
             html: `
                 <h2 style="font-family:sans-serif;color:#ff8000;">New Review Submitted</h2>
