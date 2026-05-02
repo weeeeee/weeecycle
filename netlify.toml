@@ -1,9 +1,16 @@
 [build]
   command = "echo 'skipping npm install for static site'"
   publish = "/"
+  functions = "netlify/functions"
 
 [[redirects]]
-  from = "/api/*"
-  to = "http://46.110.130.68:80/api/:splat"
+  from = "/api/comm/send"
+  to = "/.netlify/functions/send-inquiry"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/reviews"
+  to = "/.netlify/functions/submit-review"
   status = 200
   force = true

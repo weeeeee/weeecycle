@@ -481,11 +481,15 @@
                         status.classList.add('hidden');
 
                         try {
+                            const ctrl = new AbortController();
+                            const t = setTimeout(() => ctrl.abort(), 10000);
                             const res = await fetch('/api/reviews', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ name, rating, message })
+                                body: JSON.stringify({ name, rating, message }),
+                                signal: ctrl.signal
                             });
+                            clearTimeout(t);
 
                             const data = await res.json();
                             if (data.success) {
@@ -823,6 +827,8 @@
             `;
 
             try {
+                const ctrl = new AbortController();
+                const t = setTimeout(() => ctrl.abort(), 10000);
                 const res = await fetch('/api/comm/send', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -830,8 +836,10 @@
                         toEmail: 'steve@weeecycle.net',
                         subject: 'Bike Inquiry: GT Avalanche 1.0 Disc',
                         htmlBody
-                    })
+                    }),
+                    signal: ctrl.signal
                 });
+                clearTimeout(t);
                 const json = await res.json();
                 if (res.ok && json.success) {
                     status.textContent = 'Your inquiry was sent! We\'ll be in touch soon.';
