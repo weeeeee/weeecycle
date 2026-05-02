@@ -5,3 +5,5 @@ weeecycle.db
 *.log
 .env
 .DS_Store
+images/video/
+images/video */
