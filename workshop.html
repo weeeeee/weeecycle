@@ -3586,7 +3586,7 @@
             const list = document.getElementById('bikes-list');
             list.innerHTML = '<div class="p-4 text-gray-400 text-sm text-center animate-pulse">Loading...</div>';
             try {
-                const res = await fetch('/api/bikes');
+                const res = await fetch(`${API_URL}/bikes`);
                 if (!res.ok) throw new Error('Server returned ' + res.status);
                 const data = await res.json();
                 if (data.success) {
@@ -3662,7 +3662,7 @@
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
             try {
-                const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
                 const data = await res.json();
                 if (data.success) return data.url;
             } catch(e) { console.error("Upload error", e); }
@@ -3694,9 +3694,9 @@
             try {
                 let res;
                 if (id) {
-                    res = await fetch('/api/bikes/' + id, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                    res = await fetch(`${API_URL}/bikes/` + id, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
                 } else {
-                    res = await fetch('/api/bikes', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                    res = await fetch(`${API_URL}/bikes`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
                 }
                 if (!res.ok) throw new Error('Server error ' + res.status);
                 const result = await res.json();
@@ -3714,7 +3714,7 @@
 
         async function deleteBike(id) {
             if(confirm("Delete this bike?")) {
-                await fetch('/api/bikes/' + id, { method: 'DELETE' });
+                await fetch(`${API_URL}/bikes/` + id, { method: 'DELETE' });
                 fetchBikes();
             }
         }
