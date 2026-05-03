@@ -152,6 +152,11 @@
                 <i class="fa-solid fa-address-book w-6 text-center"></i>
                 <span class="font-display font-bold uppercase tracking-wide">Contacts</span>
             </button>
+            <button onclick="switchTab('dreambuild'); closeSidebarMobile()" id="nav-dreambuild"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition text-left">
+                <i class="fa-solid fa-bicycle w-6 text-center"></i>
+                <span class="font-display font-bold uppercase tracking-wide">Dream Build</span>
+            </button>
         </nav>
 
         <!-- User / Logout -->
@@ -392,6 +397,62 @@
                             <!-- Populated by JS -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- DREAM BUILD VIEW -->
+        <div id="view-dreambuild" class="hidden absolute inset-0 overflow-auto bg-[#050511]">
+            <div class="h-full flex flex-col md:flex-row">
+                <!-- Left panel: category + list -->
+                <div class="w-full md:w-80 border-r border-gray-800 bg-[#0B0B2B] flex flex-col flex-shrink-0">
+                    <div class="p-4 border-b border-gray-800 bg-[#050511]">
+                        <h2 class="font-display font-bold text-2xl uppercase text-brand-orange mb-3"><i class="fa-solid fa-bicycle mr-2"></i> Dream Build Specs</h2>
+                        <select id="component-category" onchange="renderComponentsList()" class="w-full bg-[#12122b] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none text-sm font-bold uppercase tracking-wider">
+                            <option value="frame">Frame</option>
+                            <option value="handlebar">Handlebar</option>
+                            <option value="stem">Stem</option>
+                            <option value="wheelset">Wheelset</option>
+                            <option value="groupset">Groupset</option>
+                            <option value="seatpost">Seatpost</option>
+                            <option value="saddle">Saddle</option>
+                            <option value="tires">Tires</option>
+                        </select>
+                    </div>
+                    <div id="components-list" class="flex-grow overflow-y-auto"></div>
+                    <div class="border-t border-gray-800 p-3">
+                        <button onclick="clearComponentEditor()" class="w-full text-gray-400 hover:text-white font-bold uppercase tracking-wider py-2 transition text-sm flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-plus"></i> New Component
+                        </button>
+                    </div>
+                </div>
+                <!-- Right panel: editor -->
+                <div class="flex-1 p-6 md:p-8 overflow-auto bg-[#050511] flex flex-col gap-5 max-w-2xl">
+                    <input type="hidden" id="component-id">
+                    <div>
+                        <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Name</label>
+                        <input type="text" id="component-name" class="w-full bg-[#0B0B2B] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange" placeholder="e.g. Aero Carbon Mk1">
+                    </div>
+                    <div>
+                        <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Description</label>
+                        <textarea id="component-description" rows="3" class="w-full bg-[#0B0B2B] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange" placeholder="Specs, material, sizing notes..."></textarea>
+                    </div>
+                    <div class="border border-gray-700 rounded p-4 bg-[#0B0B2B]">
+                        <label class="block text-brand-orange text-sm font-bold uppercase mb-2">Image</label>
+                        <div id="component-image-preview" class="w-full h-40 bg-gray-900 rounded mb-3 overflow-hidden flex items-center justify-center border border-gray-800">
+                            <span class="text-gray-600 text-xs italic">No image selected</span>
+                        </div>
+                        <input type="file" id="component-image-file" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-brand-orange file:text-white hover:file:bg-orange-600 mb-2" onchange="onComponentImageFileChange(this)">
+                        <p class="text-xs text-gray-500 mb-2">Or paste URL:</p>
+                        <input type="text" id="component-image-url" class="w-full bg-[#151535] border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-brand-orange text-sm" placeholder="https://..." oninput="onComponentImageUrlInput(this.value)">
+                    </div>
+                    <div>
+                        <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Product / Amazon Link</label>
+                        <input type="text" id="component-link-url" class="w-full bg-[#0B0B2B] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange" placeholder="https://amazon.com/...">
+                    </div>
+                    <div class="flex justify-end">
+                        <button onclick="saveComponentConfig()" id="component-save-btn" class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-8 py-3 rounded transition shadow-lg shadow-orange-900/50">Save</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -905,65 +966,6 @@
         </form>
     </dialog>
 
-    <!-- COMPONENT MANAGER MODAL -->
-    <dialog id="component-manager-modal" class="bg-[#0B0B2B] text-white p-0 rounded-xl shadow-2xl backdrop:bg-black/80 w-full max-w-5xl border border-gray-700 h-[85vh]">
-        <div class="h-full flex flex-col">
-            <div class="border-b border-gray-700 p-5 flex justify-between items-center bg-[#151535]">
-                <h3 class="font-display font-bold text-2xl uppercase tracking-wider text-brand-orange"><i class="fa-solid fa-bicycle mr-2"></i> Dream Build Specs</h3>
-                <button type="button" onclick="document.getElementById('component-manager-modal').close()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-2xl"></i></button>
-            </div>
-            <div class="flex-grow flex flex-col md:flex-row overflow-hidden">
-                <!-- Left panel: category + list -->
-                <div class="w-full md:w-2/5 border-r border-gray-700 bg-[#0B0B2B] flex flex-col">
-                    <div class="p-3 border-b border-gray-700 bg-[#0f0f1f]">
-                        <select id="component-category" onchange="renderComponentsList()" class="w-full bg-[#12122b] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none text-sm font-bold uppercase tracking-wider">
-                            <option value="frame">Frame</option>
-                            <option value="handlebar">Handlebar</option>
-                            <option value="stem">Stem</option>
-                            <option value="wheelset">Wheelset</option>
-                            <option value="groupset">Groupset</option>
-                            <option value="seatpost">Seatpost</option>
-                            <option value="saddle">Saddle</option>
-                            <option value="tires">Tires</option>
-                        </select>
-                    </div>
-                    <div id="components-list" class="flex-grow overflow-y-auto"></div>
-                </div>
-                <!-- Right panel: editor -->
-                <div class="w-full md:w-3/5 p-6 overflow-y-auto bg-[#050511] flex flex-col gap-4">
-                    <input type="hidden" id="component-id">
-                    <div>
-                        <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Name</label>
-                        <input type="text" id="component-name" class="w-full bg-[#0B0B2B] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange" placeholder="e.g. Aero Carbon Mk1">
-                    </div>
-                    <div>
-                        <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Description</label>
-                        <textarea id="component-description" rows="3" class="w-full bg-[#0B0B2B] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange" placeholder="Specs, material, sizing notes..."></textarea>
-                    </div>
-                    <div class="border border-gray-700 rounded p-4 bg-[#0B0B2B]">
-                        <label class="block text-brand-orange text-sm font-bold uppercase mb-2">Image</label>
-                        <div id="component-image-preview" class="w-full h-36 bg-gray-900 rounded mb-3 overflow-hidden flex items-center justify-center border border-gray-800">
-                            <span class="text-gray-600 text-xs italic">No image selected</span>
-                        </div>
-                        <input type="file" id="component-image-file" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-brand-orange file:text-white hover:file:bg-orange-600 mb-2" onchange="onComponentImageFileChange(this)">
-                        <p class="text-xs text-gray-500 mb-2">Or paste URL:</p>
-                        <input type="text" id="component-image-url" class="w-full bg-[#151535] border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-brand-orange text-sm" placeholder="https://..." oninput="onComponentImageUrlInput(this.value)">
-                    </div>
-                    <div>
-                        <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Product / Amazon Link</label>
-                        <input type="text" id="component-link-url" class="w-full bg-[#0B0B2B] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange" placeholder="https://amazon.com/...">
-                    </div>
-                </div>
-            </div>
-            <div class="p-4 border-t border-gray-700 bg-[#151535] flex justify-between items-center">
-                <button onclick="clearComponentEditor()" class="text-gray-400 hover:text-white font-bold uppercase tracking-wider px-4 py-2 transition text-sm"><i class="fa-solid fa-plus mr-1"></i> New</button>
-                <div class="flex gap-2">
-                    <button onclick="document.getElementById('component-manager-modal').close()" class="bg-gray-800 hover:bg-gray-700 text-white font-bold uppercase tracking-wider px-5 py-2 rounded transition text-sm">Close</button>
-                    <button onclick="saveComponentConfig()" id="component-save-btn" class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-6 py-2 rounded transition shadow-lg shadow-orange-900/50 text-sm">Save</button>
-                </div>
-            </div>
-        </div>
-    </dialog>
 
     <script>
         // --- MOBILE NAV ---
@@ -1130,13 +1132,15 @@
 
         function openDreamBuildSpecs() {
             document.getElementById('settings-modal').close();
-            setTimeout(() => openComponentManagerModal(), 50);
+            switchTab('dreambuild');
+            clearComponentEditor();
+            renderComponentsList();
         }
 
         function openComponentManagerModal() {
+            switchTab('dreambuild');
             clearComponentEditor();
             renderComponentsList();
-            document.getElementById('component-manager-modal').showModal();
         }
 
         async function renderComponentsList() {
@@ -2909,7 +2913,7 @@
         // TABS
         function switchTab(tab) {
             // Hide all views
-            ['dashboard', 'jobs', 'inventory', 'contacts'].forEach(t => {
+            ['dashboard', 'jobs', 'inventory', 'contacts', 'dreambuild'].forEach(t => {
                 const view = document.getElementById(`view-${t}`);
                 if (view) view.classList.add('hidden');
 
