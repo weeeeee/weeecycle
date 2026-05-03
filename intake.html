@@ -342,47 +342,38 @@
             loadCustomComponents();
         }
 
-        function loadCustomComponents() {
-            const stored = localStorage.getItem('intake_components_config');
+        async function loadCustomComponents() {
             let config = {};
-            if (stored) {
-                config = JSON.parse(stored);
-            } else {
-                // Fallback to defaults
-                config = {
-                    frame: [
-                        { id: '1', name: 'Aero Carbon Mk1', image: '/images/alloy_placeholder.png', url: '#' },
-                        { id: '2', name: 'Endurance Pro', image: '/images/alloy_placeholder.png', url: '#' }
-                    ],
-                    handlebar: [{ id: '1', name: 'Carbon Drop Bars', image: '/images/placeholder_handlebar.png', url: '#' }],
-                    stem: [{ id: '1', name: 'Alloy Stem', image: '/images/placeholder_stem.png', url: '#' }],
-                    wheelset: [{ id: '1', name: 'Aero Carbon Wheels', image: '/images/placeholder_wheelset.png', url: '#' }],
-                    groupset: [{ id: '1', name: 'Electronic Groupset', image: '/images/placeholder_groupset.png', url: '#' }],
-                    seatpost: [{ id: '1', name: 'Carbon Seatpost', image: '/images/placeholder_seatpost.png', url: '#' }],
-                    saddle: [{ id: '1', name: 'Racing Saddle', image: '/images/placeholder_saddle.png', url: '#' }],
-                    tires: [{ id: '1', name: 'Tan Wall Tires', image: '/images/placeholder_tires.png', url: '#' }]
-                };
+            try {
+                const res = await fetch('/api/dream-build-components');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) config = data.data || {};
+                }
+            } catch (e) {
+                console.warn('Could not load dream build components from server:', e);
             }
-            
+
             categories.forEach(cat => {
                 const grid = document.getElementById('specific-' + cat + '-grid');
                 if (!grid) return;
-                
+
                 grid.innerHTML = '';
                 const items = config[cat] || [];
-                
+
                 if (items.length === 0) {
-                    grid.innerHTML = '<div class="col-span-2 text-gray-500 text-sm">No items configured. Please use Workshop Dashboard.</div>';
+                    grid.innerHTML = '<div class="col-span-2 text-gray-500 text-sm">No items configured for this category.</div>';
+                    return;
                 }
 
                 items.forEach(item => {
-                    const safeName = item.name.replace(/'/g, "\'");
+                    const safeName = (item.name || '').replace(/'/g, "\\'");
                     grid.innerHTML += `
-                        <div class="component-card bg-brand-dark border border-gray-700 rounded-lg p-3 flex flex-col gap-2 transition hover:border-brand-orange cursor-pointer" 
+                        <div class="component-card bg-brand-dark border border-gray-700 rounded-lg p-3 flex flex-col gap-2 transition hover:border-brand-orange cursor-pointer"
                              onclick="selectSpecificComponent('${cat}', '${safeName}', this)">
-                            <img src="${item.image}" alt="${item.name}" class="w-full h-32 object-cover rounded bg-gray-800">
+                            <img src="${item.image_url || ''}" alt="${item.name}" class="w-full h-32 object-cover rounded bg-gray-800">
                             <div class="text-white font-bold text-sm">${item.name}</div>
-                            <a href="${item.url}" target="_blank" class="text-xs text-blue-400 hover:text-blue-300" onclick="event.stopPropagation()">View on Amazon</a>
+                            ${item.link_url ? `<a href="${item.link_url}" target="_blank" class="text-xs text-blue-400 hover:text-blue-300" onclick="event.stopPropagation()">View Product</a>` : ''}
                             <button type="button" class="mt-auto bg-gray-700 text-white text-xs py-2 rounded hover:bg-brand-orange transition select-btn">Select</button>
                         </div>
                     `;

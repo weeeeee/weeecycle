@@ -161,6 +161,17 @@ db.serialize(() => {
             is_highlighted INTEGER DEFAULT 0
         )
     `);
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS dream_build_components (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            category TEXT NOT NULL,
+            name TEXT NOT NULL,
+            image_url TEXT,
+            link_url TEXT,
+            sort_order INTEGER DEFAULT 0
+        )
+    `);
 });
 
 // --- API ROUTES ---
@@ -855,6 +866,39 @@ app.delete('/api/bikes/:id', (req, res) => {
     db.run("DELETE FROM bikes_for_sale WHERE id = ?", [id], function (err) {
         if (err) return res.status(500).json({ error: err.message });
         syncBikesForSale();
+        res.json({ success: true });
+    });
+});
+
+// --- DREAM BUILD COMPONENTS ---
+app.get('/api/dream-build-components', (req, res) => {
+    db.all("SELECT * FROM dream_build_components ORDER BY category, sort_order, id", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        const grouped = {};
+        rows.forEach(r => {
+            if (!grouped[r.category]) grouped[r.category] = [];
+            grouped[r.category].push(r);
+        });
+        res.json({ success: true, data: grouped });
+    });
+});
+
+app.post('/api/dream-build-components', (req, res) => {
+    const { category, name, image_url, link_url } = req.body;
+    if (!category || !name) return res.status(400).json({ error: 'category and name are required' });
+    db.run(
+        "INSERT INTO dream_build_components (category, name, image_url, link_url) VALUES (?, ?, ?, ?)",
+        [category, name, image_url || '', link_url || ''],
+        function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ success: true, id: this.lastID });
+        }
+    );
+});
+
+app.delete('/api/dream-build-components/:id', (req, res) => {
+    db.run("DELETE FROM dream_build_components WHERE id = ?", [req.params.id], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
         res.json({ success: true });
     });
 });
