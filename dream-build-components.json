@@ -38,5 +38,16 @@
       "sort_order": 0,
       "description": "$304.30"
     }
+  ],
+  "handlebar": [
+    {
+      "id": 5,
+      "category": "handlebar",
+      "name": "RXL SL Carbon Handlebars Road Bike Bicycle Drop Handlebars",
+      "image_url": "images/affiliate-1777834930809-477023641.png",
+      "link_url": "https://amzn.to/4djGE4K",
+      "sort_order": 0,
+      "description": "$45.99"
+    }
   ]
 }
