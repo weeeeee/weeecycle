@@ -67,5 +67,16 @@
       "sort_order": 0,
       "description": "$119.99\nSizes (41, 43, 47, 50, 53cm)"
     }
+  ],
+  "stem": [
+    {
+      "id": 8,
+      "category": "stem",
+      "name": "Ritchey, Comp 4-Axis 30D Stem",
+      "image_url": "",
+      "link_url": "https://amzn.to/4up6jyE",
+      "sort_order": 0,
+      "description": ""
+    }
   ]
 }
