@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Admin / internal pages — do not index
+Disallow: /workshop.html
+Disallow: /login.html
+Disallow: /reset-password.html
+Disallow: /stock.html
+Disallow: /intake.html
+
+Sitemap: https://weeecycle.net/sitemap.xml
