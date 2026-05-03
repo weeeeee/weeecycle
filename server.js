@@ -616,18 +616,21 @@ app.post('/api/settings/toggle-section', (req, res) => {
         // Save back to disk
         fs.writeFileSync(indexPath, html, 'utf8');
 
-        // Execute git commands to push the deployment
+        // Push to GitHub — skip commit if nothing changed (already in correct state)
         console.log(`Toggled ${section} visibility -> ${isVisible}. Pushing to GitHub...`);
-
-        exec('git add index.html && git commit -m "chore: toggle visibility via workshop" && git push',
-            { cwd: __dirname }, (err, stdout, stderr) => {
-                if (err) {
-                    console.error("Git Push Failed:", stderr);
-                    return res.status(200).json({ success: false, error: "Settings applied locally, but failed to sync to GitHub." });
-                }
-                console.log("Git Push Successful.");
-                res.json({ success: true, message: "Site deployed successfully." });
-            });
+        const gitCmd = 'git add index.html && git diff --quiet --cached && echo "NO_CHANGE" || git commit -m "chore: toggle visibility via workshop" && git push';
+        exec(gitCmd, { cwd: __dirname }, (err, stdout, stderr) => {
+            if (stdout.includes('NO_CHANGE')) {
+                // File was already in the correct state — no commit needed
+                return res.json({ success: true, message: "Already up to date." });
+            }
+            if (err) {
+                console.error("Git Push Failed:", stderr);
+                return res.status(200).json({ success: false, error: "Settings saved locally but failed to sync to GitHub." });
+            }
+            console.log("Git Push Successful.");
+            res.json({ success: true, message: "Site deployed successfully." });
+        });
 
     } catch (e) {
         console.error("Toggle error:", e);

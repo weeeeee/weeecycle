@@ -27,6 +27,30 @@
         }
     </script>
     <style>
+        /* Site toggle switch */
+        .site-toggle { display: inline-flex; align-items: center; cursor: pointer; }
+        .site-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .site-toggle .track {
+            width: 44px; height: 24px;
+            background: #374151;
+            border-radius: 12px;
+            position: relative;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .site-toggle .track::after {
+            content: '';
+            position: absolute;
+            top: 2px; left: 2px;
+            width: 20px; height: 20px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            transition: transform 0.2s;
+        }
+        .site-toggle input:checked + .track { background: #FF8000; }
+        .site-toggle input:checked + .track::after { transform: translateX(20px); }
+
         .kanban-col {
             min-height: 500px;
         }
@@ -710,26 +734,23 @@
                 <div class="space-y-5">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-bold text-gray-300">Show "The Garage" (Services)</span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="toggle-services" class="sr-only peer"
-                                onchange="toggleSiteSection('services', this.checked)">
-                            <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-brand-orange after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></div>
+                        <label class="site-toggle">
+                            <input type="checkbox" id="toggle-services" onchange="toggleSiteSection('services', this.checked)">
+                            <div class="track"></div>
                         </label>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-bold text-gray-300">Show "What Customers Say"</span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="toggle-reviews" class="sr-only peer"
-                                onchange="toggleSiteSection('reviews', this.checked)">
-                            <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-brand-orange after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></div>
+                        <label class="site-toggle">
+                            <input type="checkbox" id="toggle-reviews" onchange="toggleSiteSection('reviews', this.checked)">
+                            <div class="track"></div>
                         </label>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-bold text-gray-300">Show "Cycling Products for Sale"</span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="toggle-bikes-for-sale" class="sr-only peer"
-                                onchange="toggleSiteSection('bikes-for-sale', this.checked)">
-                            <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-brand-orange after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></div>
+                        <label class="site-toggle">
+                            <input type="checkbox" id="toggle-bikes-for-sale" onchange="toggleSiteSection('bikes-for-sale', this.checked)">
+                            <div class="track"></div>
                         </label>
                     </div>
                     <p class="text-xs text-gray-500 mt-2 text-center" id="toggle-status-msg">Changes automatically sync
@@ -1006,6 +1027,7 @@
                 if (data.success) {
                     document.getElementById('toggle-services').checked = data.status.services;
                     document.getElementById('toggle-reviews').checked = data.status.reviews;
+                    document.getElementById('toggle-bikes-for-sale').checked = data.status.bikes;
                 }
             } catch (e) {
                 console.error("Could not load site status");
