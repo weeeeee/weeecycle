@@ -996,6 +996,12 @@
 
 
     <script>
+        // Workshop requires local server — redirect away from Netlify/public domain
+        if (window.location.hostname === 'weeecycle.net') {
+            document.body.innerHTML = '<div style="font-family:monospace;padding:40px;background:#0a0a23;color:#fff;min-height:100vh"><h2 style="color:#FF8000">Admin Panel — Local Access Only</h2><p>This page only works when accessed from your local server.</p><p>Open this instead: <a href="http://localhost:3000/workshop.html" style="color:#FF8000">http://localhost:3000/workshop.html</a></p></div>';
+            throw new Error('Redirected: public domain, no backend');
+        }
+
         const API_URL = '/api';
 
         // --- MOBILE NAV ---
