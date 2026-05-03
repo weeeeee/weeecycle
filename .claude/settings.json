@@ -72,7 +72,9 @@
       "Bash(curl -s http://localhost:80/)",
       "Bash(curl -s -X POST http://localhost:3000/api/bikes -H 'Content-Type: application/json' -d '{ *)",
       "Bash(curl -s -X PUT http://localhost:3000/api/bikes/1 -H 'Content-Type: application/json' -d '{ *)",
-      "Bash(curl -s http://localhost:80/bikes-for-sale.html)"
+      "Bash(curl -s http://localhost:80/bikes-for-sale.html)",
+      "Bash(curl -s http://localhost:80/api/bikes)",
+      "Bash(curl -s -X PUT http://localhost:3000/api/bikes/2 -H 'Content-Type: application/json' -d '{\"title\":\"Garmin Tacx OG Smart Trainer w/ 11 speed cassette attached\",\"price\":\"$150.00\",\"description\":\"The OG Garmin Tacx has a 11 speed cassette attached. Connects to Zwift, Rouvvy, and Training Peaks platforms. It works very well and also includes ERG mode for training. \",\"imageUrl\":\"images/affiliate-1777753363241-775541069.jpg\",\"videoUrl\":\"\",\"isHighlighted\":false}')"
     ],
     "additionalDirectories": [
       "/home/swhitelex/weeecycle/images"
