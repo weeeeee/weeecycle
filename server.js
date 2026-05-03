@@ -173,6 +173,9 @@ db.serialize(() => {
             sort_order INTEGER DEFAULT 0
         )
     `);
+
+    // Migration: add description column if it doesn't exist (for DBs created before this column was added)
+    db.run(`ALTER TABLE dream_build_components ADD COLUMN description TEXT`, () => {});
 });
 
 // --- API ROUTES ---

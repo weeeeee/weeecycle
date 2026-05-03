@@ -996,6 +996,8 @@
 
 
     <script>
+        const API_URL = '/api';
+
         // --- MOBILE NAV ---
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -2373,8 +2375,6 @@
         // CONTACTS LOGIC
 
         // API HELPERS
-        // Reverted to localhost for desktop/laptop stability
-        const API_URL = 'http://localhost:3000/api';
 
         async function fetchContacts() {
             const statusIndicator = document.getElementById('api-status');
