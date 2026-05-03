@@ -680,7 +680,7 @@
             <!-- Dream Build Specs -->
             <div class="border-t border-gray-700 pt-4 mt-4">
                 <h4 class="font-bold text-lg border-b border-gray-700 pb-2 mb-4">Dream Build Specs</h4>
-                <button onclick="openComponentManagerModal(); document.getElementById('settings-modal').close()"
+                <button type="button" onclick="openDreamBuildSpecs()"
                     class="w-full bg-[#1e1e3f] hover:bg-brand-orange text-white py-2 rounded border border-gray-600 transition flex justify-center items-center gap-2">
                     <i class="fa-solid fa-bicycle"></i> Manage Dream Build Components
                 </button>
@@ -1125,6 +1125,11 @@
         // --- COMPONENT MANAGER LOGIC ---
         let allComponents = {};
         let selectedComponentId = null;
+
+        function openDreamBuildSpecs() {
+            document.getElementById('settings-modal').close();
+            setTimeout(() => openComponentManagerModal(), 50);
+        }
 
         function openComponentManagerModal() {
             clearComponentEditor();
