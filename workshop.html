@@ -778,10 +778,13 @@
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="border border-gray-700 rounded p-4 bg-[#0B0B2B]">
-                            <label class="block text-brand-orange text-sm font-bold uppercase mb-2">Upload Image</label>
-                            <input type="file" id="bike-image-file" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-brand-orange file:text-white hover:file:bg-orange-600 mb-2">
+                            <label class="block text-brand-orange text-sm font-bold uppercase mb-2">Image</label>
+                            <div id="bike-image-preview" class="w-full h-36 bg-gray-900 rounded mb-3 overflow-hidden flex items-center justify-center border border-gray-800">
+                                <span class="text-gray-600 text-xs italic">No image selected</span>
+                            </div>
+                            <input type="file" id="bike-image-file" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-brand-orange file:text-white hover:file:bg-orange-600 mb-2" onchange="onBikeImageFileChange(this)">
                             <p class="text-xs text-gray-500 mb-2">Or paste URL:</p>
-                            <input type="text" id="bike-image-url" class="w-full bg-[#151535] border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-brand-orange text-sm" placeholder="https://...">
+                            <input type="text" id="bike-image-url" class="w-full bg-[#151535] border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-brand-orange text-sm" placeholder="https://..." oninput="onBikeImageUrlInput(this.value)">
                         </div>
                         
                         <div class="border border-gray-700 rounded p-4 bg-[#0B0B2B]">
@@ -3625,6 +3628,26 @@
             `).join('');
         }
 
+        function updateBikeImagePreview(src) {
+            const preview = document.getElementById('bike-image-preview');
+            if (src) {
+                preview.innerHTML = `<img src="${src}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<span class=\\'text-red-400 text-xs\\'>Cannot load image</span>'">`;
+            } else {
+                preview.innerHTML = '<span class="text-gray-600 text-xs italic">No image selected</span>';
+            }
+        }
+
+        function onBikeImageFileChange(input) {
+            if (!input.files.length) return;
+            updateBikeImagePreview(URL.createObjectURL(input.files[0]));
+            document.getElementById('bike-image-url').value = '';
+        }
+
+        function onBikeImageUrlInput(url) {
+            updateBikeImagePreview(url || null);
+            if (url) document.getElementById('bike-image-file').value = '';
+        }
+
         function editBike(id) {
             const b = allBikes.find(x => x.id === id);
             if (!b) return;
@@ -3637,6 +3660,7 @@
             document.getElementById('bike-highlighted').checked = b.is_highlighted === 1;
             document.getElementById('bike-image-file').value = '';
             document.getElementById('bike-video-file').value = '';
+            updateBikeImagePreview(b.image_url || null);
         }
 
         function clearBikeEditor() {
@@ -3649,6 +3673,7 @@
             document.getElementById('bike-highlighted').checked = false;
             document.getElementById('bike-image-file').value = '';
             document.getElementById('bike-video-file').value = '';
+            updateBikeImagePreview(null);
         }
 
         function openBikesManager() {
@@ -3664,31 +3689,40 @@
             formData.append('file', fileInput.files[0]);
             try {
                 const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
+                if (!res.ok) throw new Error('Upload server error ' + res.status);
                 const data = await res.json();
                 if (data.success) return data.url;
-            } catch(e) { console.error("Upload error", e); }
-            return null;
+                throw new Error(data.error || 'Upload failed');
+            } catch(e) {
+                console.error("Upload error:", e);
+                throw e;
+            }
         }
 
         async function saveBike() {
             const btn = document.getElementById('save-bike-btn');
             btn.textContent = "Saving...";
-            
+
             const id = document.getElementById('bike-id').value;
             const title = document.getElementById('bike-title').value;
             const price = document.getElementById('bike-price').value;
             const description = document.getElementById('bike-description').value;
             const isHighlighted = document.getElementById('bike-highlighted').checked;
-            
+
             let imageUrl = document.getElementById('bike-image-url').value;
             let videoUrl = document.getElementById('bike-video-url').value;
 
-            // Handle uploads
-            const uploadedImage = await uploadFile('bike-image-file');
-            if (uploadedImage) imageUrl = uploadedImage;
-            
-            const uploadedVideo = await uploadFile('bike-video-file');
-            if (uploadedVideo) videoUrl = uploadedVideo;
+            try {
+                const uploadedImage = await uploadFile('bike-image-file');
+                if (uploadedImage) { imageUrl = uploadedImage; updateBikeImagePreview(imageUrl); }
+
+                const uploadedVideo = await uploadFile('bike-video-file');
+                if (uploadedVideo) videoUrl = uploadedVideo;
+            } catch(e) {
+                btn.textContent = "Upload Error: " + e.message;
+                setTimeout(() => { btn.textContent = "Save"; }, 4000);
+                return;
+            }
 
             const payload = { title, price, description, imageUrl, videoUrl, isHighlighted };
             
