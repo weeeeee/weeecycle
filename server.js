@@ -621,8 +621,8 @@ app.post('/api/settings/toggle-section', (req, res) => {
 
         // Push to GitHub — skip commit if nothing changed (already in correct state)
         console.log(`Toggled ${section} visibility -> ${isVisible}. Pushing to GitHub...`);
-        const gitCmd = 'git add index.html && git diff --quiet --cached && echo "NO_CHANGE" || git commit -m "chore: toggle visibility via workshop" && git push';
-        exec(gitCmd, { cwd: __dirname }, (err, stdout, stderr) => {
+        const gitCmd = 'git add index.html && (git diff --quiet --cached && echo "NO_CHANGE" || (git commit -m "chore: toggle visibility via workshop" && git push))';
+        exec(gitCmd, { cwd: __dirname, timeout: 30000 }, (err, stdout, stderr) => {
             if (stdout.includes('NO_CHANGE')) {
                 // File was already in the correct state — no commit needed
                 return res.json({ success: true, message: "Already up to date." });
