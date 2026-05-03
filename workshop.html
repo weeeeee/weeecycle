@@ -706,25 +706,31 @@
             <!-- Live Website Appearance Toggles -->
             <div class="border-t border-gray-700 pt-4 mt-2">
                 <h4 class="font-bold text-lg border-b border-gray-700 pb-2 mb-4">Live Website Appearance</h4>
-                <div class="space-y-4">
-                    <label class="flex items-center justify-between cursor-pointer">
+                <div class="space-y-5">
+                    <div class="flex items-center justify-between">
                         <span class="text-sm font-bold text-gray-300">Show "The Garage" (Services)</span>
-                        <input type="checkbox" id="toggle-services"
-                            class="form-checkbox h-5 w-5 rounded text-brand-orange bg-gray-800 border-gray-700"
-                            onchange="toggleSiteSection('services', this.checked)">
-                    </label>
-                    <label class="flex items-center justify-between cursor-pointer">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="toggle-services" class="sr-only peer"
+                                onchange="toggleSiteSection('services', this.checked)">
+                            <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-brand-orange after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between">
                         <span class="text-sm font-bold text-gray-300">Show "What Customers Say"</span>
-                        <input type="checkbox" id="toggle-reviews"
-                            class="form-checkbox h-5 w-5 rounded text-brand-orange bg-gray-800 border-gray-700"
-                            onchange="toggleSiteSection('reviews', this.checked)">
-                    </label>
-                    <label class="flex items-center justify-between cursor-pointer">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="toggle-reviews" class="sr-only peer"
+                                onchange="toggleSiteSection('reviews', this.checked)">
+                            <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-brand-orange after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between">
                         <span class="text-sm font-bold text-gray-300">Show "Cycling Products for Sale"</span>
-                        <input type="checkbox" id="toggle-bikes-for-sale"
-                            class="form-checkbox h-5 w-5 rounded text-brand-orange bg-gray-800 border-gray-700"
-                            onchange="toggleSiteSection('bikes-for-sale', this.checked)">
-                    </label>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="toggle-bikes-for-sale" class="sr-only peer"
+                                onchange="toggleSiteSection('bikes-for-sale', this.checked)">
+                            <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-brand-orange after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></div>
+                        </label>
+                    </div>
                     <p class="text-xs text-gray-500 mt-2 text-center" id="toggle-status-msg">Changes automatically sync
                         to live website.</p>
                 </div>
