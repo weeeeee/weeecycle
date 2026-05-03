@@ -450,8 +450,9 @@
                         <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Product / Amazon Link</label>
                         <input type="text" id="component-link-url" class="w-full bg-[#0B0B2B] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange" placeholder="https://amazon.com/...">
                     </div>
-                    <div class="flex justify-end">
-                        <button onclick="saveComponentConfig()" id="component-save-btn" class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-8 py-3 rounded transition shadow-lg shadow-orange-900/50">Save</button>
+                    <div class="flex justify-between items-center">
+                        <button onclick="deleteSelectedComponent()" id="component-delete-btn" class="hidden text-red-500 hover:text-red-300 font-bold uppercase tracking-wider text-sm transition flex items-center gap-2"><i class="fa-solid fa-trash"></i> Delete</button>
+                        <button onclick="saveComponentConfig()" id="component-save-btn" class="ml-auto bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-8 py-3 rounded transition shadow-lg shadow-orange-900/50">Save</button>
                     </div>
                 </div>
             </div>
@@ -1171,7 +1172,7 @@
                             <div class="font-bold text-sm text-white group-hover:text-brand-orange transition truncate">${item.name}</div>
                             ${item.description ? `<div class="text-xs text-gray-500 truncate">${item.description}</div>` : ''}
                         </div>
-                        <button type="button" onclick="event.stopPropagation(); deleteComponentConfig(${item.id})" class="text-gray-600 hover:text-red-500 p-1 flex-shrink-0"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <button type="button" onclick="event.stopPropagation(); deleteComponentConfig(${item.id})" class="text-red-500 hover:text-red-300 p-2 flex-shrink-0 transition" title="Delete"><i class="fa-solid fa-trash text-sm"></i></button>
                     </div>
                 `).join('');
             } catch (e) {
@@ -1192,7 +1193,7 @@
             document.getElementById('component-link-url').value = item.link_url || '';
             document.getElementById('component-image-file').value = '';
             updateComponentImagePreview(item.image_url || null);
-            // Highlight selected row
+            document.getElementById('component-delete-btn').classList.remove('hidden');
             document.querySelectorAll('[id^="comp-row-"]').forEach(r => r.classList.remove('bg-gray-900', 'border-l-2', 'border-brand-orange'));
             const row = document.getElementById('comp-row-' + id);
             if (row) row.classList.add('bg-gray-900', 'border-l-2', 'border-brand-orange');
@@ -1207,7 +1208,15 @@
             document.getElementById('component-image-file').value = '';
             document.getElementById('component-link-url').value = '';
             updateComponentImagePreview(null);
+            document.getElementById('component-delete-btn').classList.add('hidden');
             document.querySelectorAll('[id^="comp-row-"]').forEach(r => r.classList.remove('bg-gray-900', 'border-l-2', 'border-brand-orange'));
+        }
+
+        async function deleteSelectedComponent() {
+            const id = selectedComponentId;
+            if (!id) return;
+            if (!confirm('Remove this component?')) return;
+            await deleteComponentConfig(id);
         }
 
         function updateComponentImagePreview(src) {
