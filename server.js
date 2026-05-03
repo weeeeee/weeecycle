@@ -796,7 +796,7 @@ function syncBikesForSale() {
             fs.writeFileSync(listPath, pageHtml);
         }
 
-        exec(`git add index.html bikes-for-sale.html && git commit -m "chore: sync bikes for sale" && git push`, { cwd: __dirname });
+        exec(`git add index.html bikes-for-sale.html images/ && git commit -m "chore: sync bikes for sale" && git push`, { cwd: __dirname });
     });
 }
 
