@@ -904,19 +904,17 @@
             </div>
         </form>
     <!-- COMPONENT MANAGER MODAL -->
-    <dialog id="component-manager-modal" class="bg-[#12122b] border border-gray-700 rounded-xl shadow-2xl w-full max-w-2xl backdrop:bg-black/80 text-white p-0">
-        <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-[#0f0f1f] rounded-t-xl">
-            <h3 class="font-display font-bold text-xl uppercase tracking-wider text-brand-orange"><i class="fa-solid fa-bicycle mr-2"></i> Dream Build Specs</h3>
-            <button type="button" onclick="document.getElementById('component-manager-modal').close()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
-        </div>
-        <div class="p-6">
-            <!-- Add New Component Form -->
-            <form id="component-form" onsubmit="saveComponentConfig(event)" class="space-y-4 bg-[#0a0a1a] p-4 rounded border border-gray-800 mb-6">
-                <h4 class="font-bold text-sm text-gray-300 border-b border-gray-800 pb-2 mb-2">Add Component Option</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="md:col-span-2">
-                        <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Category</label>
-                        <select id="component-category" onchange="renderComponentsList()" class="w-full bg-[#12122b] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
+    <dialog id="component-manager-modal" class="bg-[#0B0B2B] text-white p-0 rounded-xl shadow-2xl backdrop:bg-black/80 w-full max-w-5xl border border-gray-700 h-[85vh]">
+        <div class="h-full flex flex-col">
+            <div class="border-b border-gray-700 p-5 flex justify-between items-center bg-[#151535]">
+                <h3 class="font-display font-bold text-2xl uppercase tracking-wider text-brand-orange"><i class="fa-solid fa-bicycle mr-2"></i> Dream Build Specs</h3>
+                <button type="button" onclick="document.getElementById('component-manager-modal').close()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            </div>
+            <div class="flex-grow flex flex-col md:flex-row overflow-hidden">
+                <!-- Left panel: category + list -->
+                <div class="w-full md:w-2/5 border-r border-gray-700 bg-[#0B0B2B] flex flex-col">
+                    <div class="p-3 border-b border-gray-700 bg-[#0f0f1f]">
+                        <select id="component-category" onchange="renderComponentsList()" class="w-full bg-[#12122b] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none text-sm font-bold uppercase tracking-wider">
                             <option value="frame">Frame</option>
                             <option value="handlebar">Handlebar</option>
                             <option value="stem">Stem</option>
@@ -927,29 +925,40 @@
                             <option value="tires">Tires</option>
                         </select>
                     </div>
+                    <div id="components-list" class="flex-grow overflow-y-auto"></div>
+                </div>
+                <!-- Right panel: editor -->
+                <div class="w-full md:w-3/5 p-6 overflow-y-auto bg-[#050511] flex flex-col gap-4">
+                    <input type="hidden" id="component-id">
                     <div>
-                        <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Item Name</label>
-                        <input type="text" id="component-name" required class="w-full bg-[#12122b] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
+                        <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Name</label>
+                        <input type="text" id="component-name" class="w-full bg-[#0B0B2B] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange" placeholder="e.g. Aero Carbon Mk1">
                     </div>
                     <div>
-                        <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Amazon / Product Link</label>
-                        <input type="url" id="component-url" class="w-full bg-[#12122b] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none" placeholder="https://...">
+                        <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Description</label>
+                        <textarea id="component-description" rows="3" class="w-full bg-[#0B0B2B] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange" placeholder="Specs, material, sizing notes..."></textarea>
                     </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Image URL</label>
-                        <input type="url" id="component-image" placeholder="https://..." class="w-full bg-[#12122b] border border-gray-700 rounded p-2 text-white focus:border-brand-orange outline-none">
+                    <div class="border border-gray-700 rounded p-4 bg-[#0B0B2B]">
+                        <label class="block text-brand-orange text-sm font-bold uppercase mb-2">Image</label>
+                        <div id="component-image-preview" class="w-full h-36 bg-gray-900 rounded mb-3 overflow-hidden flex items-center justify-center border border-gray-800">
+                            <span class="text-gray-600 text-xs italic">No image selected</span>
+                        </div>
+                        <input type="file" id="component-image-file" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-brand-orange file:text-white hover:file:bg-orange-600 mb-2" onchange="onComponentImageFileChange(this)">
+                        <p class="text-xs text-gray-500 mb-2">Or paste URL:</p>
+                        <input type="text" id="component-image-url" class="w-full bg-[#151535] border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-brand-orange text-sm" placeholder="https://..." oninput="onComponentImageUrlInput(this.value)">
+                    </div>
+                    <div>
+                        <label class="block text-brand-orange text-sm font-bold uppercase mb-1">Product / Amazon Link</label>
+                        <input type="text" id="component-link-url" class="w-full bg-[#0B0B2B] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange" placeholder="https://amazon.com/...">
                     </div>
                 </div>
-                <div id="component-save-msg" class="text-xs text-center hidden"></div>
-                <div class="flex justify-end mt-2">
-                    <button type="submit" id="component-save-btn" class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider text-xs px-4 py-2 rounded transition">Add Component</button>
+            </div>
+            <div class="p-4 border-t border-gray-700 bg-[#151535] flex justify-between items-center">
+                <button onclick="clearComponentEditor()" class="text-gray-400 hover:text-white font-bold uppercase tracking-wider px-4 py-2 transition text-sm"><i class="fa-solid fa-plus mr-1"></i> New</button>
+                <div class="flex gap-2">
+                    <button onclick="document.getElementById('component-manager-modal').close()" class="bg-gray-800 hover:bg-gray-700 text-white font-bold uppercase tracking-wider px-5 py-2 rounded transition text-sm">Close</button>
+                    <button onclick="saveComponentConfig()" id="component-save-btn" class="bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider px-6 py-2 rounded transition shadow-lg shadow-orange-900/50 text-sm">Save</button>
                 </div>
-            </form>
-
-            <!-- List of Configured Components -->
-            <h4 class="font-bold text-sm text-gray-300 border-b border-gray-800 pb-2 mb-4">Current Items in Category</h4>
-            <div id="components-list" class="space-y-3 max-h-64 overflow-y-auto pr-2">
-                <!-- Dynamically populated -->
             </div>
         </div>
     </dialog>
@@ -1114,7 +1123,11 @@
         }
 
         // --- COMPONENT MANAGER LOGIC ---
+        let allComponents = {};
+        let selectedComponentId = null;
+
         function openComponentManagerModal() {
+            clearComponentEditor();
             renderComponentsList();
             document.getElementById('component-manager-modal').showModal();
         }
@@ -1122,66 +1135,135 @@
         async function renderComponentsList() {
             const category = document.getElementById('component-category').value;
             const list = document.getElementById('components-list');
-            list.innerHTML = '<div class="text-sm text-gray-500 text-center py-4">Loading...</div>';
+            list.innerHTML = '<div class="p-4 text-sm text-gray-500 text-center">Loading...</div>';
             try {
                 const res = await fetch(`${API_URL}/dream-build-components`);
                 const data = await res.json();
-                const items = (data.data && data.data[category]) || [];
+                allComponents = data.data || {};
+                const items = allComponents[category] || [];
                 if (items.length === 0) {
-                    list.innerHTML = '<div class="text-sm text-gray-500 text-center py-4">No items in this category yet.</div>';
+                    list.innerHTML = '<div class="p-4 text-sm text-gray-500 text-center italic">No items yet. Use the editor to add one.</div>';
                     return;
                 }
                 list.innerHTML = items.map(item => `
-                    <div class="flex items-center gap-3 bg-[#12122b] p-2 rounded border border-gray-700">
-                        <img src="${item.image_url || ''}" class="w-12 h-12 object-cover rounded bg-gray-800" onerror="this.style.display='none'">
-                        <div class="flex-1 min-w-0">
-                            <div class="text-sm font-bold text-white truncate">${item.name}</div>
-                            <div class="text-xs text-blue-400 truncate">${item.link_url || ''}</div>
+                    <div id="comp-row-${item.id}" class="p-4 border-b border-gray-800 hover:bg-gray-900 cursor-pointer flex items-center gap-3 group transition" onclick="editComponent(${item.id})">
+                        <div class="w-12 h-12 bg-gray-800 rounded overflow-hidden flex-shrink-0">
+                            <img src="${item.image_url || ''}" class="w-full h-full object-cover" onerror="this.style.display='none'">
                         </div>
-                        <button type="button" onclick="deleteComponentConfig(${item.id})" class="text-red-400 hover:text-red-300 p-2">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-bold text-sm text-white group-hover:text-brand-orange transition truncate">${item.name}</div>
+                            ${item.description ? `<div class="text-xs text-gray-500 truncate">${item.description}</div>` : ''}
+                        </div>
+                        <button type="button" onclick="event.stopPropagation(); deleteComponentConfig(${item.id})" class="text-gray-600 hover:text-red-500 p-1 flex-shrink-0"><i class="fa-solid fa-trash text-xs"></i></button>
                     </div>
                 `).join('');
             } catch (e) {
-                list.innerHTML = '<div class="text-sm text-red-400 text-center py-4">Failed to load components.</div>';
+                list.innerHTML = '<div class="p-4 text-sm text-red-400 text-center">Failed to load components.</div>';
             }
         }
 
-        async function saveComponentConfig(e) {
-            e.preventDefault();
+        function editComponent(id) {
+            const category = document.getElementById('component-category').value;
+            const items = allComponents[category] || [];
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+            selectedComponentId = id;
+            document.getElementById('component-id').value = id;
+            document.getElementById('component-name').value = item.name || '';
+            document.getElementById('component-description').value = item.description || '';
+            document.getElementById('component-image-url').value = item.image_url || '';
+            document.getElementById('component-link-url').value = item.link_url || '';
+            document.getElementById('component-image-file').value = '';
+            updateComponentImagePreview(item.image_url || null);
+            // Highlight selected row
+            document.querySelectorAll('[id^="comp-row-"]').forEach(r => r.classList.remove('bg-gray-900', 'border-l-2', 'border-brand-orange'));
+            const row = document.getElementById('comp-row-' + id);
+            if (row) row.classList.add('bg-gray-900', 'border-l-2', 'border-brand-orange');
+        }
+
+        function clearComponentEditor() {
+            selectedComponentId = null;
+            document.getElementById('component-id').value = '';
+            document.getElementById('component-name').value = '';
+            document.getElementById('component-description').value = '';
+            document.getElementById('component-image-url').value = '';
+            document.getElementById('component-image-file').value = '';
+            document.getElementById('component-link-url').value = '';
+            updateComponentImagePreview(null);
+            document.querySelectorAll('[id^="comp-row-"]').forEach(r => r.classList.remove('bg-gray-900', 'border-l-2', 'border-brand-orange'));
+        }
+
+        function updateComponentImagePreview(src) {
+            const preview = document.getElementById('component-image-preview');
+            if (src) {
+                preview.innerHTML = `<img src="${src}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<span class=\\'text-red-400 text-xs\\'>Cannot load image</span>'">`;
+            } else {
+                preview.innerHTML = '<span class="text-gray-600 text-xs italic">No image selected</span>';
+            }
+        }
+
+        function onComponentImageFileChange(input) {
+            if (!input.files.length) return;
+            updateComponentImagePreview(URL.createObjectURL(input.files[0]));
+            document.getElementById('component-image-url').value = '';
+        }
+
+        function onComponentImageUrlInput(url) {
+            updateComponentImagePreview(url || null);
+            if (url) document.getElementById('component-image-file').value = '';
+        }
+
+        async function uploadComponentImage() {
+            const fileInput = document.getElementById('component-image-file');
+            if (!fileInput.files.length) return null;
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
+            if (!res.ok) throw new Error('Upload failed (' + res.status + ')');
+            const data = await res.json();
+            if (!data.success) throw new Error(data.error || 'Upload failed');
+            return data.url;
+        }
+
+        async function saveComponentConfig() {
             const btn = document.getElementById('component-save-btn');
-            const msg = document.getElementById('component-save-msg');
+            const id = document.getElementById('component-id').value;
             const category = document.getElementById('component-category').value;
             const name = document.getElementById('component-name').value.trim();
-            const link_url = document.getElementById('component-url').value.trim();
-            const image_url = document.getElementById('component-image').value.trim();
+            if (!name) { alert('Name is required.'); return; }
+
+            let image_url = document.getElementById('component-image-url').value.trim();
+            const link_url = document.getElementById('component-link-url').value.trim();
+            const description = document.getElementById('component-description').value.trim();
 
             btn.textContent = 'Saving...';
             btn.disabled = true;
             try {
-                const res = await fetch(`${API_URL}/dream-build-components`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ category, name, image_url, link_url })
-                });
+                const uploaded = await uploadComponentImage();
+                if (uploaded) {
+                    image_url = uploaded;
+                    updateComponentImagePreview(image_url);
+                    document.getElementById('component-image-url').value = image_url;
+                }
+
+                const isEdit = !!id;
+                const url = isEdit ? `${API_URL}/dream-build-components/${id}` : `${API_URL}/dream-build-components`;
+                const method = isEdit ? 'PUT' : 'POST';
+                const body = isEdit
+                    ? { name, description, image_url, link_url }
+                    : { category, name, description, image_url, link_url };
+
+                const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
                 const data = await res.json();
                 if (!data.success) throw new Error(data.error || 'Save failed');
-                document.getElementById('component-name').value = '';
-                document.getElementById('component-url').value = '';
-                document.getElementById('component-image').value = '';
-                msg.textContent = 'Component added!';
-                msg.className = 'text-xs text-center text-green-400';
-                msg.classList.remove('hidden');
-                setTimeout(() => msg.classList.add('hidden'), 2000);
-                renderComponentsList();
-            } catch (err) {
-                msg.textContent = 'Error: ' + err.message;
-                msg.className = 'text-xs text-center text-red-400';
-                msg.classList.remove('hidden');
-            } finally {
-                btn.textContent = 'Add Component';
-                btn.disabled = false;
+
+                btn.textContent = 'Saved!';
+                setTimeout(() => { btn.textContent = 'Save'; btn.disabled = false; }, 1500);
+                await renderComponentsList();
+                if (!isEdit && data.id) editComponent(data.id);
+            } catch (e) {
+                btn.textContent = 'Error: ' + e.message;
+                setTimeout(() => { btn.textContent = 'Save'; btn.disabled = false; }, 3000);
             }
         }
 
@@ -1190,7 +1272,10 @@
             try {
                 const res = await fetch(`${API_URL}/dream-build-components/${id}`, { method: 'DELETE' });
                 const data = await res.json();
-                if (data.success) renderComponentsList();
+                if (data.success) {
+                    if (selectedComponentId === id) clearComponentEditor();
+                    renderComponentsList();
+                }
             } catch (e) {
                 alert('Delete failed');
             }

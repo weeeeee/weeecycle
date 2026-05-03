@@ -373,6 +373,7 @@
                              onclick="selectSpecificComponent('${cat}', '${safeName}', this)">
                             <img src="${item.image_url || ''}" alt="${item.name}" class="w-full h-32 object-cover rounded bg-gray-800">
                             <div class="text-white font-bold text-sm">${item.name}</div>
+                            ${item.description ? `<div class="text-gray-400 text-xs leading-snug">${item.description}</div>` : ''}
                             ${item.link_url ? `<a href="${item.link_url}" target="_blank" class="text-xs text-blue-400 hover:text-blue-300" onclick="event.stopPropagation()">View Product</a>` : ''}
                             <button type="button" class="mt-auto bg-gray-700 text-white text-xs py-2 rounded hover:bg-brand-orange transition select-btn">Select</button>
                         </div>

@@ -167,6 +167,7 @@ db.serialize(() => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             category TEXT NOT NULL,
             name TEXT NOT NULL,
+            description TEXT,
             image_url TEXT,
             link_url TEXT,
             sort_order INTEGER DEFAULT 0
@@ -884,14 +885,27 @@ app.get('/api/dream-build-components', (req, res) => {
 });
 
 app.post('/api/dream-build-components', (req, res) => {
-    const { category, name, image_url, link_url } = req.body;
+    const { category, name, description, image_url, link_url } = req.body;
     if (!category || !name) return res.status(400).json({ error: 'category and name are required' });
     db.run(
-        "INSERT INTO dream_build_components (category, name, image_url, link_url) VALUES (?, ?, ?, ?)",
-        [category, name, image_url || '', link_url || ''],
+        "INSERT INTO dream_build_components (category, name, description, image_url, link_url) VALUES (?, ?, ?, ?, ?)",
+        [category, name, description || '', image_url || '', link_url || ''],
         function (err) {
             if (err) return res.status(500).json({ error: err.message });
             res.json({ success: true, id: this.lastID });
+        }
+    );
+});
+
+app.put('/api/dream-build-components/:id', (req, res) => {
+    const { name, description, image_url, link_url } = req.body;
+    if (!name) return res.status(400).json({ error: 'name is required' });
+    db.run(
+        "UPDATE dream_build_components SET name=?, description=?, image_url=?, link_url=? WHERE id=?",
+        [name, description || '', image_url || '', link_url || '', req.params.id],
+        function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ success: true });
         }
     );
 });
