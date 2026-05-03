@@ -878,6 +878,25 @@ app.delete('/api/bikes/:id', (req, res) => {
 });
 
 // --- DREAM BUILD COMPONENTS ---
+function syncDreamBuild() {
+    db.all("SELECT * FROM dream_build_components ORDER BY category, sort_order, id", [], (err, rows) => {
+        if (err) return;
+        const grouped = {};
+        rows.forEach(r => {
+            if (!grouped[r.category]) grouped[r.category] = [];
+            grouped[r.category].push(r);
+        });
+        const jsonPath = path.join(__dirname, 'dream-build-components.json');
+        fs.writeFileSync(jsonPath, JSON.stringify(grouped, null, 2));
+        const gitCmd = 'git add dream-build-components.json images/ && (git diff --quiet --cached && echo "NO_CHANGE" || (git commit -m "chore: sync dream build components" && git push))';
+        exec(gitCmd, { cwd: __dirname, timeout: 30000 }, (err, stdout, stderr) => {
+            if (stdout.includes('NO_CHANGE')) return;
+            if (err) console.error('Dream build sync failed:', stderr);
+            else console.log('Dream build synced to GitHub.');
+        });
+    });
+}
+
 app.get('/api/dream-build-components', (req, res) => {
     db.all("SELECT * FROM dream_build_components ORDER BY category, sort_order, id", [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -899,6 +918,7 @@ app.post('/api/dream-build-components', (req, res) => {
         function (err) {
             if (err) return res.status(500).json({ error: err.message });
             res.json({ success: true, id: this.lastID });
+            syncDreamBuild();
         }
     );
 });
@@ -912,6 +932,7 @@ app.put('/api/dream-build-components/:id', (req, res) => {
         function (err) {
             if (err) return res.status(500).json({ error: err.message });
             res.json({ success: true });
+            syncDreamBuild();
         }
     );
 });
@@ -920,6 +941,7 @@ app.delete('/api/dream-build-components/:id', (req, res) => {
     db.run("DELETE FROM dream_build_components WHERE id = ?", [req.params.id], function (err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ success: true });
+        syncDreamBuild();
     });
 });
 

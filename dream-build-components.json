@@ -1,0 +1,24 @@
+{
+  "Frame": [
+    {
+      "id": 1,
+      "category": "Frame",
+      "name": "Test Fork",
+      "image_url": "",
+      "link_url": "",
+      "sort_order": 0,
+      "description": "A test description"
+    }
+  ],
+  "frame": [
+    {
+      "id": 2,
+      "category": "frame",
+      "name": "Twitter (Gray) 700C Gravel Bike Frameset 45/48/51/54cm Aluminum Alloy Road Bike",
+      "image_url": "images/affiliate-1777817538714-600638883.png",
+      "link_url": "https://amzn.to/42GwJ38",
+      "sort_order": 0,
+      "description": "Cost = 304.30"
+    }
+  ]
+}

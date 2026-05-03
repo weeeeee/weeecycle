@@ -345,13 +345,10 @@
         async function loadCustomComponents() {
             let config = {};
             try {
-                const res = await fetch('/api/dream-build-components');
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.success) config = data.data || {};
-                }
+                const res = await fetch('/dream-build-components.json');
+                if (res.ok) config = await res.json();
             } catch (e) {
-                console.warn('Could not load dream build components from server:', e);
+                console.warn('Could not load dream build components:', e);
             }
 
             categories.forEach(cat => {
