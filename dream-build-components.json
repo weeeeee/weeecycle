@@ -10,6 +10,17 @@
       "description": "A test description"
     }
   ],
+  "brakes": [
+    {
+      "id": 19,
+      "category": "brakes",
+      "name": "GRX RX820 Shifter/Disc Brake Caliper",
+      "image_url": "",
+      "link_url": "https://competitivecyclist.g39l.net/X4X3yy",
+      "sort_order": 0,
+      "description": "$465.00 right brake and disc brake caliper included"
+    }
+  ],
   "crank": [
     {
       "id": 18,
