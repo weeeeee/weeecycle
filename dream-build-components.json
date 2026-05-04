@@ -141,6 +141,17 @@
       "description": "Shimano Cranksets"
     }
   ],
+  "shifters": [
+    {
+      "id": 24,
+      "category": "shifters",
+      "name": "Rival E1 AXS Shift/Brake System",
+      "image_url": "images/affiliate-1777922581099-674890581.png",
+      "link_url": "https://www.competitivecyclist.com/search?s=u&q=rival+shifters?utm_source=ccghx_matt",
+      "sort_order": 0,
+      "description": "$280 each for front and rear \n\n$560 for the pair"
+    }
+  ],
   "stem": [
     {
       "id": 8,
