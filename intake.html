@@ -260,9 +260,12 @@
                                         <div class="grid grid-cols-2 gap-4" id="specific-tires-grid"></div>
                                     </div>
 
-                                    <!-- Other -->
-                                    <div class="spec-field hidden opacity-0 transition-all duration-500" id="field-other">
-                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Other Details / Additional Requests</label>
+                                    <!-- Other (multi-select) -->
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500 mt-6" id="field-other">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1">Additional Components <span class="text-gray-600 normal-case">(select all that apply)</span></label>
+                                        <p class="text-gray-500 text-xs mb-3">Mix and match individual drivetrain parts or accessories. You may select multiple items.</p>
+                                        <div class="grid grid-cols-2 gap-4 mb-4" id="specific-other-grid"></div>
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-1 mt-2">Additional Notes</label>
                                         <textarea id="spec-other" class="w-full bg-brand-dark border border-gray-700 rounded p-3 text-white focus:border-brand-orange focus:outline-none transition" placeholder="Any specific brands, colors, accessories, or other notes?" rows="3" name="specOther"></textarea>
                                     </div>
 
@@ -336,6 +339,8 @@
             saddle: "",
             tires: ""
         };
+        // "other" is multi-select — tracked separately as an array
+        const otherChoices = [];
 
         const categories = Object.keys(componentChoices);
 
@@ -361,18 +366,16 @@
                 console.warn('Could not load dream build components:', e);
             }
 
+            // Render single-select categories
             categories.forEach(cat => {
                 const grid = document.getElementById('specific-' + cat + '-grid');
                 if (!grid) return;
-
                 grid.innerHTML = '';
                 const items = config[cat] || [];
-
                 if (items.length === 0) {
                     grid.innerHTML = '<div class="col-span-2 text-gray-500 text-sm">No items configured for this category.</div>';
                     return;
                 }
-
                 items.forEach(item => {
                     const safeName = (item.name || '').replace(/'/g, "\\'");
                     grid.innerHTML += `
@@ -387,6 +390,48 @@
                     `;
                 });
             });
+
+            // Render "other" as multi-select
+            const otherGrid = document.getElementById('specific-other-grid');
+            if (otherGrid) {
+                otherGrid.innerHTML = '';
+                const items = config['other'] || [];
+                if (items.length === 0) {
+                    otherGrid.innerHTML = '<div class="col-span-2 text-gray-500 text-sm">No additional components configured.</div>';
+                } else {
+                    items.forEach(item => {
+                        const safeName = (item.name || '').replace(/'/g, "\\'");
+                        otherGrid.innerHTML += `
+                            <div class="component-card bg-brand-dark border border-gray-700 rounded-lg p-3 flex flex-col gap-2 transition hover:border-brand-orange cursor-pointer"
+                                 onclick="toggleOtherComponent('${safeName}', this)">
+                                <img src="${item.image_url || ''}" alt="${item.name}" class="w-full h-32 object-cover rounded bg-gray-800">
+                                <div class="text-white font-bold text-sm">${item.name}</div>
+                                ${item.description ? `<div class="text-gray-400 text-xs leading-snug">${item.description}</div>` : ''}
+                                ${item.link_url ? `<a href="${item.link_url}" target="_blank" class="text-xs text-blue-400 hover:text-blue-300" onclick="event.stopPropagation()">View Product</a>` : ''}
+                                <button type="button" class="mt-auto bg-gray-700 text-white text-xs py-2 rounded hover:bg-brand-orange transition select-btn">Add to Build</button>
+                            </div>
+                        `;
+                    });
+                }
+            }
+        }
+
+        function toggleOtherComponent(itemName, element) {
+            const idx = otherChoices.indexOf(itemName);
+            const btn = element.querySelector('.select-btn');
+            if (idx === -1) {
+                // Add
+                otherChoices.push(itemName);
+                element.classList.add('ring-2', 'ring-brand-orange');
+                btn.classList.replace('bg-gray-700', 'bg-brand-orange');
+                btn.textContent = 'Added ✓';
+            } else {
+                // Remove
+                otherChoices.splice(idx, 1);
+                element.classList.remove('ring-2', 'ring-brand-orange');
+                btn.classList.replace('bg-brand-orange', 'bg-gray-700');
+                btn.textContent = 'Add to Build';
+            }
         }
 
         function selectSpecificComponent(category, itemName, element) {
@@ -493,7 +538,7 @@
                 Seatpost: document.getElementById('spec-seatpost').value,
                 Saddle: document.getElementById('spec-saddle').value,
                 Tires: document.getElementById('spec-tires').value,
-                Other: document.getElementById('spec-other').value
+                Other: [...otherChoices, document.getElementById('spec-other').value].filter(Boolean).join(', ')
             };
 
             // Format into a single description summary
