@@ -121,6 +121,17 @@
       "description": "$119.99\nSizes (41, 43, 47, 50, 53cm)"
     }
   ],
+  "other": [
+    {
+      "id": 22,
+      "category": "other",
+      "name": "AM DUB English/BSA Bottom Bracket",
+      "image_url": "images/affiliate-1777918646713-867674148.png",
+      "link_url": "https://competitivecyclist.g39l.net/aNWQGQ",
+      "sort_order": 0,
+      "description": "$38.95 \nCompatible with SRAM Rival crankset (see crankset)"
+    }
+  ],
   "stem": [
     {
       "id": 8,
