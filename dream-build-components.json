@@ -152,6 +152,17 @@
       "description": "Shimano Cranksets"
     }
   ],
+  "rearmech": [
+    {
+      "id": 29,
+      "category": "rearmech",
+      "name": "SRAM Rival E1 XPLR AXS 13-Speed Rear Derailleur",
+      "image_url": "images/affiliate-1777925466668-736040145.png",
+      "link_url": "https://www.competitivecyclist.com/sram-rival-e1-xplr-axs-13-speed-rear-derailleur?utm_source=ccghx_matt",
+      "sort_order": 0,
+      "description": "$360.00"
+    }
+  ],
   "shifters": [
     {
       "id": 24,
