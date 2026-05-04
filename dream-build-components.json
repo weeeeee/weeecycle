@@ -10,6 +10,17 @@
       "description": "A test description"
     }
   ],
+  "brakerotor": [
+    {
+      "id": 20,
+      "category": "brakerotor",
+      "name": "SM-RT64 Centerlock Disc Brake Rotor",
+      "image_url": "",
+      "link_url": "https://competitivecyclist.g39l.net/2RW910",
+      "sort_order": 0,
+      "description": "$39.30"
+    }
+  ],
   "brakes": [
     {
       "id": 19,
