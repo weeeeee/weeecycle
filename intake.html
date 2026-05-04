@@ -242,6 +242,48 @@
                                         <div class="grid grid-cols-2 gap-4" id="specific-groupset-grid"></div>
                                     </div>
 
+                                    <!-- Shifters -->
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500 mt-6" id="field-specific-shifters">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Shifters</label>
+                                        <div class="grid grid-cols-2 gap-4" id="specific-shifters-grid"></div>
+                                    </div>
+
+                                    <!-- Brakes -->
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500 mt-6" id="field-specific-brakes">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Brakes</label>
+                                        <div class="grid grid-cols-2 gap-4" id="specific-brakes-grid"></div>
+                                    </div>
+
+                                    <!-- Chain -->
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500 mt-6" id="field-specific-chain">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Chain</label>
+                                        <div class="grid grid-cols-2 gap-4" id="specific-chain-grid"></div>
+                                    </div>
+
+                                    <!-- Rear Mech -->
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500 mt-6" id="field-specific-rearmech">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Rear Derailleur</label>
+                                        <div class="grid grid-cols-2 gap-4" id="specific-rearmech-grid"></div>
+                                    </div>
+
+                                    <!-- Front Mech -->
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500 mt-6" id="field-specific-frontmech">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Front Derailleur</label>
+                                        <div class="grid grid-cols-2 gap-4" id="specific-frontmech-grid"></div>
+                                    </div>
+
+                                    <!-- Crank -->
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500 mt-6" id="field-specific-crank">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Crankset</label>
+                                        <div class="grid grid-cols-2 gap-4" id="specific-crank-grid"></div>
+                                    </div>
+
+                                    <!-- Brake Rotor -->
+                                    <div class="spec-field hidden opacity-0 transition-all duration-500 mt-6" id="field-specific-brakerotor">
+                                        <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Brake Rotors</label>
+                                        <div class="grid grid-cols-2 gap-4" id="specific-brakerotor-grid"></div>
+                                    </div>
+
                                     <!-- Seatpost -->
                                     <div class="spec-field hidden opacity-0 transition-all duration-500 mt-6" id="field-specific-seatpost">
                                         <label class="block text-gray-400 text-xs uppercase tracking-wider mb-2">Select Your Seatpost</label>
@@ -335,6 +377,13 @@
             stem: "",
             wheelset: "",
             groupset: "",
+            shifters: "",
+            brakes: "",
+            chain: "",
+            rearmech: "",
+            frontmech: "",
+            crank: "",
+            brakerotor: "",
             seatpost: "",
             saddle: "",
             tires: ""
@@ -530,14 +579,21 @@
             
             // Collect all build specs
             const specs = {
-                Frame: specificFrameChoice ? specificFrameChoice : document.getElementById('spec-frame').value,
-                Handlebar: document.getElementById('spec-handlebar').value,
-                Stem: document.getElementById('spec-stem').value,
-                Wheelset: document.getElementById('spec-wheelset').value,
-                Groupset: document.getElementById('spec-groupset').value,
-                Seatpost: document.getElementById('spec-seatpost').value,
-                Saddle: document.getElementById('spec-saddle').value,
-                Tires: document.getElementById('spec-tires').value,
+                Frame: componentChoices.frame,
+                Handlebar: componentChoices.handlebar,
+                Stem: componentChoices.stem,
+                Wheelset: componentChoices.wheelset,
+                Groupset: componentChoices.groupset,
+                Shifters: componentChoices.shifters,
+                Brakes: componentChoices.brakes,
+                Chain: componentChoices.chain,
+                'Rear Mech': componentChoices.rearmech,
+                'Front Mech': componentChoices.frontmech,
+                Crank: componentChoices.crank,
+                'Brake Rotor': componentChoices.brakerotor,
+                Seatpost: componentChoices.seatpost,
+                Saddle: componentChoices.saddle,
+                Tires: componentChoices.tires,
                 Other: [...otherChoices, document.getElementById('spec-other').value].filter(Boolean).join(', ')
             };
 
