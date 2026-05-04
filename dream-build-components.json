@@ -32,6 +32,17 @@
       "description": "$300.77 left/front\n$305.07 right/rear"
     }
   ],
+  "cassette": [
+    {
+      "id": 25,
+      "category": "cassette",
+      "name": "SRAM XG-1371 XPLR E1 13-Speed Cassette",
+      "image_url": "images/affiliate-1777924066059-774871879.png",
+      "link_url": "https://www.competitivecyclist.com/sram-xg-1371-xplr-e1-13-speed-cassette?utm_source=ccghx_matt",
+      "sort_order": 0,
+      "description": "$305.00"
+    }
+  ],
   "crank": [
     {
       "id": 18,
