@@ -181,6 +181,11 @@
                 <i class="fa-solid fa-bicycle w-6 text-center"></i>
                 <span class="font-display font-bold uppercase tracking-wide">Dream Build</span>
             </button>
+            <button onclick="switchTab('reviews'); closeSidebarMobile()" id="nav-reviews"
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition text-left">
+                <i class="fa-solid fa-star w-6 text-center"></i>
+                <span class="font-display font-bold uppercase tracking-wide">Reviews</span>
+            </button>
         </nav>
 
         <!-- User / Logout -->
@@ -482,6 +487,42 @@
             </div>
         </div>
 
+        <!-- REVIEWS VIEW -->
+        <div id="view-reviews" class="hidden absolute inset-0 overflow-auto bg-[#050511]">
+            <div class="h-full flex flex-col md:flex-row">
+                <!-- Left panel: review list -->
+                <div class="w-full md:w-96 border-r border-gray-800 bg-[#0B0B2B] flex flex-col flex-shrink-0">
+                    <div class="p-4 border-b border-gray-800 bg-[#050511]">
+                        <h2 class="font-display font-bold text-2xl uppercase text-brand-orange mb-1"><i class="fa-solid fa-star mr-2"></i> Customer Reviews</h2>
+                        <p class="text-xs text-gray-500">Reviews shown on the live website. Changes sync automatically.</p>
+                    </div>
+                    <div id="reviews-list" class="flex-1 overflow-y-auto p-3 space-y-2"></div>
+                    <div class="p-3 border-t border-gray-800">
+                        <button onclick="clearReviewEditor()" class="w-full bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider py-2 rounded transition text-sm">+ Add New Review</button>
+                    </div>
+                </div>
+                <!-- Right panel: editor -->
+                <div class="flex-1 p-6 overflow-auto">
+                    <h3 id="review-editor-title" class="font-display font-bold text-xl uppercase text-white mb-4">New Review</h3>
+                    <div class="space-y-4 max-w-xl">
+                        <div>
+                            <label class="block text-xs font-bold text-brand-orange uppercase tracking-wider mb-1">Customer Name</label>
+                            <input id="review-name-input" type="text" placeholder="e.g. Joseph" class="w-full bg-[#12122b] border border-gray-700 rounded p-3 text-white focus:border-brand-orange outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-brand-orange uppercase tracking-wider mb-1">Review</label>
+                            <textarea id="review-message-input" rows="8" placeholder="Paste the review text here..." class="w-full bg-[#12122b] border border-gray-700 rounded p-3 text-white focus:border-brand-orange outline-none text-sm resize-y"></textarea>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="saveReview()" class="flex-1 bg-brand-orange hover:bg-orange-600 text-white font-bold uppercase tracking-wider py-3 rounded transition">Save & Publish</button>
+                            <button id="review-delete-btn" onclick="deleteSelectedReview()" class="hidden bg-red-700 hover:bg-red-600 text-white font-bold uppercase tracking-wider py-3 px-6 rounded transition">Delete</button>
+                        </div>
+                        <p id="review-sync-msg" class="text-xs text-gray-500 text-center">Saved reviews publish to the live website automatically.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         </div> <!-- End Absolute Wrapper -->
         </div> <!-- End Views Container -->
     </main> <!-- End Main -->
@@ -765,6 +806,15 @@
                     <i class="fa-brands fa-amazon"></i> Add Affiliate Product
                 </button>
                 <p class="text-xs text-gray-500 mt-2 text-center">Instantly adds items to your live Amazon Store.</p>
+            </div>
+            <!-- Reviews Manager -->
+            <div class="border-t border-gray-700 pt-4 mt-4">
+                <h4 class="font-bold text-lg border-b border-gray-700 pb-2 mb-4">Customer Reviews</h4>
+                <button type="button" onclick="openReviewsManager()"
+                    class="w-full bg-[#1e1e3f] hover:bg-brand-orange text-white py-2 rounded border border-gray-600 transition flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-star"></i> Manage Reviews
+                </button>
+                <p class="text-xs text-gray-500 mt-2 text-center">Add, edit, or remove customer reviews shown on the live website.</p>
             </div>
             <!-- Dream Build Specs -->
             <div class="border-t border-gray-700 pt-4 mt-4">
@@ -1074,6 +1124,113 @@
                 alert('Connection error');
                 msgEl.textContent = 'Sync failed.';
             }
+        }
+
+        // --- REVIEWS MANAGER ---
+        let selectedReviewId = null;
+
+        function openReviewsManager() {
+            document.getElementById('settings-modal').close();
+            switchTab('reviews');
+            loadReviewsList();
+        }
+
+        async function loadReviewsList() {
+            const list = document.getElementById('reviews-list');
+            list.innerHTML = '<p class="text-gray-500 text-sm p-2">Loading...</p>';
+            try {
+                const res = await fetch(`${API_URL}/curated-reviews`);
+                const data = await res.json();
+                if (!data.success) throw new Error();
+                list.innerHTML = '';
+                if (data.data.length === 0) {
+                    list.innerHTML = '<p class="text-gray-500 text-sm p-2">No reviews yet.</p>';
+                    return;
+                }
+                data.data.forEach(r => {
+                    const el = document.createElement('div');
+                    el.className = 'flex items-start gap-2 p-3 rounded-lg bg-[#12122b] border border-gray-700 cursor-pointer hover:border-brand-orange transition';
+                    el.dataset.id = r.id;
+                    el.innerHTML = `
+                        <div class="flex-1 min-w-0" onclick="editReview(${r.id}, ${JSON.stringify(r.name)}, ${JSON.stringify(r.message)})">
+                            <div class="font-bold text-white text-sm truncate">${r.name}</div>
+                            <div class="text-gray-400 text-xs truncate">${r.message.substring(0, 60)}...</div>
+                        </div>
+                        <button onclick="event.stopPropagation(); deleteReview(${r.id})" class="text-red-500 hover:text-red-400 flex-shrink-0 mt-1" title="Delete"><i class="fa-solid fa-trash text-xs"></i></button>`;
+                    list.appendChild(el);
+                });
+            } catch (e) {
+                list.innerHTML = '<p class="text-red-400 text-sm p-2">Could not load reviews.</p>';
+            }
+        }
+
+        function clearReviewEditor() {
+            selectedReviewId = null;
+            document.getElementById('review-editor-title').textContent = 'New Review';
+            document.getElementById('review-name-input').value = '';
+            document.getElementById('review-message-input').value = '';
+            document.getElementById('review-delete-btn').classList.add('hidden');
+            document.getElementById('review-sync-msg').textContent = 'Saved reviews publish to the live website automatically.';
+        }
+
+        function editReview(id, name, message) {
+            selectedReviewId = id;
+            document.getElementById('review-editor-title').textContent = 'Edit Review';
+            document.getElementById('review-name-input').value = name;
+            document.getElementById('review-message-input').value = message;
+            document.getElementById('review-delete-btn').classList.remove('hidden');
+        }
+
+        async function saveReview() {
+            const name = document.getElementById('review-name-input').value.trim();
+            const message = document.getElementById('review-message-input').value.trim();
+            const syncMsg = document.getElementById('review-sync-msg');
+            if (!name || !message) return alert('Name and review text are required.');
+
+            syncMsg.textContent = 'Publishing to live website...';
+            try {
+                let res;
+                if (selectedReviewId) {
+                    res = await fetch(`${API_URL}/curated-reviews/${selectedReviewId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, message })
+                    });
+                } else {
+                    res = await fetch(`${API_URL}/curated-reviews`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, message })
+                    });
+                }
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error);
+                syncMsg.textContent = 'Published! Site will update in ~1 minute.';
+                clearReviewEditor();
+                loadReviewsList();
+            } catch (e) {
+                syncMsg.textContent = 'Error saving review.';
+            }
+        }
+
+        async function deleteReview(id) {
+            if (!confirm('Remove this review from the website?')) return;
+            const syncMsg = document.getElementById('review-sync-msg');
+            syncMsg.textContent = 'Removing...';
+            try {
+                const res = await fetch(`${API_URL}/curated-reviews/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (!data.success) throw new Error();
+                syncMsg.textContent = 'Removed. Site will update in ~1 minute.';
+                if (selectedReviewId === id) clearReviewEditor();
+                loadReviewsList();
+            } catch (e) {
+                syncMsg.textContent = 'Error removing review.';
+            }
+        }
+
+        function deleteSelectedReview() {
+            if (selectedReviewId) deleteReview(selectedReviewId);
         }
 
         // --- AFFILIATES ---
@@ -2956,7 +3113,7 @@
         // TABS
         function switchTab(tab) {
             // Hide all views
-            ['dashboard', 'jobs', 'inventory', 'contacts', 'dreambuild'].forEach(t => {
+            ['dashboard', 'jobs', 'inventory', 'contacts', 'dreambuild', 'reviews'].forEach(t => {
                 const view = document.getElementById(`view-${t}`);
                 if (view) view.classList.add('hidden');
 

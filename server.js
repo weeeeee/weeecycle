@@ -151,6 +151,15 @@ db.serialize(() => {
     `);
 
     db.run(`
+        CREATE TABLE IF NOT EXISTS curated_reviews (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            message TEXT NOT NULL,
+            sort_order INTEGER DEFAULT 0
+        )
+    `);
+
+    db.run(`
         CREATE TABLE IF NOT EXISTS bikes_for_sale (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT,
@@ -874,6 +883,72 @@ app.delete('/api/bikes/:id', (req, res) => {
         if (err) return res.status(500).json({ error: err.message });
         syncBikesForSale();
         res.json({ success: true });
+    });
+});
+
+// --- CURATED REVIEWS ---
+function syncReviews() {
+    db.all("SELECT * FROM curated_reviews ORDER BY sort_order, id", [], (err, rows) => {
+        if (err) return;
+        const reviewsHtml = rows.map(r => `
+                <div class="bg-brand-dark border border-gray-800 rounded-xl p-8 shadow-xl">
+                    <div class="flex text-brand-orange mb-4">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                            class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                            class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-gray-300 italic mb-6">"${r.message.replace(/\n/g, '<br>').replace(/"/g, '&quot;')}"</p>
+                    <div class="font-display font-bold text-xl text-white uppercase">- ${r.name}</div>
+                </div>`).join('\n');
+
+        const indexPath = path.join(__dirname, 'index.html');
+        let html = fs.readFileSync(indexPath, 'utf8');
+        const regex = /(<!-- REVIEWS_START -->)[\s\S]*?(<!-- REVIEWS_END -->)/;
+        if (!regex.test(html)) return;
+        html = html.replace(regex, `$1\n${reviewsHtml}\n            $2`);
+        fs.writeFileSync(indexPath, html);
+
+        const gitCmd = 'git add index.html && (git diff --quiet --cached && echo "NO_CHANGE" || (git commit -m "chore: sync reviews" && git push))';
+        exec(gitCmd, { cwd: __dirname, timeout: 30000 }, (err, stdout, stderr) => {
+            if (stdout.includes('NO_CHANGE')) return;
+            if (err) console.error('Reviews sync failed:', stderr);
+            else console.log('Reviews synced to GitHub.');
+        });
+    });
+}
+
+app.get('/api/curated-reviews', (req, res) => {
+    db.all("SELECT * FROM curated_reviews ORDER BY sort_order, id", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, data: rows });
+    });
+});
+
+app.post('/api/curated-reviews', (req, res) => {
+    const { name, message } = req.body;
+    if (!name || !message) return res.status(400).json({ error: 'name and message are required' });
+    db.run("INSERT INTO curated_reviews (name, message) VALUES (?, ?)", [name, message], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, id: this.lastID });
+        syncReviews();
+    });
+});
+
+app.put('/api/curated-reviews/:id', (req, res) => {
+    const { name, message } = req.body;
+    if (!name || !message) return res.status(400).json({ error: 'name and message are required' });
+    db.run("UPDATE curated_reviews SET name=?, message=? WHERE id=?", [name, message, req.params.id], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true });
+        syncReviews();
+    });
+});
+
+app.delete('/api/curated-reviews/:id', (req, res) => {
+    db.run("DELETE FROM curated_reviews WHERE id = ?", [req.params.id], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true });
+        syncReviews();
     });
 });
 
