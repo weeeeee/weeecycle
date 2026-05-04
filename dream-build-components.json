@@ -103,6 +103,17 @@
       "description": ""
     }
   ],
+  "handlebar": [
+    {
+      "id": 26,
+      "category": "handlebar",
+      "name": "FSA Omega Compact Road Handlebar",
+      "image_url": "images/affiliate-1777924707235-729964013.png",
+      "link_url": "https://www.competitivecyclist.com/fsa-omega-compact-handlebar?utm_source=ccghx_matt",
+      "sort_order": 0,
+      "description": "$34.05 - $60.00\n\n38cm - $51.40\n40cm - $51.40\n42cm - $34.05\n44cm - $40.25"
+    }
+  ],
   "other": [
     {
       "id": 22,
