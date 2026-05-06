@@ -43,6 +43,17 @@
       "description": "$305.00"
     }
   ],
+  "chain": [
+    {
+      "id": 35,
+      "category": "chain",
+      "name": "SRAM NX Eagle 12-Speed Chain",
+      "image_url": "images/affiliate-1778027451819-847854467.png",
+      "link_url": "https://www.competitivecyclist.com/search?s=u&q=Sram+12+speed+chain?utm_source=ccghx_matt",
+      "sort_order": 0,
+      "description": "$24.22"
+    }
+  ],
   "crank": [
     {
       "id": 18,
