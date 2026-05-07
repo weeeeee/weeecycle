@@ -314,6 +314,29 @@ app.post('/api/jobs', async (req, res) => {
         });
 
         res.json({ success: true });
+
+        // If it's a Dream Build, send an email notification as well
+        if (job.service === 'Dream Build' || (job.service && job.service.includes('Dream Build'))) {
+            const mailOptions = {
+                from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
+                to: 'steve@weeecycle.net',
+                subject: 'New Dream Build Request (via Contact Form)',
+                html: `
+                    <h3>New Dream Build Request</h3>
+                    <p><strong>Customer:</strong> ${job.customer}</p>
+                    <p><strong>Bike:</strong> ${job.bike || 'N/A'}</p>
+                    <p><strong>Service:</strong> ${job.service}</p>
+                    <p><strong>Date:</strong> ${job.date}</p>
+                    <p><strong>Description:</strong></p>
+                    <blockquote style="border-left: 4px solid #FF8000; padding-left: 10px; margin-left: 0;">
+                        ${(job.description || 'No description provided').replace(/\n/g, '<br>')}
+                    </blockquote>
+                `
+            };
+            transporter.sendMail(mailOptions)
+                .then(() => console.log("Dream Build notification email sent from api/jobs"))
+                .catch(e => console.error("Dream Build email error from api/jobs:", e));
+        }
     } catch (e) {
         res.status(500).json({ error: e.message });
     }

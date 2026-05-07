@@ -279,6 +279,7 @@
                 for (let i = 0; i < select.options.length; i++) {
                     if (select.options[i].value === service) {
                         select.selectedIndex = i;
+                        toggleCustomerAlaCarte();
                         break;
                     }
                 }
@@ -289,6 +290,12 @@
             const notify = document.getElementById('service-menu');
             const custom = document.getElementById('contact-custom-service');
             const other = document.getElementById('contact-custom-other');
+            
+            if (notify.value === 'Dream Build') {
+                window.location.href = 'build.html';
+                return;
+            }
+
             if (notify.value === 'A La Carte') {
                 custom.classList.remove('hidden');
                 custom.focus();
