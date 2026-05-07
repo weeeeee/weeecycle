@@ -185,6 +185,19 @@ db.serialize(() => {
 
     // Migration: add description column if it doesn't exist (for DBs created before this column was added)
     db.run(`ALTER TABLE dream_build_components ADD COLUMN description TEXT`, () => {});
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS consultations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            first_name TEXT,
+            last_name TEXT,
+            email TEXT,
+            phone TEXT,
+            description TEXT,
+            contact_method TEXT,
+            date TEXT
+        )
+    `);
 });
 
 // --- API ROUTES ---
@@ -1018,6 +1031,61 @@ app.delete('/api/dream-build-components/:id', (req, res) => {
         res.json({ success: true });
         syncDreamBuild();
     });
+});
+
+// --- CONSULTATIONS ---
+app.post('/api/consultations', async (req, res) => {
+    console.log("Received consultation request:", req.body);
+    const { firstName, lastName, email, phone, description, contactMethod } = req.body;
+
+    if (!firstName || !lastName || !email || !description) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const date = new Date().toISOString();
+
+    try {
+        await dbRun(`
+            INSERT INTO consultations (first_name, last_name, email, phone, description, contact_method, date)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [firstName, lastName, email, phone || '', description, contactMethod || 'email', date]);
+        
+        // Broadcast to SSE clients
+        sseClients.forEach(client => {
+            client.write(`data: ${JSON.stringify({ 
+                type: 'new_consultation', 
+                data: { firstName, lastName, email, phone, description, contactMethod, date } 
+            })}\n\n`);
+        });
+
+        res.json({ success: true });
+
+        // Send notification email
+        const mailOptions = {
+            from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
+            to: 'steve@weeecycle.net',
+            subject: 'New Dream Build Consultation Request',
+            html: `
+                <h3>New Dream Build Consultation Request</h3>
+                <p><strong>Name:</strong> ${firstName} ${lastName}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Phone:</strong> ${phone || 'N/A'}</p>
+                <p><strong>Preferred Contact:</strong> ${contactMethod}</p>
+                <p><strong>Build Description:</strong></p>
+                <blockquote style="border-left: 4px solid #FF8000; padding-left: 10px; margin-left: 0;">
+                    ${description.replace(/\n/g, '<br>')}
+                </blockquote>
+                <p><small>Submitted on: ${new Date(date).toLocaleString()}</small></p>
+            `
+        };
+        transporter.sendMail(mailOptions)
+            .then(() => console.log("Consultation email sent successfully to steve@weeecycle.net"))
+            .catch(e => console.error("Consultation email error:", e));
+
+    } catch (e) {
+        console.error("Consultation DB error:", e);
+        res.status(500).json({ error: "Internal server error" });
+    }
 });
 
 // Start Server

@@ -120,72 +120,170 @@
         </a>
 
         <div class="grid md:grid-cols-2 gap-12 items-start">
-            <div class="relative rounded-xl overflow-hidden border border-gray-800 shadow-2xl group">
-                <!-- Placeholder Image for Dream Build -->
-                <img src="images/Dream_Build.png" alt="Custom Bike Build"
-                    class="w-full h-auto object-cover transform group-hover:scale-105 transition duration-700">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                <div class="absolute bottom-6 left-6">
-                    <span
-                        class="bg-brand-orange text-brand-dark font-bold font-display px-3 py-1 text-lg rounded mb-2 inline-block">Pro
-                        Custom</span>
-                    <h2 class="font-display font-bold text-4xl text-white uppercase shadow-black drop-shadow-lg">Dream
-                        Build</h2>
+            <div class="space-y-8">
+                <div class="relative rounded-xl overflow-hidden border border-gray-800 shadow-2xl group">
+                    <img src="images/Dream_Build.png" alt="Custom Bike Build"
+                        class="w-full h-auto object-cover transform group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <div class="absolute bottom-6 left-6">
+                        <span
+                            class="bg-brand-orange text-brand-dark font-bold font-display px-3 py-1 text-lg rounded mb-2 inline-block">Pro
+                            Custom</span>
+                        <h2 class="font-display font-bold text-4xl text-white uppercase shadow-black drop-shadow-lg">Dream
+                            Build</h2>
+                    </div>
+                </div>
+                
+                <div class="bg-[#0B0B2B] border border-gray-800 p-8 rounded-xl">
+                    <h3 class="font-display font-bold text-3xl text-white mb-6 uppercase border-b border-gray-700 pb-2 text-brand-orange">Consultation Process</h3>
+                    <p class="text-gray-300 leading-relaxed mb-6">Every dream build starts with a conversation. We take the time to understand your riding style, performance goals, and aesthetic preferences.</p>
+                    <ul class="space-y-4 text-gray-400">
+                        <li class="flex items-start gap-4">
+                            <span class="bg-brand-orange/10 text-brand-orange w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold">1</span>
+                            <div>
+                                <h4 class="text-white font-bold uppercase text-sm">Initial Discovery</h4>
+                                <p class="text-xs">Submit the form and we'll reach out to discuss your vision.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <span class="bg-brand-orange/10 text-brand-orange w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold">2</span>
+                            <div>
+                                <h4 class="text-white font-bold uppercase text-sm">Sourcing & Specs</h4>
+                                <p class="text-xs">We help you select the perfect frame and components.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <span class="bg-brand-orange/10 text-brand-orange w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold">3</span>
+                            <div>
+                                <h4 class="text-white font-bold uppercase text-sm">Precision Build</h4>
+                                <p class="text-xs">Obsessive attention to detail during every step of the assembly.</p>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             </div>
 
-            <div class="space-y-10">
-                <div>
-                    <h1 class="font-display font-bold text-5xl md:text-6xl text-white uppercase tracking-tighter mb-6">
-                        Built From<br /><span class="text-brand-orange">Scratch</span></h1>
-                    <p class="text-gray-300 text-lg leading-relaxed mb-4">
-                        Sourcing parts and constructing your dream machine with obsessive attention to detail.
-                    </p>
-                </div>
+            <div class="bg-[#0B0B2B] border border-gray-800 p-8 rounded-xl shadow-2xl relative">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-orange to-transparent opacity-50"></div>
+                
+                <h1 class="font-display font-bold text-4xl text-white uppercase tracking-tight mb-2">Request a <span class="text-brand-orange">Consultation</span></h1>
+                <p class="text-gray-400 mb-8 text-sm uppercase tracking-widest">Connect with Steve for your custom build</p>
 
-                <div class="space-y-8">
-                    <div
-                        class="bg-[#0B0B2B] border border-gray-800 p-6 rounded-lg hover:border-brand-orange transition duration-300">
-                        <h3
-                            class="font-display font-bold text-2xl text-white mb-4 uppercase border-b border-gray-700 pb-2">
-                            Custom Assembly</h3>
-                        <p class="text-gray-400 mb-4">We work with you to select the perfect frame and components for
-                            your riding style and budget. </p>
-                        <ul class="space-y-3 text-gray-400">
-                            <li class="flex items-start gap-3">
-                                <span
-                                    class="material-symbols-outlined text-brand-orange text-xl mt-0.5">check_circle</span>
-                                <span>Find a frame to match your style of ride.</span>
-                            </li>
-                            <li class="flex items-start gap-3">
-                                <span
-                                    class="material-symbols-outlined text-brand-orange text-xl mt-0.5">check_circle</span>
-                                <span>Add/Replace the cranks, rear derailleur, front derailleur, shifters, brakes, and
-                                    cable/housing on your bike to your specs.</span>
-                            </li>
-                            <li class="flex items-start gap-3">
-                                <span
-                                    class="material-symbols-outlined text-brand-orange text-xl mt-0.5">check_circle</span>
-                                <span>Change the wheelset, cassette, freehub, wheelset, brakes, and tires.</span>
-                            </li>
-                            <li class="flex items-start gap-3">
-                                <span
-                                    class="material-symbols-outlined text-brand-orange text-xl mt-0.5">check_circle</span>
-                                <span>Seatposts, handlebars, headsets, and saddle.</span>
-                            </li>
-                        </ul>
+                <form id="consultation-form" class="space-y-5">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="firstName" class="block text-gray-500 text-[10px] uppercase tracking-[0.2em] mb-1 ml-1">First Name</label>
+                            <input type="text" id="firstName" name="firstName" required
+                                class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
+                                placeholder="Eddy">
+                        </div>
+                        <div>
+                            <label for="lastName" class="block text-gray-500 text-[10px] uppercase tracking-[0.2em] mb-1 ml-1">Last Name</label>
+                            <input type="text" id="lastName" name="lastName" required
+                                class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
+                                placeholder="Merckx">
+                        </div>
                     </div>
-                </div>
 
-                <div class="flex flex-col sm:flex-row gap-4 pt-6">
-                    <a href="intake.html"
-                        class="flex-1 bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-2xl uppercase tracking-wider py-4 px-8 rounded text-center shadow-lg shadow-orange-900/50 transition transform hover:-translate-y-1">
-                        Start Your Build
-                    </a>
-                </div>
+                    <div>
+                        <label for="email" class="block text-gray-500 text-[10px] uppercase tracking-[0.2em] mb-1 ml-1">Email Address</label>
+                        <input type="email" id="email" name="email" required
+                            class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
+                            placeholder="eddy@pro-tour.com">
+                    </div>
+
+                    <div>
+                        <label for="phone" class="block text-gray-500 text-[10px] uppercase tracking-[0.2em] mb-1 ml-1">Phone Number</label>
+                        <input type="tel" id="phone" name="phone"
+                            class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
+                            placeholder="XXX-XXX-XXXX">
+                    </div>
+
+                    <div>
+                        <label for="description" class="block text-gray-500 text-[10px] uppercase tracking-[0.2em] mb-1 ml-1">Description of build you want</label>
+                        <textarea id="description" name="description" rows="4" required
+                            class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
+                            placeholder="Tell me about your dream machine..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-500 text-[10px] uppercase tracking-[0.2em] mb-3 ml-1">Best way to reach you</label>
+                        <div class="grid grid-cols-3 gap-3">
+                            <label class="relative flex items-center justify-center p-3 border border-gray-700 rounded cursor-pointer group hover:border-brand-orange transition">
+                                <input type="radio" name="contactMethod" value="text" class="hidden peer">
+                                <span class="text-xs uppercase font-bold text-gray-500 peer-checked:text-brand-orange group-hover:text-gray-300 transition">Text</span>
+                                <div class="absolute inset-0 border-2 border-brand-orange rounded scale-90 opacity-0 peer-checked:scale-100 peer-checked:opacity-100 transition pointer-events-none"></div>
+                            </label>
+                            <label class="relative flex items-center justify-center p-3 border border-gray-700 rounded cursor-pointer group hover:border-brand-orange transition">
+                                <input type="radio" name="contactMethod" value="email" checked class="hidden peer">
+                                <span class="text-xs uppercase font-bold text-gray-500 peer-checked:text-brand-orange group-hover:text-gray-300 transition">Email</span>
+                                <div class="absolute inset-0 border-2 border-brand-orange rounded scale-90 opacity-0 peer-checked:scale-100 peer-checked:opacity-100 transition pointer-events-none"></div>
+                            </label>
+                            <label class="relative flex items-center justify-center p-3 border border-gray-700 rounded cursor-pointer group hover:border-brand-orange transition">
+                                <input type="radio" name="contactMethod" value="phone" class="hidden peer">
+                                <span class="text-xs uppercase font-bold text-gray-500 peer-checked:text-brand-orange group-hover:text-gray-300 transition">Phone</span>
+                                <div class="absolute inset-0 border-2 border-brand-orange rounded scale-90 opacity-0 peer-checked:scale-100 peer-checked:opacity-100 transition pointer-events-none"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="status-message" class="hidden p-4 rounded text-center font-bold text-sm"></div>
+
+                    <button type="submit" id="submit-btn"
+                        class="w-full bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-2xl uppercase tracking-wider py-4 px-8 rounded shadow-lg shadow-orange-900/50 transition transform hover:-translate-y-1">
+                        Submit Request
+                    </button>
+                </form>
+
+                <script>
+                    document.getElementById('consultation-form').addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        const btn = document.getElementById('submit-btn');
+                        const status = document.getElementById('status-message');
+                        const formData = {
+                            firstName: document.getElementById('firstName').value,
+                            lastName: document.getElementById('lastName').value,
+                            email: document.getElementById('email').value,
+                            phone: document.getElementById('phone').value,
+                            description: document.getElementById('description').value,
+                            contactMethod: document.querySelector('input[name=\"contactMethod\"]:checked').value
+                        };
+
+                        btn.disabled = true;
+                        btn.textContent = \"Sending...\";
+                        btn.classList.add('opacity-50', 'cursor-not-allowed');
+                        status.classList.add('hidden');
+
+                        try {
+                            const res = await fetch('/api/consultations', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(formData)
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                                status.textContent = \"Success! Steve will be in touch soon.\";
+                                status.className = \"p-4 rounded text-center font-bold text-sm bg-green-500/20 text-green-400 border border-green-500/50\";
+                                status.classList.remove('hidden');
+                                document.getElementById('consultation-form').reset();
+                            } else {
+                                throw new Error(data.error || \"Submission failed\");
+                            }
+                        } catch (err) {
+                            status.textContent = \"Error: \" + err.message;
+                            status.className = \"p-4 rounded text-center font-bold text-sm bg-red-500/20 text-red-400 border border-red-500/50\";
+                            status.classList.remove('hidden');
+                        } finally {
+                            btn.disabled = false;
+                            btn.textContent = \"Submit Request\";
+                            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        }
+                    });
+                </script>
             </div>
         </div>
     </div>
+
 
     <footer class="bg-black border-t border-gray-900 py-12 mt-20">
         <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
