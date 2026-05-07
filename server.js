@@ -315,27 +315,43 @@ app.post('/api/jobs', async (req, res) => {
 
         res.json({ success: true });
 
-        // If it's a Dream Build, send an email notification as well
+        // If it's a Dream Build, send email notifications
         if (job.service === 'Dream Build' || (job.service && job.service.includes('Dream Build'))) {
-            const mailOptions = {
+            const adminMailOptions = {
                 from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
-                to: 'steve@weeecycle.net',
+                to: 'steve@weeecycle.net, swhitelex@gmail.com',
                 subject: 'New Dream Build Request (via Contact Form)',
                 html: `
-                    <h3>New Dream Build Request</h3>
+                    <h2 style="color: #FF8000;">New Dream Build Request</h2>
                     <p><strong>Customer:</strong> ${job.customer}</p>
-                    <p><strong>Bike:</strong> ${job.bike || 'N/A'}</p>
                     <p><strong>Service:</strong> ${job.service}</p>
                     <p><strong>Date:</strong> ${job.date}</p>
                     <p><strong>Description:</strong></p>
-                    <blockquote style="border-left: 4px solid #FF8000; padding-left: 10px; margin-left: 0;">
+                    <div style="background: #f4f4f4; padding: 15px; border-left: 5px solid #FF8000;">
                         ${(job.description || 'No description provided').replace(/\n/g, '<br>')}
-                    </blockquote>
+                    </div>
                 `
             };
-            transporter.sendMail(mailOptions)
-                .then(() => console.log("Dream Build notification email sent from api/jobs"))
-                .catch(e => console.error("Dream Build email error from api/jobs:", e));
+
+            const customerMailOptions = {
+                from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
+                to: job.email || job.customer_email || 'steve@weeecycle.net', // Fallback if no email
+                subject: 'We received your Dream Build request!',
+                html: `
+                    <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px;">
+                        <h2 style="color: #FF8000; text-transform: uppercase;">Build the Dream</h2>
+                        <p>Hi,</p>
+                        <p>Thanks for reaching out about your Dream Build! We've received your request and Steve will be reviewing your vision shortly.</p>
+                        <p><strong>We'll reach out to you soon.</strong></p>
+                        <p style="margin-top: 30px; font-weight: bold;">WEEECYCLE.NET</p>
+                    </div>
+                `
+            };
+
+            Promise.all([
+                transporter.sendMail(adminMailOptions),
+                job.email ? transporter.sendMail(customerMailOptions) : Promise.resolve()
+            ]).catch(e => console.error("Dream Build email error from api/jobs:", e));
         }
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -1083,26 +1099,56 @@ app.post('/api/consultations', async (req, res) => {
 
         res.json({ success: true });
 
-        // Send notification email
-        const mailOptions = {
+        // 1. Admin Notification
+        const adminMailOptions = {
             from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
-            to: 'steve@weeecycle.net',
+            to: 'steve@weeecycle.net, swhitelex@gmail.com', // CC the secondary email for reliability
             subject: 'New Dream Build Consultation Request',
             html: `
-                <h3>New Dream Build Consultation Request</h3>
-                <p><strong>Name:</strong> ${firstName} ${lastName}</p>
+                <h2 style="color: #FF8000;">New Dream Build Request</h2>
+                <p><strong>Customer:</strong> ${firstName} ${lastName}</p>
                 <p><strong>Email:</strong> ${email}</p>
-                <p><strong>Phone:</strong> ${phone || 'N/A'}</p>
+                <p><strong>Phone:</strong> ${phone}</p>
                 <p><strong>Preferred Contact:</strong> ${contactMethod}</p>
-                <p><strong>Build Description:</strong></p>
-                <blockquote style="border-left: 4px solid #FF8000; padding-left: 10px; margin-left: 0;">
+                <p><strong>Description:</strong></p>
+                <div style="background: #f4f4f4; padding: 15px; border-left: 5px solid #FF8000;">
                     ${description.replace(/\n/g, '<br>')}
-                </blockquote>
+                </div>
+                <hr>
                 <p><small>Submitted on: ${new Date(date).toLocaleString()}</small></p>
             `
         };
-        transporter.sendMail(mailOptions)
-            .then(() => console.log("Consultation email sent successfully to steve@weeecycle.net"))
+
+        // 2. Customer Confirmation
+        const customerMailOptions = {
+            from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
+            to: email,
+            subject: 'We received your Dream Build request!',
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px;">
+                    <h2 style="color: #FF8000; text-transform: uppercase;">Build the Dream</h2>
+                    <p>Hi ${firstName},</p>
+                    <p>Thanks for reaching out about your Dream Build! We've received your request and Steve will be reviewing your vision shortly.</p>
+                    <p><strong>We'll reach out via your preferred method (${contactMethod}) soon.</strong></p>
+                    <hr>
+                    <p style="font-size: 0.9em; color: #666;">
+                        <strong>Your Request Summary:</strong><br>
+                        ${description.substring(0, 200)}${description.length > 200 ? '...' : ''}
+                    </p>
+                    <p style="margin-top: 30px; font-weight: bold;">WEEECYCLE.NET</p>
+                </div>
+            `
+        };
+
+        // Send both emails
+        Promise.all([
+            transporter.sendMail(adminMailOptions),
+            transporter.sendMail(customerMailOptions)
+        ])
+            .then(([adminInfo, customerInfo]) => {
+                console.log(`Admin notification sent. Response: ${adminInfo.response}`);
+                console.log(`Customer confirmation sent to ${email}. Response: ${customerInfo.response}`);
+            })
             .catch(e => console.error("Consultation email error:", e));
 
     } catch (e) {
