@@ -320,13 +320,14 @@ app.post('/api/jobs', async (req, res) => {
             const adminMailOptions = {
                 from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
                 to: 'steve@weeecycle.net, swhitelex@gmail.com',
-                subject: 'New Dream Build Request (via Contact Form)',
+                subject: 'New Dream Build Request (via Intake Form)',
                 html: `
                     <h2 style="color: #FF8000;">New Dream Build Request</h2>
                     <p><strong>Customer:</strong> ${job.customer}</p>
-                    <p><strong>Service:</strong> ${job.service}</p>
+                    <p><strong>Email:</strong> ${job.email || 'Not provided'}</p>
+                    <p><strong>Phone:</strong> ${job.phone || 'Not provided'}</p>
                     <p><strong>Date:</strong> ${job.date}</p>
-                    <p><strong>Description:</strong></p>
+                    <p><strong>Build Specs:</strong></p>
                     <div style="background: #f4f4f4; padding: 15px; border-left: 5px solid #FF8000;">
                         ${(job.description || 'No description provided').replace(/\n/g, '<br>')}
                     </div>
