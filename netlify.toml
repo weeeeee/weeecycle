@@ -3,6 +3,9 @@
   publish = "/"
   functions = "netlify/functions"
 
+[build.environment]
+  npm_config_ignore_scripts = "true"
+
 [[redirects]]
   from = "/api/comm/send"
   to = "/.netlify/functions/send-inquiry"
@@ -12,5 +15,11 @@
 [[redirects]]
   from = "/api/reviews"
   to = "/.netlify/functions/submit-review"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/consultations"
+  to = "/.netlify/functions/dream-build"
   status = 200
   force = true
