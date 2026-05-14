@@ -18,11 +18,6 @@
   status = 200
   force = true
 
-[[redirects]]
-  from = "/api/consultations"
-  to = "/.netlify/functions/dream-build"
-  status = 200
-  force = true
 
 [[redirects]]
   from = "/api/jobs"

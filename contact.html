@@ -204,6 +204,13 @@
                                 <option value="A La Carte">5. A La Carte</option>
                             </select>
 
+                            <!-- Dream Build notice -->
+                            <div id="dream-build-notice" class="hidden mt-3 p-4 bg-brand-orange/10 border border-brand-orange/30 rounded">
+                                <p class="text-brand-orange font-display font-bold uppercase tracking-wide text-sm mb-1">&#9733; Dream Build Selected</p>
+                                <p class="text-gray-400 text-sm">Tell us your vision below — frame style, components, budget, discipline (road, gravel, MTB), or anything else you have in mind. Steve will reach out to discuss the details.</p>
+                            </div>
+
+                            <!-- A La Carte sub-selection -->
                             <select id="contact-custom-service" onchange="toggleCustomerAlaCarteOther()" class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition mt-3 hidden">
                                 <option value="" disabled selected>Select A La Carte Service</option>
                                 <option value="Gear indexing">Gear indexing</option>
@@ -279,7 +286,7 @@
                 for (let i = 0; i < select.options.length; i++) {
                     if (select.options[i].value === service) {
                         select.selectedIndex = i;
-                        toggleCustomerAlaCarte();
+                        toggleCustomerAlaCarte(); // fires notice/sub-menus for pre-selected service
                         break;
                     }
                 }
@@ -290,12 +297,16 @@
             const notify = document.getElementById('service-menu');
             const custom = document.getElementById('contact-custom-service');
             const other = document.getElementById('contact-custom-other');
-            
+            const dreamNotice = document.getElementById('dream-build-notice');
+
+            // Show/hide Dream Build notice
             if (notify.value === 'Dream Build') {
-                window.location.href = 'build.html';
-                return;
+                dreamNotice.classList.remove('hidden');
+            } else {
+                dreamNotice.classList.add('hidden');
             }
 
+            // Show/hide A La Carte sub-selection
             if (notify.value === 'A La Carte') {
                 custom.classList.remove('hidden');
                 custom.focus();
