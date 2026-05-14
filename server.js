@@ -171,19 +171,6 @@ db.serialize(() => {
         )
     `);
 
-    // Initialize consultations table
-    db.run(`
-        CREATE TABLE IF NOT EXISTS consultations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            first_name TEXT,
-            last_name TEXT,
-            email TEXT,
-            phone TEXT,
-            description TEXT,
-            contact_method TEXT,
-            date TEXT
-        )
-    `);
 
     // Migration: add description column if it doesn't exist (for DBs created before this column was added)
     db.run(`ALTER TABLE dream_build_components ADD COLUMN description TEXT`, () => {});
@@ -289,33 +276,12 @@ app.get('/api/jobs', async (req, res) => {
     }
 });
 
-app.get('/api/consultations', async (req, res) => {
-    try {
-        const rows = await dbAll('SELECT * FROM consultations ORDER BY date DESC');
-        res.json(rows);
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
 
         await dbRun(`
             INSERT OR REPLACE INTO jobs (id, customer, bike, service, status, date, checklist)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `, [job.id, job.customer, job.bike, job.service, job.status, job.date, JSON.stringify(job.checklist || {})]);
 
-        // If Dream Build, also record in consultations
-        const isDreamBuild = job.service === 'Dream Build' || (job.service && job.service.includes('Dream Build'));
-        if (isDreamBuild) {
-            const nameParts = (job.customer || '').split(' ');
-            const firstName = nameParts[0] || '';
-            const lastName = nameParts.slice(1).join(' ') || '';
-            
-            await dbRun(`
-                INSERT INTO consultations (first_name, last_name, email, phone, description, contact_method, date)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            `, [firstName, lastName, job.email, job.phone, job.description, 'email', job.date || new Date().toISOString()]);
-        }
-        
         // Broadcast new job to all connected SSE clients
         sseClients.forEach(client => {
             client.write(`data: ${JSON.stringify({ type: 'new_service_request', data: job })}\n\n`);
@@ -324,7 +290,6 @@ app.get('/api/consultations', async (req, res) => {
         res.json({ success: true });
 
         // --- Send email notification to steve for ALL service form submissions ---
-        const isDreamBuild = job.service === 'Dream Build' || (job.service && job.service.includes('Dream Build'));
 
         // General service request notification (fires for every submission)
         const serviceNotifyOptions = {
@@ -365,28 +330,6 @@ app.get('/api/consultations', async (req, res) => {
             .then(info => console.log(`Service request email sent for "${job.service}". ID: ${info.messageId || 'mock'}`))
             .catch(e => console.error('Service request email error:', e));
 
-        // --- Dream Build-specific: also send customer confirmation ---
-        if (isDreamBuild) {
-            const customerMailOptions = {
-                from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
-                to: job.email || 'steve@weeecycle.net',
-                subject: 'We received your Dream Build request!',
-                html: `
-                    <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px;">
-                        <h2 style="color: #FF8000; text-transform: uppercase;">Build the Dream</h2>
-                        <p>Hi,</p>
-                        <p>Thanks for reaching out about your Dream Build! We've received your request and Steve will be reviewing your vision shortly.</p>
-                        <p><strong>We'll reach out to you soon.</strong></p>
-                        <p style="margin-top: 30px; font-weight: bold;">WEEECYCLE.NET</p>
-                    </div>
-                `
-            };
-
-            if (job.email) {
-                transporter.sendMail(customerMailOptions)
-                    .catch(e => console.error('Dream Build customer confirmation email error:', e));
-            }
-        }
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
