@@ -171,21 +171,22 @@ db.serialize(() => {
         )
     `);
 
+    // Initialize consultations table
     db.run(`
-        CREATE TABLE IF NOT EXISTS dream_build_components (
+        CREATE TABLE IF NOT EXISTS consultations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            category TEXT NOT NULL,
-            name TEXT NOT NULL,
+            first_name TEXT,
+            last_name TEXT,
+            email TEXT,
+            phone TEXT,
             description TEXT,
-            image_url TEXT,
-            link_url TEXT,
-            sort_order INTEGER DEFAULT 0
+            contact_method TEXT,
+            date TEXT
         )
     `);
 
     // Migration: add description column if it doesn't exist (for DBs created before this column was added)
     db.run(`ALTER TABLE dream_build_components ADD COLUMN description TEXT`, () => {});
-
 });
 
 // --- API ROUTES ---
@@ -288,13 +289,32 @@ app.get('/api/jobs', async (req, res) => {
     }
 });
 
-app.post('/api/jobs', async (req, res) => {
-    const job = req.body;
+app.get('/api/consultations', async (req, res) => {
     try {
+        const rows = await dbAll('SELECT * FROM consultations ORDER BY date DESC');
+        res.json(rows);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
         await dbRun(`
             INSERT OR REPLACE INTO jobs (id, customer, bike, service, status, date, checklist)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `, [job.id, job.customer, job.bike, job.service, job.status, job.date, JSON.stringify(job.checklist || {})]);
+
+        // If Dream Build, also record in consultations
+        const isDreamBuild = job.service === 'Dream Build' || (job.service && job.service.includes('Dream Build'));
+        if (isDreamBuild) {
+            const nameParts = (job.customer || '').split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+            
+            await dbRun(`
+                INSERT INTO consultations (first_name, last_name, email, phone, description, contact_method, date)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            `, [firstName, lastName, job.email, job.phone, job.description, 'email', job.date || new Date().toISOString()]);
+        }
         
         // Broadcast new job to all connected SSE clients
         sseClients.forEach(client => {
