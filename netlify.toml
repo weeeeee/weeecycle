@@ -28,3 +28,8 @@
   to = "/.netlify/functions/submit-job"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/build.html"
+  to = "/contact.html?service=Dream+Build"
+  status = 301
