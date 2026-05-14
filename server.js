@@ -315,28 +315,53 @@ app.post('/api/jobs', async (req, res) => {
 
         res.json({ success: true });
 
-        // If it's a Dream Build, send email notifications
-        if (job.service === 'Dream Build' || (job.service && job.service.includes('Dream Build'))) {
-            const adminMailOptions = {
-                from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
-                to: 'steve@weeecycle.net, swhitelex@gmail.com',
-                subject: 'New Dream Build Request (via Intake Form)',
-                html: `
-                    <h2 style="color: #FF8000;">New Dream Build Request</h2>
-                    <p><strong>Customer:</strong> ${job.customer}</p>
-                    <p><strong>Email:</strong> ${job.email || 'Not provided'}</p>
-                    <p><strong>Phone:</strong> ${job.phone || 'Not provided'}</p>
-                    <p><strong>Date:</strong> ${job.date}</p>
-                    <p><strong>Build Specs:</strong></p>
-                    <div style="background: #f4f4f4; padding: 15px; border-left: 5px solid #FF8000;">
-                        ${(job.description || 'No description provided').replace(/\n/g, '<br>')}
-                    </div>
-                `
-            };
+        // --- Send email notification to steve for ALL service form submissions ---
+        const isDreamBuild = job.service === 'Dream Build' || (job.service && job.service.includes('Dream Build'));
 
+        // General service request notification (fires for every submission)
+        const serviceNotifyOptions = {
+            from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
+            to: 'steve@weeecycle.net',
+            subject: `New Service Request: ${job.service || 'Unknown Service'} — Weeecycle.net`,
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: auto;">
+                    <h2 style="color: #FF8000; border-bottom: 3px solid #FF8000; padding-bottom: 8px;">New Service Request</h2>
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+                        <tr><td style="padding: 8px; font-weight: bold; color: #555; width: 140px;">Service:</td>
+                            <td style="padding: 8px; color: #111;">${job.service || 'Not specified'}</td></tr>
+                        <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold; color: #555;">Customer:</td>
+                            <td style="padding: 8px; color: #111;">${job.customer || 'Not provided'}</td></tr>
+                        <tr><td style="padding: 8px; font-weight: bold; color: #555;">Email:</td>
+                            <td style="padding: 8px; color: #111;">${job.email || 'Not provided'}</td></tr>
+                        <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold; color: #555;">Phone:</td>
+                            <td style="padding: 8px; color: #111;">${job.phone || 'Not provided'}</td></tr>
+                        <tr><td style="padding: 8px; font-weight: bold; color: #555;">Bike:</td>
+                            <td style="padding: 8px; color: #111;">${job.bike || 'Not specified'}</td></tr>
+                        <tr style="background:#f9f9f9;"><td style="padding: 8px; font-weight: bold; color: #555;">Date:</td>
+                            <td style="padding: 8px; color: #111;">${job.date || new Date().toLocaleDateString()}</td></tr>
+                        <tr><td style="padding: 8px; font-weight: bold; color: #555;">Address:</td>
+                            <td style="padding: 8px; color: #111;">${job.address || 'Not provided'}</td></tr>
+                    </table>
+                    ${job.description ? `
+                    <div style="margin-top: 16px;">
+                        <strong style="color: #555;">Description / Notes:</strong>
+                        <div style="background: #f4f4f4; padding: 12px; border-left: 4px solid #FF8000; margin-top: 8px; white-space: pre-wrap;">${job.description.replace(/\n/g, '<br>')}</div>
+                    </div>` : ''}
+                    <p style="margin-top: 24px; color: #999; font-size: 12px;">Submitted: ${new Date().toLocaleString()} — via Weeecycle.net</p>
+                </div>
+            `
+        };
+
+        // Fire the general notification (non-blocking)
+        transporter.sendMail(serviceNotifyOptions)
+            .then(info => console.log(`Service request email sent for "${job.service}". ID: ${info.messageId || 'mock'}`))
+            .catch(e => console.error('Service request email error:', e));
+
+        // --- Dream Build-specific: also send customer confirmation ---
+        if (isDreamBuild) {
             const customerMailOptions = {
                 from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
-                to: job.email || job.customer_email || 'steve@weeecycle.net', // Fallback if no email
+                to: job.email || 'steve@weeecycle.net',
                 subject: 'We received your Dream Build request!',
                 html: `
                     <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px;">
@@ -349,10 +374,10 @@ app.post('/api/jobs', async (req, res) => {
                 `
             };
 
-            Promise.all([
-                transporter.sendMail(adminMailOptions),
-                job.email ? transporter.sendMail(customerMailOptions) : Promise.resolve()
-            ]).catch(e => console.error("Dream Build email error from api/jobs:", e));
+            if (job.email) {
+                transporter.sendMail(customerMailOptions)
+                    .catch(e => console.error('Dream Build customer confirmation email error:', e));
+            }
         }
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -1074,6 +1099,44 @@ app.delete('/api/dream-build-components/:id', (req, res) => {
 });
 
 // --- CONSULTATIONS ---
+app.get('/api/consultations', async (req, res) => {
+    const token  = process.env.NETLIFY_TOKEN;
+    const siteId = process.env.NETLIFY_SITE_ID;
+
+    if (!token || !siteId) {
+        return res.status(500).json({ error: 'NETLIFY_TOKEN and NETLIFY_SITE_ID must be set in .env' });
+    }
+
+    try {
+        const formsRes = await fetch(`https://api.netlify.com/api/v1/sites/${siteId}/forms`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const forms = await formsRes.json();
+        const form  = forms.find(f => f.name === 'dream-build');
+        if (!form) return res.json([]);
+
+        const subRes = await fetch(`https://api.netlify.com/api/v1/forms/${form.id}/submissions?per_page=100`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const submissions = await subRes.json();
+
+        const normalized = submissions.map(s => ({
+            id:             s.id,
+            first_name:     s.data.firstName  || '',
+            last_name:      s.data.lastName   || '',
+            email:          s.data.email      || s.email || '',
+            phone:          s.data.phone      || '',
+            description:    s.data.description|| '',
+            contact_method: s.data.contactMethod || 'email',
+            date:           s.created_at
+        }));
+
+        res.json(normalized);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 app.post('/api/consultations', async (req, res) => {
     console.log("Received consultation request:", req.body);
     const { firstName, lastName, email, phone, description, contactMethod } = req.body;
