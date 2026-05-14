@@ -1,10 +1,15 @@
 [build]
-  command = "cd netlify/functions && npm install && cd ../../bike-build-app && npm install && npm run build && cd .. && mkdir -p tracker && cp -r bike-build-app/dist/* tracker/"
+  command = "cd netlify/functions && npm install && cd ../../bike-build-app && npm install && npm run build && cd .. && rm -rf tracker && mkdir -p tracker && cp -r bike-build-app/dist/* tracker/"
   publish = "/"
   functions = "netlify/functions"
 
 [build.environment]
   npm_config_ignore_scripts = "true"
+
+[[redirects]]
+  from = "/tracker/*"
+  to = "/tracker/index.html"
+  status = 200
 
 [[redirects]]
   from = "/api/comm/send"
@@ -17,7 +22,6 @@
   to = "/.netlify/functions/submit-review"
   status = 200
   force = true
-
 
 [[redirects]]
   from = "/api/jobs"
