@@ -23,3 +23,9 @@
   to = "/.netlify/functions/dream-build"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/api/jobs"
+  to = "/.netlify/functions/submit-job"
+  status = 200
+  force = true
