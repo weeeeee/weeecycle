@@ -1,5 +1,5 @@
 [build]
-  command = "cd netlify/functions && npm install && cd ../../bike-build-app && npm install && npm run build && cd .. && rm -rf tracker && mkdir -p tracker && cp -r bike-build-app/dist/* tracker/"
+  command = "cd netlify/functions && npm install"
   publish = "/"
   functions = "netlify/functions"
 
