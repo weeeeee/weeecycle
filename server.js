@@ -276,7 +276,9 @@ app.get('/api/jobs', async (req, res) => {
     }
 });
 
-
+app.post('/api/jobs', async (req, res) => {
+    const job = req.body;
+    try {
         await dbRun(`
             INSERT OR REPLACE INTO jobs (id, customer, bike, service, status, date, checklist)
             VALUES (?, ?, ?, ?, ?, ?, ?)
