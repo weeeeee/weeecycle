@@ -6,10 +6,6 @@
 [build.environment]
   npm_config_ignore_scripts = "true"
 
-[[redirects]]
-  from = "/tracker/*"
-  to = "/tracker/index.html"
-  status = 200
 
 [[redirects]]
   from = "/api/comm/send"
