@@ -1,31 +1,5 @@
 [build]
-  command = "cd netlify/functions && npm install"
-  publish = "/"
-  functions = "netlify/functions"
+  publish = "."
 
 [build.environment]
   npm_config_ignore_scripts = "true"
-
-
-[[redirects]]
-  from = "/api/comm/send"
-  to = "/.netlify/functions/send-inquiry"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/api/reviews"
-  to = "/.netlify/functions/submit-review"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/api/jobs"
-  to = "/.netlify/functions/submit-job"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/build.html"
-  to = "/contact.html?service=Dream+Build"
-  status = 301
