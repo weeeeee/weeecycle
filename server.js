@@ -75,6 +75,121 @@ app.post('/api/mechanic-logout', (req, res) => {
     res.json({ success: true, redirect: 'https://weeecycle.net/mechanic-login.html' });
 });
 
+// SQLite Workshop Database Setup (Permanent Server-Side Persistence)
+const sqlite3 = require('sqlite3').verbose();
+const dbPath = path.join(__dirname, 'weeecycle-workshop.db');
+const workshopDb = new sqlite3.Database(dbPath, (err) => {
+    if (err) console.error('Error opening SQLite database:', err);
+    else console.log('SQLite workshop database connected.');
+});
+
+workshopDb.serialize(() => {
+    workshopDb.run(`CREATE TABLE IF NOT EXISTS customers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        firstName TEXT,
+        lastName TEXT,
+        phone TEXT,
+        address TEXT,
+        city TEXT,
+        state TEXT,
+        zipCode TEXT,
+        createdAt TEXT,
+        updatedAt TEXT
+    )`);
+
+    workshopDb.run(`CREATE TABLE IF NOT EXISTS jobs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        customerId INTEGER,
+        title TEXT,
+        stage TEXT,
+        bikeModel TEXT,
+        estimatedCost TEXT,
+        notes TEXT,
+        createdAt TEXT,
+        updatedAt TEXT
+    )`);
+});
+
+// REST API Endpoints for Customers (Protected by requireMechanicAuth)
+app.get('/api/customers', requireMechanicAuth, (req, res) => {
+    workshopDb.all('SELECT * FROM customers ORDER BY id DESC', [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+app.post('/api/customers', requireMechanicAuth, (req, res) => {
+    const { firstName, lastName, phone, address, city, state, zipCode } = req.body;
+    const now = new Date().toISOString();
+    const sql = `INSERT INTO customers (firstName, lastName, phone, address, city, state, zipCode, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    workshopDb.run(sql, [firstName, lastName, phone, address, city, state, zipCode, now, now], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ id: this.lastID, firstName, lastName, phone, address, city, state, zipCode, createdAt: now, updatedAt: now });
+    });
+});
+
+app.put('/api/customers/:id', requireMechanicAuth, (req, res) => {
+    const { firstName, lastName, phone, address, city, state, zipCode } = req.body;
+    const now = new Date().toISOString();
+    const sql = `UPDATE customers SET firstName=?, lastName=?, phone=?, address=?, city=?, state=?, zipCode=?, updatedAt=? WHERE id=?`;
+    workshopDb.run(sql, [firstName, lastName, phone, address, city, state, zipCode, now, req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, id: req.params.id });
+    });
+});
+
+app.delete('/api/customers/:id', requireMechanicAuth, (req, res) => {
+    workshopDb.run('DELETE FROM jobs WHERE customerId=?', [req.params.id], (err) => {
+        if (err) console.error('Error deleting associated jobs:', err);
+        workshopDb.run('DELETE FROM customers WHERE id=?', [req.params.id], function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ success: true });
+        });
+    });
+});
+
+// REST API Endpoints for Jobs
+app.get('/api/jobs', requireMechanicAuth, (req, res) => {
+    workshopDb.all('SELECT * FROM jobs ORDER BY id DESC', [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+app.post('/api/jobs', requireMechanicAuth, (req, res) => {
+    const { customerId, title, stage, bikeModel, estimatedCost, notes } = req.body;
+    const now = new Date().toISOString();
+    const sql = `INSERT INTO jobs (customerId, title, stage, bikeModel, estimatedCost, notes, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    workshopDb.run(sql, [customerId, title, stage, bikeModel, estimatedCost, notes, now, now], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ id: this.lastID, customerId, title, stage, bikeModel, estimatedCost, notes, createdAt: now, updatedAt: now });
+    });
+});
+
+app.put('/api/jobs/:id', requireMechanicAuth, (req, res) => {
+    const { stage, notes, estimatedCost } = req.body;
+    const now = new Date().toISOString();
+    let sql, params;
+    if (stage && !notes && !estimatedCost) {
+        sql = `UPDATE jobs SET stage=?, updatedAt=? WHERE id=?`;
+        params = [stage, now, req.params.id];
+    } else {
+        sql = `UPDATE jobs SET notes=?, estimatedCost=?, updatedAt=? WHERE id=?`;
+        params = [notes, estimatedCost, now, req.params.id];
+    }
+    workshopDb.run(sql, params, function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, id: req.params.id });
+    });
+});
+
+app.delete('/api/jobs/:id', requireMechanicAuth, (req, res) => {
+    workshopDb.run('DELETE FROM jobs WHERE id=?', [req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true });
+    });
+});
+
 // Serve static files from root (for public site assets)
 app.use(express.static(path.join(__dirname, '/')));
 
