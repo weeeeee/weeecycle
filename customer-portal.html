@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Portal & Live Repair Tracker | Weeecycle</title>
+    <meta name="description" content="Register for Weeecycle bike repair services and track your bicycle's workshop progress live across 8 service stages.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <style>
+        /* Customer Portal Premium Styles */
+        .portal-main {
+            padding: 120px 20px 80px;
+            max-width: 1000px;
+            margin: 0 auto;
+            min-height: calc(100vh - 80px);
+        }
+        .portal-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .portal-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+        .portal-subtitle {
+            color: var(--text-muted);
+            font-size: 1.15rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Tab Navigation */
+        .portal-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+        .portal-tab-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.85rem 2rem;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .portal-tab-btn:hover {
+            border-color: var(--brand-primary);
+            color: var(--text-main);
+            transform: translateY(-2px);
+        }
+        .portal-tab-btn.active {
+            background: var(--brand-primary);
+            border-color: var(--brand-primary);
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(249, 115, 22, 0.35);
+        }
+
+        /* Portal Card Container */
+        .portal-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        /* Form Styles */
+        .portal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        @media(max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .portal-card { padding: 2rem 1.5rem; }
+            .portal-title { font-size: 2.25rem; }
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .input-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        .portal-input {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.9rem 1.2rem;
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+        .portal-input:focus {
+            outline: none;
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+        }
+        select.portal-input {
+            cursor: pointer;
+        }
+        select.portal-input option {
+            background: #1e293b;
+            color: #fff;
+        }
+
+        /* Status Lookup & Progress Bar */
+        .status-lookup-container {
+            max-width: 500px;
+            margin: 0 auto 3rem;
+            display: flex;
+            gap: 1rem;
+        }
+        .status-lookup-container .portal-input {
+            flex: 1;
+        }
+
+        /* 8-Stage Visual Progress Bar */
+        .tracker-wrapper {
+            margin-top: 3rem;
+            padding-top: 3rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .job-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            transition: border-color 0.2s ease;
+        }
+        .job-card:hover {
+            border-color: var(--brand-primary);
+        }
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .job-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--brand-primary);
+            margin: 0 0 0.5rem;
+        }
+        .job-bike {
+            font-size: 1.1rem;
+            color: var(--text-main);
+            margin: 0;
+        }
+        .job-cost {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        /* Stepper */
+        .stepper {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin: 3rem 0 2rem;
+            overflow-x: auto;
+            padding-bottom: 1.5rem;
+        }
+        .stepper::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            right: 30px;
+            height: 4px;
+            background: var(--border-color);
+            z-index: 1;
+        }
+        .step {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 100px;
+            text-align: center;
+        }
+        .step-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #1e293b;
+            border: 3px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+        .step.completed .step-circle {
+            background: #10b981;
+            border-color: #10b981;
+            color: #fff;
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+        }
+        .step.active .step-circle {
+            background: var(--brand-primary);
+            border-color: var(--brand-primary);
+            color: #fff;
+            box-shadow: 0 0 24px rgba(249, 115, 22, 0.6);
+            transform: scale(1.15);
+        }
+        .step-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: color 0.3s ease;
+        }
+        .step.completed .step-label { color: #10b981; }
+        .step.active .step-label { color: var(--brand-primary); font-weight: 700; }
+
+        .job-notes {
+            background: rgba(15, 23, 42, 0.8);
+            border-left: 4px solid var(--brand-primary);
+            padding: 1.25rem;
+            border-radius: 0 12px 12px 0;
+            margin-top: 1.5rem;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            display: none;
+        }
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+            display: block;
+        }
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            display: block;
+        }
+    </style>
+</head>
+<body class="dark-mode">
+
+    <!-- Navigation Bar -->
+    <header className="navbar" style="position: fixed; top: 0; left: 0; right: 0; height: 80px; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); z-index: 1000; display: flex; align-items: center; padding: 0 2rem;">
+        <div style="max-width: 1400px; width: 100%; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <a href="index.html" style="font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.8rem;">🚲</span> WEEECYCLE
+            </a>
+            <nav style="display: flex; gap: 1.5rem; align-items: center;">
+                <a href="index.html" style="color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: color 0.2s;">Home</a>
+                <a href="services.html" style="color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: color 0.2s;">Services</a>
+                <a href="contact.html" style="color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: color 0.2s;">Contact</a>
+                <a href="customer-portal.html" style="color: var(--brand-primary); text-decoration: none; font-weight: 700; font-size: 0.95rem; transition: color 0.2s;">Repair Status</a>
+                <a href="mechanic-login.html" style="color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: color 0.2s;">Shop Mechanic</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="portal-main">
+        <div class="portal-header">
+            <h1 class="portal-title">Customer Repair Portal</h1>
+            <p class="portal-subtitle">Register your bike for professional workshop service or check live repair progress across our 8 workshop stages.</p>
+        </div>
+
+        <div class="portal-tabs">
+            <button class="portal-tab-btn active" onclick="switchTab('status')">🔍 Check Repair Status</button>
+            <button class="portal-tab-btn" onclick="switchTab('signup')">👤 New Customer Registration</button>
+        </div>
+
+        <div id="alertBox" class="alert"></div>
+
+        <!-- Check Status View -->
+        <div id="statusView" class="portal-card">
+            <div class="status-lookup-container">
+                <input type="tel" id="lookupPhone" class="portal-input" placeholder="Enter your phone number (e.g. 555-123-4567)" onkeydown="if(event.key === 'Enter') checkStatus()">
+                <button class="btn btn-primary" onclick="checkStatus()" style="padding: 0 2rem; font-size: 1.05rem;">Check Status</button>
+            </div>
+
+            <div id="trackerResults" class="tracker-wrapper" style="display: none;">
+                <!-- Dynamically populated job cards will go here -->
+            </div>
+        </div>
+
+        <!-- Signup View -->
+        <div id="signupView" class="portal-card" style="display: none;">
+            <form id="signupForm" class="portal-form" onsubmit="handleSignup(event)">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label for="firstName">First Name *</label>
+                        <input type="text" id="firstName" class="portal-input" required placeholder="John">
+                    </div>
+                    <div class="input-group">
+                        <label for="lastName">Last Name *</label>
+                        <input type="text" id="lastName" class="portal-input" required placeholder="Doe">
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label for="phone">Phone Number *</label>
+                        <input type="tel" id="phone" class="portal-input" required placeholder="(555) 000-0000">
+                    </div>
+                    <div class="input-group">
+                        <label for="address">Street Address</label>
+                        <input type="text" id="address" class="portal-input" placeholder="123 Main St">
+                    </div>
+                </div>
+
+                <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr;">
+                    <div class="input-group">
+                        <label for="city">City</label>
+                        <input type="text" id="city" class="portal-input" placeholder="Denver">
+                    </div>
+                    <div class="input-group">
+                        <label for="state">State</label>
+                        <select id="state" class="portal-input">
+                            <option value="AL">AL</option><option value="AK">AK</option><option value="AZ">AZ</option><option value="AR">AR</option>
+                            <option value="CA" selected>CA</option><option value="CO">CO</option><option value="CT">CT</option><option value="DE">DE</option>
+                            <option value="FL">FL</option><option value="GA">GA</option><option value="HI">HI</option><option value="ID">ID</option>
+                            <option value="IL">IL</option><option value="IN">IN</option><option value="IA">IA</option><option value="KS">KS</option>
+                            <option value="KY">KY</option><option value="LA">LA</option><option value="ME">ME</option><option value="MD">MD</option>
+                            <option value="MA">MA</option><option value="MI">MI</option><option value="MN">MN</option><option value="MS">MS</option>
+                            <option value="MO">MO</option><option value="MT">MT</option><option value="NE">NE</option><option value="NV">NV</option>
+                            <option value="NH">NH</option><option value="NJ">NJ</option><option value="NM">NM</option><option value="NY">NY</option>
+                            <option value="NC">NC</option><option value="ND">ND</option><option value="OH">OH</option><option value="OK">OK</option>
+                            <option value="OR">OR</option><option value="PA">PA</option><option value="RI">RI</option><option value="SC">SC</option>
+                            <option value="SD">SD</option><option value="TN">TN</option><option value="TX">TX</option><option value="UT">UT</option>
+                            <option value="VT">VT</option><option value="VA">VA</option><option value="WA">WA</option><option value="WV">WV</option>
+                            <option value="WI">WI</option><option value="WY">WY</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="zipCode">Zip Code</label>
+                        <input type="text" id="zipCode" class="portal-input" placeholder="80202">
+                    </div>
+                </div>
+
+                <div class="tracker-wrapper" style="margin-top: 1rem; padding-top: 2rem;">
+                    <h3 style="margin: 0 0 1.5rem; font-family: 'Outfit', sans-serif; color: var(--brand-primary);">Optional Service Intake</h3>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="bikeModel">Bicycle Make / Model</label>
+                            <input type="text" id="bikeModel" class="portal-input" placeholder="e.g. 2024 Specialized Tarmac SL8">
+                        </div>
+                        <div class="input-group">
+                            <label for="requestedService">Requested Service / Description</label>
+                            <input type="text" id="requestedService" class="portal-input" placeholder="e.g. Comprehensive Tune-Up, Bleed Brakes">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="padding: 1.25rem; font-size: 1.15rem; margin-top: 1.5rem; justify-content: center;">
+                    🚀 Sign Up & Join Workshop Database
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer style="text-align: center; padding: 3rem 2rem; border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.9rem;">
+        Weeecycle Workshop — Professional Bicycle Mechanics & Custom Dream Builds
+    </footer>
+
+    <!-- Customer Portal Logic -->
+    <script>
+        const STAGES = [
+            'In the shop',
+            'Inspection',
+            'Approval',
+            'Awaiting for parts',
+            'Service',
+            'Testing',
+            'Waiting for pickup',
+            'Complete'
+        ];
+
+        function showAlert(msg, isError = false) {
+            const box = document.getElementById('alertBox');
+            box.className = 'alert ' + (isError ? 'alert-error' : 'alert-success');
+            box.innerText = msg;
+            box.style.display = 'block';
+            setTimeout(() => { box.style.display = 'none'; }, 6000);
+        }
+
+        function switchTab(tab) {
+            const statusBtn = document.querySelectorAll('.portal-tab-btn')[0];
+            const signupBtn = document.querySelectorAll('.portal-tab-btn')[1];
+            const statusView = document.getElementById('statusView');
+            const signupView = document.getElementById('signupView');
+
+            if (tab === 'status') {
+                statusBtn.classList.add('active');
+                signupBtn.classList.remove('active');
+                statusView.style.display = 'block';
+                signupView.style.display = 'none';
+            } else {
+                signupBtn.classList.add('active');
+                statusBtn.classList.remove('active');
+                signupView.style.display = 'block';
+                statusView.style.display = 'none';
+            }
+        }
+
+        async function handleSignup(e) {
+            e.preventDefault();
+            const fields = {
+                firstName: document.getElementById('firstName').value.trim(),
+                lastName: document.getElementById('lastName').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                address: document.getElementById('address').value.trim(),
+                city: document.getElementById('city').value.trim(),
+                state: document.getElementById('state').value,
+                zipCode: document.getElementById('zipCode').value.trim(),
+                bikeModel: document.getElementById('bikeModel').value.trim(),
+                requestedService: document.getElementById('requestedService').value.trim()
+            };
+
+            try {
+                const res = await fetch('http://localhost:3000/api/public/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(fields)
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showAlert('🎉 Successfully registered! You are now in the Weeecycle database.');
+                    document.getElementById('lookupPhone').value = fields.phone;
+                    switchTab('status');
+                    checkStatus();
+                    document.getElementById('signupForm').reset();
+                } else {
+                    showAlert(data.error || 'Registration failed. Please try again.', true);
+                }
+            } catch (err) {
+                showAlert('Network error connecting to workshop server.', true);
+                console.error(err);
+            }
+        }
+
+        async function checkStatus() {
+            const phone = document.getElementById('lookupPhone').value.trim();
+            if (!phone) {
+                showAlert('Please enter your phone number first.', true);
+                return;
+            }
+
+            const wrapper = document.getElementById('trackerResults');
+            wrapper.style.display = 'block';
+            wrapper.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 2rem;">🔍 Locating your repair records...</div>';
+
+            try {
+                const res = await fetch(`http://localhost:3000/api/public/status?phone=${encodeURIComponent(phone)}`);
+                const data = await res.json();
+
+                if (!res.ok) {
+                    wrapper.innerHTML = `<div style="text-align: center; color: #ef4444; padding: 2rem; background: rgba(239, 68, 68, 0.1); border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.3);">⚠️ ${data.error || 'No records found.'}</div>`;
+                    return;
+                }
+
+                if (!data.jobs || data.jobs.length === 0) {
+                    wrapper.innerHTML = `
+                        <div style="text-align: center; padding: 3rem 1rem;">
+                            <h3 style="margin: 0 0 0.5rem; color: var(--text-main);">Welcome, ${data.customer.firstName}!</h3>
+                            <p style="color: var(--text-muted); margin: 0 0 1.5rem;">You are registered in our system, but currently have no active bike repair jobs.</p>
+                            <button class="btn btn-primary" onclick="switchTab('signup')">Book a New Service</button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = `<h3 style="margin: 0 0 2rem; color: var(--text-main); border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">Active Repairs for ${data.customer.firstName} ${data.customer.lastName}</h3>`;
+
+                data.jobs.forEach(job => {
+                    const currentIdx = STAGES.indexOf(job.stage);
+                    
+                    let stepperHtml = '<div class="stepper">';
+                    STAGES.forEach((stageName, idx) => {
+                        let stepClass = 'step';
+                        if (idx < currentIdx) stepClass += ' completed';
+                        else if (idx === currentIdx) stepClass += ' active';
+
+                        stepperHtml += `
+                            <div class="${stepClass}">
+                                <div class="step-circle">${idx < currentIdx ? '✓' : idx + 1}</div>
+                                <div class="step-label">${stageName}</div>
+                            </div>
+                        `;
+                    });
+                    stepperHtml += '</div>';
+
+                    html += `
+                        <div class="job-card">
+                            <div class="job-header">
+                                <div>
+                                    <h4 class="job-title">${job.title}</h4>
+                                    <p class="job-bike">🚲 ${job.bikeModel || 'Customer Bicycle'}</p>
+                                </div>
+                                ${job.estimatedCost ? `<div class="job-cost">Est. Cost: $${parseFloat(job.estimatedCost).toFixed(2)}</div>` : ''}
+                            </div>
+
+                            ${stepperHtml}
+
+                            ${job.notes ? `
+                                <div class="job-notes">
+                                    <strong style="color: var(--text-main); display: block; margin-bottom: 0.25rem;">🛠️ Workshop Notes:</strong>
+                                    ${job.notes}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+
+                wrapper.innerHTML = html;
+
+            } catch (err) {
+                wrapper.innerHTML = '<div style="text-align: center; color: #ef4444; padding: 2rem;">⚠️ Network error connecting to workshop server.</div>';
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+</html>

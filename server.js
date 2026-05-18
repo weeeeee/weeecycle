@@ -190,6 +190,65 @@ app.delete('/api/jobs/:id', requireMechanicAuth, (req, res) => {
     });
 });
 
+// Public REST API Endpoints for Customer Portal (No mechanic auth required)
+app.post('/api/public/signup', (req, res) => {
+    const { firstName, lastName, phone, address, city, state, zipCode, requestedService, bikeModel } = req.body;
+    if (!firstName || !lastName || !phone) {
+        return res.status(400).json({ error: 'First Name, Last Name, and Phone Number are required.' });
+    }
+    const now = new Date().toISOString();
+    
+    // Check if customer already exists by phone
+    workshopDb.get('SELECT * FROM customers WHERE phone=?', [phone.trim()], (err, existing) => {
+        if (err) return res.status(500).json({ error: err.message });
+        
+        const handleJobCreation = (id) => {
+            if (requestedService && requestedService.trim() !== '') {
+                const jobSql = `INSERT INTO jobs (customerId, title, stage, bikeModel, estimatedCost, notes, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+                workshopDb.run(jobSql, [id, requestedService.trim(), 'In the shop', bikeModel || 'Customer Bike', '', 'Customer self-service intake request.', now, now], function(jobErr) {
+                    if (jobErr) console.error('Error creating initial job:', jobErr);
+                    res.json({ success: true, customerId: id, jobId: this?.lastID });
+                });
+            } else {
+                res.json({ success: true, customerId: id });
+            }
+        };
+
+        if (existing) {
+            // Update existing customer info
+            const updateSql = `UPDATE customers SET firstName=?, lastName=?, address=?, city=?, state=?, zipCode=?, updatedAt=? WHERE id=?`;
+            workshopDb.run(updateSql, [firstName.trim(), lastName.trim(), address?.trim(), city?.trim(), state, zipCode?.trim(), now, existing.id], (upErr) => {
+                if (upErr) return res.status(500).json({ error: upErr.message });
+                handleJobCreation(existing.id);
+            });
+        } else {
+            // Insert new customer
+            const insertSql = `INSERT INTO customers (firstName, lastName, phone, address, city, state, zipCode, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            workshopDb.run(insertSql, [firstName.trim(), lastName.trim(), phone.trim(), address?.trim(), city?.trim(), state, zipCode?.trim(), now, now], function(insErr) {
+                if (insErr) return res.status(500).json({ error: insErr.message });
+                handleJobCreation(this.lastID);
+            });
+        }
+    });
+});
+
+app.get('/api/public/status', (req, res) => {
+    const { phone } = req.query;
+    if (!phone) {
+        return res.status(400).json({ error: 'Phone number is required to look up repair status.' });
+    }
+    workshopDb.get('SELECT * FROM customers WHERE phone=?', [phone.trim()], (err, customer) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!customer) {
+            return res.status(404).json({ error: 'No customer found matching that phone number.' });
+        }
+        workshopDb.all('SELECT id, title, stage, bikeModel, estimatedCost, notes, updatedAt FROM jobs WHERE customerId=? ORDER BY id DESC', [customer.id], (jobErr, jobs) => {
+            if (jobErr) return res.status(500).json({ error: jobErr.message });
+            res.json({ customer: { firstName: customer.firstName, lastName: customer.lastName, phone: customer.phone }, jobs });
+        });
+    });
+});
+
 // Serve static files from root (for public site assets)
 app.use(express.static(path.join(__dirname, '/')));
 
