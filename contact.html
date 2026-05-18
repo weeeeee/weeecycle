@@ -91,9 +91,10 @@
                     href="index.html#services">Services</a>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
                     href="https://weeecycle.substack.com" target="_blank">Substack</a>
-
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
                     href="index.html#shop">Shop My Bench</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="mechanic-login.html">Shop Mechanic</a>
                 <a class="bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase tracking-wider py-2 px-6 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50"
                     href="contact.html">Book Service</a>
             </div>
@@ -109,9 +110,11 @@
                 <a class="text-xl font-display uppercase tracking-wide text-gray-200"
                     href="https://weeecycle.substack.com" target="_blank"
                     onclick="this.closest('#mobile-menu').classList.add('hidden')">Substack</a>
-
                 <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="index.html#shop"
                     onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop My Bench</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200"
+                    href="mechanic-login.html"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop Mechanic</a>
                 <a class="text-brand-orange text-xl font-display font-bold uppercase tracking-wide" href="contact.html"
                     onclick="this.closest('#mobile-menu').classList.add('hidden')">Book Now</a>
             </div>
@@ -204,16 +207,14 @@
                             <!-- A La Carte sub-selection -->
                             <select id="contact-custom-service" onchange="toggleCustomerAlaCarteOther()" class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition mt-3 hidden">
                                 <option value="" disabled selected>Select A La Carte Service</option>
-                                <option value="Gear indexing">Gear indexing</option>
-                                <option value="Tubeless tire setup (labor only)">Tubeless tire setup (labor only)</option>
-                                <option value="Tire tubed setup">Tire tubed setup</option>
-                                <option value="Pedal Install">Pedal Install</option>
-                                <option value="Brake adjustments">Brake adjustments</option>
-                                <option value="Shift adjustments">Shift adjustments</option>
-                                <option value="Disassemble / Assemble bike for shipping">Disassemble / Assemble bike for shipping</option>
-                                <option value="Chain installation">Chain installation</option>
-                                <option value="Bike assembly from box - Single speed (child's bike)">Bike assembly from box - Single speed (child's bike)</option>
-                                <option value="Bike assembly from box - Multi Speed bike">Bike assembly from box - Multi Speed bike</option>
+                                <option value="Tire repair">Tire repair</option>
+                                <option value="Tire installation">Tire installation</option>
+                                <option value="Tubeless tire installation">Tubeless tire installation</option>
+                                <option value="Wheel truing">Wheel truing</option>
+                                <option value="Wheel bearing service">Wheel bearing service</option>
+                                <option value="Headset service">Headset service</option>
+                                <option value="Bottom bracket service">Bottom bracket service</option>
+                                <option value="Component installation">Component installation</option>
                                 <option value="Other">Other (Please describe)</option>
                             </select>
                             <input type="text" id="contact-custom-other" placeholder="Specify Other Service"
