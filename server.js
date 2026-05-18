@@ -12,7 +12,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: ['https://weeecycle.net', 'http://localhost:3000', 'http://localhost:5173'],
+    credentials: true
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
@@ -27,13 +30,19 @@ function generateMechanicToken(username) {
 
 // Authentication Middleware for Shop Mechanic (/tracker)
 function requireMechanicAuth(req, res, next) {
-    const token = req.cookies.mechanic_token;
+    const token = req.cookies.mechanic_token || req.headers.authorization?.split(' ')[1];
     if (!token) {
-        return res.redirect('/mechanic-login.html');
+        if (req.path.startsWith('/api/')) {
+            return res.status(401).json({ error: 'Unauthorized. Please login.' });
+        }
+        return res.redirect('https://weeecycle.net/mechanic-login.html');
     }
     const expectedToken = generateMechanicToken(process.env.MECHANIC_USER || 'steve');
     if (token !== expectedToken) {
-        return res.redirect('/mechanic-login.html');
+        if (req.path.startsWith('/api/')) {
+            return res.status(401).json({ error: 'Invalid token. Please login.' });
+        }
+        return res.redirect('https://weeecycle.net/mechanic-login.html');
     }
     next();
 }
@@ -51,19 +60,19 @@ app.post('/api/mechanic-login', (req, res) => {
         const token = generateMechanicToken(username);
         res.cookie('mechanic_token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
         });
-        return res.json({ success: true, redirect: '/tracker/' });
+        return res.json({ success: true, token, redirect: '/tracker/' });
     }
     return res.status(401).json({ error: 'Invalid username or password.' });
 });
 
 // POST /api/mechanic-logout
 app.post('/api/mechanic-logout', (req, res) => {
-    res.clearCookie('mechanic_token');
-    res.json({ success: true, redirect: '/mechanic-login.html' });
+    res.clearCookie('mechanic_token', { sameSite: 'none', secure: true });
+    res.json({ success: true, redirect: 'https://weeecycle.net/mechanic-login.html' });
 });
 
 // Serve static files from root (for public site assets)
@@ -111,7 +120,7 @@ async function fetchImageBuffer(url) {
 }
 
 // POST /api/send-build-pdf
-app.post('/api/send-build-pdf', async (req, res) => {
+app.post('/api/send-build-pdf', requireMechanicAuth, async (req, res) => {
     const { customerEmail, buildName, totalPrice, components = [], extras = [], customMessage } = req.body;
 
     if (!customerEmail) {

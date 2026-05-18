@@ -119,7 +119,7 @@
             btnSpinner.classList.remove('hidden');
 
             try {
-                const res = await fetch('/api/mechanic-login', {
+                const res = await fetch('http://localhost:3000/api/mechanic-login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
@@ -127,6 +127,7 @@
 
                 const data = await res.json();
                 if (res.ok && data.success) {
+                    sessionStorage.setItem('mechanic_token', data.token);
                     btnText.textContent = 'Success! Redirecting...';
                     window.location.href = data.redirect;
                 } else {
