@@ -59,15 +59,49 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "LocalBusiness",
+      "@type": "BicycleRepairShop",
       "name": "Weeecycle.net",
       "description": "Expert road and gravel bike repair, tuning, and custom builds. Professional service for cyclists who demand precision.",
       "url": "https://weeecycle.net",
       "image": "https://weeecycle.net/images/hero_gravel_realistic.png",
       "logo": "https://weeecycle.net/images/logo/gradient-bike.png",
-      "priceRange": "$$"
+      "priceRange": "$$",
+      "email": "steve@weeecycle.net",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Lexington",
+        "addressRegion": "KY",
+        "addressCountry": "US"
+      },
+      "areaServed": {
+        "@type": "AdministrativeArea",
+        "name": "Lexington, KY"
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday"
+          ],
+          "opens": "09:00",
+          "closes": "18:00"
+        }
+      ],
+      "sameAs": [
+        "https://www.instagram.com/weeecycle/",
+        "https://www.facebook.com/profile.php?id=61584485203543",
+        "https://www.youtube.com/@weeecycle",
+        "https://www.tiktok.com/@weeecycling",
+        "https://weeecycle.substack.com"
+      ]
     }
     </script>
+
 </head>
 
 <body class="bg-brand-dark text-gray-200 font-body antialiased selection:bg-brand-orange selection:text-white pb-20 md:pb-0">
@@ -89,6 +123,8 @@
             <div class="hidden md:flex items-center gap-8">
                 <a class="font-display text-lg text-brand-orange font-bold uppercase tracking-wide"
                     href="#services">Services</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="#handbook">Handbook</a>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
                     href="https://weeecycle.substack.com" target="_blank">Substack</a>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
@@ -118,6 +154,9 @@
             <div class="flex flex-col p-4 space-y-4">
                 <a class="text-brand-orange text-xl font-display font-bold uppercase tracking-wide" href="#services"
                     onclick="this.closest('#mobile-menu').classList.add('hidden')">Services</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition"
+                    href="#handbook"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Handbook</a>
                 <a class="text-xl font-display uppercase tracking-wide text-gray-200"
                     href="https://weeecycle.substack.com" target="_blank"
                     onclick="this.closest('#mobile-menu').classList.add('hidden')">Substack</a>
@@ -331,6 +370,100 @@
         </div>
     </section>
 
+    <!-- eBook Showcase Section -->
+    <section class="py-24 bg-gradient-to-br from-brand-dark via-[#07071c] to-brand-dark relative border-t border-gray-900 overflow-hidden scroll-mt-20" id="handbook">
+        <!-- Subtle decorative glow elements -->
+        <div class="absolute top-1/4 left-10 w-72 h-72 bg-brand-orange/10 rounded-full blur-[100px] pointer-events-none"></div>
+        <div class="absolute bottom-1/4 right-10 w-80 h-80 bg-brand-orange/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div class="container mx-auto px-4 max-w-6xl relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+                
+                <!-- Left Column: Book Cover Visual -->
+                <div class="lg:col-span-5 flex justify-center lg:justify-start">
+                    <div class="relative group max-w-[360px] w-full aspect-[2/3]">
+                        <!-- Orange light glow effect behind the book -->
+                        <div class="absolute -inset-1 bg-gradient-to-r from-brand-orange to-orange-500 rounded-2xl blur-xl opacity-30 group-hover:opacity-60 transition duration-500"></div>
+                        
+                        <!-- The book container itself with some depth style -->
+                        <div class="relative w-full h-full rounded-2xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.9)] border border-gray-800/80 transform group-hover:-translate-y-2 group-hover:rotate-1 transition-all duration-500">
+                            <img src="images/ebook_cover_v1.png" alt="The Complete Bike Mechanics Handbook" class="w-full h-full object-cover" />
+                            
+                            <!-- Overlay badge -->
+                            <div class="absolute top-4 left-4 bg-brand-orange text-white font-display font-bold text-sm tracking-wider uppercase py-1 px-4 rounded shadow-md">
+                                Shop Edition
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Book Details & Description -->
+                <div class="lg:col-span-7 flex flex-col justify-center">
+                    <div class="mb-6">
+                        <span class="text-brand-orange uppercase font-display font-bold tracking-widest text-xl">Digital Guide</span>
+                        <h2 class="font-display font-bold text-5xl md:text-6xl text-white uppercase tracking-tight leading-none mt-1 mb-4">
+                            The Complete <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-orange-400">Bike Mechanics</span> Handbook
+                        </h2>
+                        <p class="text-gray-300 text-lg font-light leading-relaxed mb-6">
+                            The Complete Bike Mechanics Handbook is a 100-page digital guide built for cyclists who want to understand and maintain their own road or gravel bike without guessing. Written by WeeeCycle, a dedicated road and gravel service shop in Lexington, KY, every chapter is grounded in real workshop practice.
+                        </p>
+                    </div>
+
+                    <div class="mb-8">
+                        <h3 class="font-display font-bold text-2xl text-white uppercase tracking-wide mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-brand-orange">menu_book</span> What's Inside:
+                        </h3>
+                        <ul class="space-y-4 text-base text-gray-300 font-light">
+                            <li class="flex items-start gap-3">
+                                <i class="fa-solid fa-book-open text-brand-orange mt-1.5 text-sm flex-shrink-0"></i>
+                                <span><strong>13 chapters</strong> covering every core system — chain, derailleurs, cassette, brakes, wheels, tires, cockpit, fit, and seasonal storage</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fa-solid fa-road text-brand-orange mt-1.5 text-sm flex-shrink-0"></i>
+                                <span><strong>Dedicated road vs. gravel comparisons throughout</strong> — 1× drivetrain logic, GRX vs. SRAM XPLR, 700c vs. 650b wheels, tubeless tyre pressure formulas, flat-mount disc brake specifics</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fa-solid fa-wrench text-brand-orange mt-1.5 text-sm flex-shrink-0"></i>
+                                <span><strong>Torque specifications</strong> for every critical fastener, so you never guess on a carbon component</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fa-solid fa-list-check text-brand-orange mt-1.5 text-sm flex-shrink-0"></i>
+                                <span><strong>Step-by-step procedures:</strong> hydraulic brake bleeds, tubeless conversion, wheel truing, derailleur indexing, clutch derailleur service, dropper post maintenance</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fa-solid fa-image text-brand-orange mt-1.5 text-sm flex-shrink-0"></i>
+                                <span><strong>AI-illustrated technical diagrams</strong> in every chapter — labeled anatomy, exploded views, system cross-sections</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fa-solid fa-lightbulb text-brand-orange mt-1.5 text-sm flex-shrink-0"></i>
+                                <span><strong>Pro tips, warning callouts,</strong> and maintenance calendars built from shop experience</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="border-t border-gray-800 pt-8 mt-2">
+                        <p class="text-gray-300 text-lg mb-6 font-light">
+                            Whether you're wrenching on a Shimano 105 road bike or dialing in a GRX gravel build with a 10-51T cassette, this handbook gives you the knowledge to do it right the first time.
+                        </p>
+                        
+                        <div class="flex flex-col sm:flex-row items-center gap-6">
+                            <a href="https://payhip.com/b/fzWFc" target="_blank" class="w-full sm:w-auto bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-2xl uppercase tracking-wider py-4 px-10 rounded transition transform hover:scale-105 shadow-lg shadow-orange-900/50 inline-flex items-center justify-center gap-3 group">
+                                <span>Get the Handbook</span>
+                                <i class="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1"></i>
+                            </a>
+                            <div class="text-center sm:text-left">
+                                <div class="text-3xl font-display font-bold text-brand-orange leading-none">$6.99</div>
+                                <div class="text-gray-500 text-sm uppercase tracking-wider mt-1">Download Once. Reference Forever.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="bg-black border-t border-gray-900 py-12">
         <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
@@ -339,7 +472,7 @@
                 <span class="text-gray-500 text-xs uppercase tracking-[0.2em] mt-2">Building Speed. Fixing Fun.</span>
             </div>
             <div class="text-gray-600 text-xs uppercase tracking-wider">
-                <span>&copy; 2025 Weeecycle. All rights reserved.</span>
+                <span>&copy; 2026 Weeecycle | Lexington, KY. All rights reserved.</span>
             </div>
         </div>
     </footer>

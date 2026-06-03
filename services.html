@@ -61,12 +61,49 @@
       "description": "Professional road and gravel bike repair services. Free Safety Checks, Expert Tune-Ups, Complete Overhauls, and A La Carte repairs.",
       "url": "https://weeecycle.net/services.html",
       "publisher": {
-        "@type": "LocalBusiness",
+        "@type": "BicycleRepairShop",
         "name": "Weeecycle.net",
-        "url": "https://weeecycle.net"
+        "url": "https://weeecycle.net",
+        "image": "https://weeecycle.net/images/hero_gravel_realistic.png",
+        "logo": "https://weeecycle.net/images/logo/gradient-bike.png",
+        "priceRange": "$$",
+        "email": "steve@weeecycle.net",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Lexington",
+          "addressRegion": "KY",
+          "addressCountry": "US"
+        },
+        "areaServed": {
+          "@type": "AdministrativeArea",
+          "name": "Lexington, KY"
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday"
+            ],
+            "opens": "09:00",
+            "closes": "18:00"
+          }
+        ],
+        "sameAs": [
+          "https://www.instagram.com/weeecycle/",
+          "https://www.facebook.com/profile.php?id=61584485203543",
+          "https://www.youtube.com/@weeecycle",
+          "https://www.tiktok.com/@weeecycling",
+          "https://weeecycle.substack.com"
+        ]
       }
     }
     </script>
+
 </head>
 
 <body class="bg-brand-dark text-gray-200 font-body antialiased selection:bg-brand-orange selection:text-white pb-20 md:pb-0">
@@ -88,6 +125,8 @@
             <div class="hidden md:flex items-center gap-8">
                 <a class="font-display text-lg text-brand-orange font-bold uppercase tracking-wide"
                     href="services.html">Services</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="index.html#handbook">Handbook</a>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
                     href="https://weeecycle.substack.com" target="_blank">Substack</a>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
@@ -117,6 +156,9 @@
             <div class="flex flex-col p-4 space-y-4">
                 <a class="text-brand-orange text-xl font-display font-bold uppercase tracking-wide" href="services.html"
                     onclick="this.closest('#mobile-menu').classList.add('hidden')">Services</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition"
+                    href="index.html#handbook"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Handbook</a>
                 <a class="text-xl font-display uppercase tracking-wide text-gray-200"
                     href="https://weeecycle.substack.com" target="_blank"
                     onclick="this.closest('#mobile-menu').classList.add('hidden')">Substack</a>
@@ -274,7 +316,7 @@
                 <span class="text-gray-500 text-xs uppercase tracking-[0.2em] mt-2">Building Speed. Fixing Fun.</span>
             </div>
             <div class="text-gray-600 text-xs uppercase tracking-wider">
-                <span>&copy; 2025 Weeecycle. All rights reserved.</span>
+                <span>&copy; 2026 Weeecycle | Lexington, KY. All rights reserved.</span>
             </div>
         </div>
     </footer>

@@ -63,8 +63,56 @@
     </style>
     <link rel="icon" type="image/png" href="images/logo/gradient-bike.png" />
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"ContactPage","name":"Contact Weeecycle.net","description":"Book your road or gravel bike service appointment. Safety Check, Tune-Up, Overhaul, or Dream Build. We'll get you back on the road.","url":"https://weeecycle.net/contact.html","mainEntity":{"@type":"LocalBusiness","name":"Weeecycle.net","url":"https://weeecycle.net"}}
+    {
+      "@context": "https://schema.org",
+      "@type": "ContactPage",
+      "name": "Contact Weeecycle.net",
+      "description": "Book your road or gravel bike service appointment. Safety Check, Tune-Up, Overhaul, or Dream Build. We'll get you back on the road.",
+      "url": "https://weeecycle.net/contact.html",
+      "mainEntity": {
+        "@type": "BicycleRepairShop",
+        "name": "Weeecycle.net",
+        "url": "https://weeecycle.net",
+        "image": "https://weeecycle.net/images/hero_gravel_realistic.png",
+        "logo": "https://weeecycle.net/images/logo/gradient-bike.png",
+        "priceRange": "$$",
+        "email": "steve@weeecycle.net",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Lexington",
+          "addressRegion": "KY",
+          "addressCountry": "US"
+        },
+        "areaServed": {
+          "@type": "AdministrativeArea",
+          "name": "Lexington, KY"
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday"
+            ],
+            "opens": "09:00",
+            "closes": "18:00"
+          }
+        ],
+        "sameAs": [
+          "https://www.instagram.com/weeecycle/",
+          "https://www.facebook.com/profile.php?id=61584485203543",
+          "https://www.youtube.com/@weeecycle",
+          "https://www.tiktok.com/@weeecycling",
+          "https://weeecycle.substack.com"
+        ]
+      }
+    }
     </script>
+
 </head>
 
 <body
@@ -90,6 +138,8 @@
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
                     href="index.html#services">Services</a>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="index.html#handbook">Handbook</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
                     href="https://weeecycle.substack.com" target="_blank">Substack</a>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
                     href="index.html#shop">Shop My Bench</a>
@@ -109,6 +159,9 @@
             <div class="flex flex-col p-4 space-y-4">
                 <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="index.html#services"
                     onclick="this.closest('#mobile-menu').classList.add('hidden')">Services</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition"
+                    href="index.html#handbook"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Handbook</a>
                 <a class="text-xl font-display uppercase tracking-wide text-gray-200"
                     href="https://weeecycle.substack.com" target="_blank"
                     onclick="this.closest('#mobile-menu').classList.add('hidden')">Substack</a>
@@ -128,7 +181,7 @@
 
     <div class="pt-32 pb-20 container mx-auto px-4">
         <section class="relative" id="contact">
-            <div class="container mx-auto px-4 max-w-4xl">
+            <div class="container mx-auto px-4 max-w-6xl">
                 <div class="text-center mb-12">
                     <h2 class="font-display font-bold text-6xl text-white uppercase leading-none mb-4">Book
                         Your<br /><span class="text-brand-orange">Service</span></h2>
@@ -136,127 +189,179 @@
                         get back to you to confirm your appointment.</p>
                 </div>
 
-                <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-8 shadow-2xl">
-                    <form id="contactForm" name="contact" method="POST" data-netlify="true" class="space-y-6">
-                        <!-- Required for Netlify -->
-                        <input type="hidden" name="form-name" value="contact" />
-                        <input type="hidden" name="subject" value="New Service Request - Weeecycle.net" />
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <!-- Left: Form Column -->
+                    <div class="lg:col-span-2 bg-[#0B0B2B] border border-gray-800 rounded-xl p-8 shadow-2xl">
+                        <form id="contactForm" name="contact" method="POST" data-netlify="true" class="space-y-6">
+                            <!-- Required for Netlify -->
+                            <input type="hidden" name="form-name" value="contact" />
+                            <input type="hidden" name="subject" value="New Service Request - Weeecycle.net" />
 
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <!-- Full Name -->
-                            <div>
-                                <label for="fullname"
-                                    class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Full
-                                    Name</label>
-                                <input type="text" id="fullname" name="fullname" required
-                                    class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
-                                    placeholder="Your Name">
-                            </div>
-
-                            <!-- Mobile Phone -->
-                            <div>
-                                <label for="phone"
-                                    class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Mobile
-                                    Phone</label>
-                                <input type="tel" id="phone" name="phone" required
-                                    class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
-                                    placeholder="Your Phone Number">
-                            </div>
-
-                            <!-- Email Address -->
-                            <div class="md:col-span-2">
-                                <label for="email"
-                                    class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Email
-                                    Address</label>
-                                <input type="email" id="email" name="email" required
-                                    class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
-                                    placeholder="your@email.com">
-                            </div>
-
-                            <!-- Address -->
-                            <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-6 gap-4">
-                                <div class="md:col-span-6">
-                                    <label for="address" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Address</label>
-                                    <input type="text" id="address" name="address" class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition" placeholder="Street Address">
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <!-- Full Name -->
+                                <div>
+                                    <label for="fullname"
+                                        class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Full
+                                        Name</label>
+                                    <input type="text" id="fullname" name="fullname" required
+                                        class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
+                                        placeholder="Your Name">
                                 </div>
-                                <div class="md:col-span-3">
-                                    <label for="city" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">City</label>
-                                    <input type="text" id="city" name="city" class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition" placeholder="City">
+
+                                <!-- Mobile Phone -->
+                                <div>
+                                    <label for="phone"
+                                        class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Mobile
+                                        Phone</label>
+                                    <input type="tel" id="phone" name="phone" required
+                                        class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
+                                        placeholder="Your Phone Number">
                                 </div>
-                                <div class="md:col-span-1">
-                                    <label for="state" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">State</label>
-                                    <input type="text" id="state" name="state" class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition" placeholder="KY">
-                                </div>
+
+                                <!-- Email Address -->
                                 <div class="md:col-span-2">
-                                    <label for="zip" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Zip Code</label>
-                                    <input type="text" id="zip" name="zip" class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition" placeholder="Zip Code">
+                                    <label for="email"
+                                        class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Email
+                                        Address</label>
+                                    <input type="email" id="email" name="email" required
+                                        class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
+                                        placeholder="your@email.com">
+                                </div>
+
+                                <!-- Address -->
+                                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-6 gap-4">
+                                    <div class="md:col-span-6">
+                                        <label for="address" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Address</label>
+                                        <input type="text" id="address" name="address" class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition" placeholder="Street Address">
+                                    </div>
+                                    <div class="md:col-span-3">
+                                        <label for="city" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">City</label>
+                                        <input type="text" id="city" name="city" class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition" placeholder="City">
+                                    </div>
+                                    <div class="md:col-span-1">
+                                        <label for="state" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">State</label>
+                                        <input type="text" id="state" name="state" class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition" placeholder="KY">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label for="zip" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Zip Code</label>
+                                        <input type="text" id="zip" name="zip" class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition" placeholder="Zip Code">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Menu Selection -->
+                            <div>
+                                <label for="service-menu"
+                                    class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">The
+                                    Menu Selection</label>
+                                <select id="service-menu" name="service-menu" onchange="toggleCustomerAlaCarte()"
+                                    class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition">
+                                    <option value="Safety Check">1. Safety Check</option>
+                                    <option value="The Tune-Up">2. The Tune-Up</option>
+                                    <option value="Overhaul">3. The Overhaul</option>
+                                    <option value="Dream Build">4. Dream Build</option>
+                                    <option value="A La Carte">5. A La Carte</option>
+                                </select>
+
+
+                                <!-- A La Carte sub-selection -->
+                                <select id="contact-custom-service" onchange="toggleCustomerAlaCarteOther()" class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition mt-3 hidden">
+                                    <option value="" disabled selected>Select A La Carte Service</option>
+                                    <option value="Tire repair">Tire repair</option>
+                                    <option value="Tire installation">Tire installation</option>
+                                    <option value="Tubeless tire installation">Tubeless tire installation</option>
+                                    <option value="Wheel truing">Wheel truing</option>
+                                    <option value="Wheel bearing service">Wheel bearing service</option>
+                                    <option value="Headset service">Headset service</option>
+                                    <option value="Bottom bracket service">Bottom bracket service</option>
+                                    <option value="Component installation">Component installation</option>
+                                    <option value="Other">Other (Please describe)</option>
+                                </select>
+                                <input type="text" id="contact-custom-other" placeholder="Specify Other Service"
+                                    class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition mt-3 hidden">
+                            </div>
+
+
+
+
+                            <!-- Make/Model -->
+                            <div>
+                                <label for="bike-model"
+                                    class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Make/Model
+                                    of
+                                    Bike</label>
+                                <input type="text" id="bike-model" name="bike-model"
+                                    class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
+                                    placeholder="e.g. Specialized Tarmac, Trek Domane">
+                            </div>
+
+                            <!-- Description -->
+                            <div>
+                                <label for="description"
+                                    class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Description
+                                    of Issue(s)</label>
+                                <textarea id="description" name="description" rows="5"
+                                    class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
+                                    placeholder="Describe what needs fixing..."></textarea>
+                            </div>
+
+                            <button type="submit"
+                                class="w-full bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-xl uppercase tracking-wider py-4 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50">Submit
+                                Request</button>
+                        </form>
+                    </div>
+
+                    <!-- Right: Info Panel Column -->
+                    <div class="space-y-6">
+                        <!-- Service Hub Info -->
+                        <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-8 shadow-2xl">
+                            <h3 class="font-display font-bold text-3xl text-white uppercase mb-6 tracking-wider">Service Hub</h3>
+                            <div class="space-y-6 text-gray-300 font-light">
+                                <div class="flex items-start gap-4">
+                                    <span class="material-symbols-outlined text-brand-orange text-2xl mt-0.5">location_on</span>
+                                    <div>
+                                        <h4 class="font-bold text-white uppercase text-sm tracking-wider mb-1">Location Hub</h4>
+                                        <p class="text-base text-gray-200">Lexington, Kentucky</p>
+                                        <p class="text-xs text-gray-500 mt-1">Serving Lexington & surrounding areas.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-4">
+                                    <span class="material-symbols-outlined text-brand-orange text-2xl mt-0.5">schedule</span>
+                                    <div>
+                                        <h4 class="font-bold text-white uppercase text-sm tracking-wider mb-1">Service Hours</h4>
+                                        <p class="text-base text-gray-200">Monday &ndash; Saturday</p>
+                                        <p class="text-sm text-gray-400">9:00 AM &ndash; 6:00 PM</p>
+                                        <p class="text-xs text-gray-500 mt-1">Sunday: Closed</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-4">
+                                    <span class="material-symbols-outlined text-brand-orange text-2xl mt-0.5">mail</span>
+                                    <div>
+                                        <h4 class="font-bold text-white uppercase text-sm tracking-wider mb-1">Email</h4>
+                                        <a href="mailto:steve@weeecycle.net" class="text-brand-orange hover:text-orange-400 transition-colors text-base font-medium">steve@weeecycle.net</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Menu Selection -->
-                        <div>
-                            <label for="service-menu"
-                                class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">The
-                                Menu Selection</label>
-                            <select id="service-menu" name="service-menu" onchange="toggleCustomerAlaCarte()"
-                                class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition">
-                                <option value="Safety Check">1. Safety Check</option>
-                                <option value="The Tune-Up">2. The Tune-Up</option>
-                                <option value="Overhaul">3. The Overhaul</option>
-                                <option value="Dream Build">4. Dream Build</option>
-                                <option value="A La Carte">5. A La Carte</option>
-                            </select>
-
-
-                            <!-- A La Carte sub-selection -->
-                            <select id="contact-custom-service" onchange="toggleCustomerAlaCarteOther()" class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition mt-3 hidden">
-                                <option value="" disabled selected>Select A La Carte Service</option>
-                                <option value="Tire repair">Tire repair</option>
-                                <option value="Tire installation">Tire installation</option>
-                                <option value="Tubeless tire installation">Tubeless tire installation</option>
-                                <option value="Wheel truing">Wheel truing</option>
-                                <option value="Wheel bearing service">Wheel bearing service</option>
-                                <option value="Headset service">Headset service</option>
-                                <option value="Bottom bracket service">Bottom bracket service</option>
-                                <option value="Component installation">Component installation</option>
-                                <option value="Other">Other (Please describe)</option>
-                            </select>
-                            <input type="text" id="contact-custom-other" placeholder="Specify Other Service"
-                                class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition mt-3 hidden">
+                        <!-- Map Card -->
+                        <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-4 shadow-2xl overflow-hidden">
+                            <h4 class="font-display font-bold text-xl text-white uppercase mb-3 px-2 tracking-wider">Lexington Service Area</h4>
+                            <div class="relative w-full h-64 rounded-lg overflow-hidden border border-brand-orange/20">
+                                <iframe 
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d100516.19504899532!2d-84.57245585!3d38.0286822!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x88424429cc99d1fd%3A0xed555e1bfe7c9284!2sLexington%2C%20KY!5e0!3m2!1sen!2sus!4v1716500000000!5m2!1sen!2sus" 
+                                    class="absolute inset-0 w-full h-full border-0 filter grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300" 
+                                    allowfullscreen="" 
+                                    loading="lazy" 
+                                    referrerpolicy="no-referrer-when-downgrade">
+                                </iframe>
+                            </div>
                         </div>
-
-
-
-
-                        <!-- Make/Model -->
-                        <div>
-                            <label for="bike-model"
-                                class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Make/Model
-                                of
-                                Bike</label>
-                            <input type="text" id="bike-model" name="bike-model"
-                                class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
-                                placeholder="e.g. Specialized Tarmac, Trek Domane">
-                        </div>
-
-                        <!-- Description -->
-                        <div>
-                            <label for="description"
-                                class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Description
-                                of Issue(s)</label>
-                            <textarea id="description" name="description" rows="5"
-                                class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
-                                placeholder="Describe what needs fixing..."></textarea>
-                        </div>
-
-                        <button type="submit"
-                            class="w-full bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-xl uppercase tracking-wider py-4 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50">Submit
-                            Request</button>
-                    </form>
+                    </div>
                 </div>
             </div>
         </section>
+
     </div>
 
 
@@ -268,7 +373,7 @@
                 <span class="text-gray-500 text-xs uppercase tracking-[0.2em] mt-2">Building Speed. Fixing Fun.</span>
             </div>
             <div class="text-gray-600 text-xs uppercase tracking-wider">
-                &copy; 2025 Weeecycle. All rights reserved.
+                <span>&copy; 2026 Weeecycle | Lexington, KY. All rights reserved.</span>
             </div>
         </div>
     </footer>
