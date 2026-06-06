@@ -669,6 +669,70 @@ app.post('/api/invoices/:id/send-stripe', requireMechanicAuth, async (req, res) 
                     if (err) console.error('Error updating customer stripeCustomerId:', err);
                 });
 
+                // Send email to customer via SMTP in simulator mode
+                if (transporter) {
+                    const mailHtml = `
+                        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; padding: 40px 20px; color: #1e293b;">
+                            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border: 1px solid #e2e8f0;">
+                                <div style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%); padding: 32px; text-align: center; color: #ffffff;">
+                                    <h1 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">WEEECYCLE WORKSHOP</h1>
+                                    <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.9;">Road & Gravel Specialists</p>
+                                </div>
+                                <div style="padding: 32px;">
+                                    <h2 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 700; color: #0f172a;">New Invoice from Weeecycle</h2>
+                                    <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6; color: #475569;">
+                                        Hi ${customer.firstName},<br><br>
+                                        Your invoice from Weeecycle Workshop is ready for payment. You can pay securely online using your credit or debit card.
+                                    </p>
+                                    <div style="background-color: #f1f5f9; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                                        <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #475569;">
+                                            <tr>
+                                                <td style="padding: 4px 0; font-weight: 600; color: #1e293b;">Invoice ID:</td>
+                                                <td style="padding: 4px 0; text-align: right;">#${invoiceId}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 4px 0; font-weight: 600; color: #1e293b;">Issue Date:</td>
+                                                <td style="padding: 4px 0; text-align: right;">${invoice.issueDate}</td>
+                                            </tr>
+                                            ${invoice.dueDate ? `
+                                            <tr>
+                                                <td style="padding: 4px 0; font-weight: 600; color: #1e293b;">Due Date:</td>
+                                                <td style="padding: 4px 0; text-align: right;">${invoice.dueDate}</td>
+                                            </tr>` : ''}
+                                            <tr style="border-top: 1px solid #cbd5e1;">
+                                                <td style="padding: 12px 0 4px 0; font-size: 16px; font-weight: bold; color: #0f172a;">Total Due:</td>
+                                                <td style="padding: 12px 0 4px 0; text-align: right; font-size: 18px; font-weight: bold; color: #d97706;">$${(invoice.total || 0).toFixed(2)}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div style="text-align: center; margin-bottom: 32px;">
+                                        <a href="${mockHostedUrl}" style="background-color: #635bff; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(99, 91, 255, 0.2);">
+                                            Pay Invoice Online
+                                        </a>
+                                    </div>
+                                    <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #64748b;">
+                                        Thank you for your business!<br>
+                                        <strong>Weeecycle Workshop</strong>
+                                    </p>
+                                </div>
+                                <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 24px; text-align: center; font-size: 12px; color: #94a3b8;">
+                                    This is a simulated Stripe Invoice email for development/testing purposes.
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    const mailOptions = {
+                        from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
+                        to: customer.email,
+                        subject: `[TEST] Invoice #${invoiceId} from Weeecycle Workshop`,
+                        html: mailHtml
+                    };
+                    transporter.sendMail(mailOptions, (mailErr) => {
+                        if (mailErr) console.error('Error sending simulated invoice email:', mailErr);
+                        else console.log('Simulated invoice email sent successfully to:', customer.email);
+                    });
+                }
+
                 const now = new Date().toISOString();
                 const updateSql = `UPDATE invoices SET stripeInvoiceId=?, hostedInvoiceUrl=?, status=?, updatedAt=? WHERE id=?`;
                 workshopDb.run(updateSql, [mockInvoiceId, mockHostedUrl, 'Sent', now, invoiceId], function(err) {
