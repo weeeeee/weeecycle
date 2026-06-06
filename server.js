@@ -135,6 +135,11 @@ workshopDb.serialize(() => {
         updatedAt TEXT
     )`);
 
+    workshopDb.run(`CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT
+    )`);
+
     // Upgrade migration columns for customers/invoices (ignores duplicate errors)
     workshopDb.run("ALTER TABLE customers ADD COLUMN email TEXT", () => {});
     workshopDb.run("ALTER TABLE customers ADD COLUMN stripeCustomerId TEXT", () => {});
@@ -639,6 +644,139 @@ app.post('/api/send-build-pdf', requireMechanicAuth, async (req, res) => {
     }
 });
 
+// Settings DB helpers
+function getSetting(key) {
+    return new Promise((resolve, reject) => {
+        workshopDb.get('SELECT value FROM settings WHERE key = ?', [key], (err, row) => {
+            if (err) reject(err);
+            else resolve(row ? row.value : null);
+        });
+    });
+}
+
+function saveSetting(key, value) {
+    return new Promise((resolve, reject) => {
+        workshopDb.run('REPLACE INTO settings (key, value) VALUES (?, ?)', [key, value], (err) => {
+            if (err) reject(err);
+            else resolve();
+        });
+    });
+}
+
+function deleteSetting(key) {
+    return new Promise((resolve, reject) => {
+        workshopDb.run('DELETE FROM settings WHERE key = ?', [key], (err) => {
+            if (err) reject(err);
+            else resolve();
+        });
+    });
+}
+
+async function getStripeKeys() {
+    let secretKey = null;
+    let webhookSecret = null;
+    try {
+        secretKey = await getSetting('stripe_secret_key');
+        webhookSecret = await getSetting('stripe_webhook_secret');
+    } catch (err) {
+        console.error('Error fetching settings from database:', err);
+    }
+    
+    if (!secretKey) secretKey = process.env.STRIPE_SECRET_KEY;
+    if (!webhookSecret) webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    return { secretKey, webhookSecret };
+}
+
+function maskKey(key) {
+    if (!key) return '';
+    if (key.length <= 12) return '********';
+    return `${key.slice(0, 10)}...${key.slice(-4)}`;
+}
+
+// GET Stripe Settings
+app.get('/api/settings/stripe', requireMechanicAuth, async (req, res) => {
+    try {
+        const { secretKey, webhookSecret } = await getStripeKeys();
+        const host = req.headers.host || 'localhost:3000';
+        const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+        const webhookUrl = `${protocol}://${host}/api/webhooks/stripe`;
+
+        res.json({
+            stripeSecretKeyConfigured: !!secretKey && !secretKey.includes('placeholder') && secretKey !== '',
+            stripeSecretKeyMasked: maskKey(secretKey),
+            stripeWebhookSecretConfigured: !!webhookSecret && !webhookSecret.includes('placeholder') && webhookSecret !== '',
+            stripeWebhookSecretMasked: maskKey(webhookSecret),
+            webhookUrl,
+            isLive: !!secretKey && secretKey.startsWith('sk_live')
+        });
+    } catch (err) {
+        console.error('Error fetching Stripe settings:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST Stripe Settings with credential validation
+app.post('/api/settings/stripe', requireMechanicAuth, async (req, res) => {
+    const { stripeSecretKey, stripeWebhookSecret } = req.body;
+
+    try {
+        const currentKeys = await getStripeKeys();
+
+        // 1. Process Stripe Secret Key
+        let targetSecretKey = stripeSecretKey;
+        const isMaskedSecret = stripeSecretKey && stripeSecretKey.includes('...');
+        
+        if (isMaskedSecret) {
+            // Keep existing key
+            targetSecretKey = currentKeys.secretKey;
+        }
+
+        // 2. Validate Stripe Secret Key if it changed and is not empty
+        if (targetSecretKey && targetSecretKey !== currentKeys.secretKey) {
+            try {
+                const stripe = require('stripe')(targetSecretKey);
+                // Call a lightweight Stripe API to verify the key works
+                await stripe.accounts.retrieve();
+            } catch (stripeErr) {
+                console.error('Stripe verification failed for key:', stripeErr.message);
+                return res.status(400).json({ error: `Stripe validation failed: ${stripeErr.message}` });
+            }
+        }
+
+        // 3. Process Webhook Secret Key
+        let targetWebhookSecret = stripeWebhookSecret;
+        const isMaskedWebhook = stripeWebhookSecret && stripeWebhookSecret.includes('...');
+
+        if (isMaskedWebhook) {
+            // Keep existing webhook secret
+            targetWebhookSecret = currentKeys.webhookSecret;
+        }
+
+        // 4. Save to Database
+        if (targetSecretKey !== undefined) {
+            if (targetSecretKey === '') {
+                await deleteSetting('stripe_secret_key');
+            } else {
+                await saveSetting('stripe_secret_key', targetSecretKey);
+            }
+        }
+
+        if (targetWebhookSecret !== undefined) {
+            if (targetWebhookSecret === '') {
+                await deleteSetting('stripe_webhook_secret');
+            } else {
+                await saveSetting('stripe_webhook_secret', targetWebhookSecret);
+            }
+        }
+
+        res.json({ success: true, message: 'Stripe settings saved and verified successfully!' });
+    } catch (err) {
+        console.error('Error saving Stripe settings:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Stripe Invoice Operations (Create & Send)
 app.post('/api/invoices/:id/send-stripe', requireMechanicAuth, async (req, res) => {
     const invoiceId = req.params.id;
@@ -652,8 +790,7 @@ app.post('/api/invoices/:id/send-stripe', requireMechanicAuth, async (req, res) 
             if (!customer) return res.status(404).json({ error: 'Customer not found' });
             if (!customer.email) return res.status(400).json({ error: 'Customer must have an email address to send a Stripe invoice.' });
 
-            const items = invoice.items ? JSON.parse(invoice.items) : [];
-            const stripeSecret = process.env.STRIPE_SECRET_KEY;
+            const { secretKey: stripeSecret } = await getStripeKeys();
             
             // Fallback to Simulator Mode if secret is not configured
             const isMockMode = !stripeSecret || stripeSecret.includes('placeholder') || stripeSecret === '';
@@ -865,10 +1002,9 @@ app.post('/api/public/mock-stripe-pay', (req, res) => {
 });
 
 // Real Stripe Webhook Handler
-app.post('/api/webhooks/stripe', (req, res) => {
+app.post('/api/webhooks/stripe', async (req, res) => {
     const sig = req.headers['stripe-signature'];
-    const stripeSecret = process.env.STRIPE_SECRET_KEY;
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const { secretKey: stripeSecret, webhookSecret } = await getStripeKeys();
 
     if (!stripeSecret) {
         return res.status(400).send('Stripe not configured.');
