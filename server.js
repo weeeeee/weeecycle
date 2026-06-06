@@ -790,6 +790,7 @@ app.post('/api/invoices/:id/send-stripe', requireMechanicAuth, async (req, res) 
             if (!customer) return res.status(404).json({ error: 'Customer not found' });
             if (!customer.email) return res.status(400).json({ error: 'Customer must have an email address to send a Stripe invoice.' });
 
+            const items = invoice.items ? JSON.parse(invoice.items) : [];
             const { secretKey: stripeSecret } = await getStripeKeys();
             
             // Fallback to Simulator Mode if secret is not configured
