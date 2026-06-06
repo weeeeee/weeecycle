@@ -16,9 +16,15 @@ app.use(cors({
     origin: ['https://weeecycle.net', 'http://localhost:3000', 'http://localhost:5173'],
     credentials: true
 }));
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ 
+    limit: '50mb',
+    verify: (req, res, buf) => {
+        req.rawBody = buf;
+    }
+}));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
+
 
 // Helper to generate HMAC token
 function generateMechanicToken(username) {
@@ -89,6 +95,8 @@ workshopDb.serialize(() => {
         firstName TEXT,
         lastName TEXT,
         phone TEXT,
+        email TEXT,
+        stripeCustomerId TEXT,
         address TEXT,
         city TEXT,
         state TEXT,
@@ -120,11 +128,20 @@ workshopDb.serialize(() => {
         subtotal REAL,
         tax REAL,
         total REAL,
+        stripeInvoiceId TEXT,
+        hostedInvoiceUrl TEXT,
         notes TEXT,
         createdAt TEXT,
         updatedAt TEXT
     )`);
+
+    // Upgrade migration columns for customers/invoices (ignores duplicate errors)
+    workshopDb.run("ALTER TABLE customers ADD COLUMN email TEXT", () => {});
+    workshopDb.run("ALTER TABLE customers ADD COLUMN stripeCustomerId TEXT", () => {});
+    workshopDb.run("ALTER TABLE invoices ADD COLUMN stripeInvoiceId TEXT", () => {});
+    workshopDb.run("ALTER TABLE invoices ADD COLUMN hostedInvoiceUrl TEXT", () => {});
 });
+
 
 // REST API Endpoints for Customers (Protected by requireMechanicAuth)
 app.get('/api/customers', requireMechanicAuth, (req, res) => {
@@ -135,24 +152,25 @@ app.get('/api/customers', requireMechanicAuth, (req, res) => {
 });
 
 app.post('/api/customers', requireMechanicAuth, (req, res) => {
-    const { firstName, lastName, phone, address, city, state, zipCode } = req.body;
+    const { firstName, lastName, phone, email, stripeCustomerId, address, city, state, zipCode } = req.body;
     const now = new Date().toISOString();
-    const sql = `INSERT INTO customers (firstName, lastName, phone, address, city, state, zipCode, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-    workshopDb.run(sql, [firstName, lastName, phone, address, city, state, zipCode, now, now], function(err) {
+    const sql = `INSERT INTO customers (firstName, lastName, phone, email, stripeCustomerId, address, city, state, zipCode, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    workshopDb.run(sql, [firstName, lastName, phone, email, stripeCustomerId || null, address, city, state, zipCode, now, now], function(err) {
         if (err) return res.status(500).json({ error: err.message });
-        res.json({ id: this.lastID, firstName, lastName, phone, address, city, state, zipCode, createdAt: now, updatedAt: now });
+        res.json({ id: this.lastID, firstName, lastName, phone, email, stripeCustomerId, address, city, state, zipCode, createdAt: now, updatedAt: now });
     });
 });
 
 app.put('/api/customers/:id', requireMechanicAuth, (req, res) => {
-    const { firstName, lastName, phone, address, city, state, zipCode } = req.body;
+    const { firstName, lastName, phone, email, stripeCustomerId, address, city, state, zipCode } = req.body;
     const now = new Date().toISOString();
-    const sql = `UPDATE customers SET firstName=?, lastName=?, phone=?, address=?, city=?, state=?, zipCode=?, updatedAt=? WHERE id=?`;
-    workshopDb.run(sql, [firstName, lastName, phone, address, city, state, zipCode, now, req.params.id], function(err) {
+    const sql = `UPDATE customers SET firstName=?, lastName=?, phone=?, email=?, stripeCustomerId=?, address=?, city=?, state=?, zipCode=?, updatedAt=? WHERE id=?`;
+    workshopDb.run(sql, [firstName, lastName, phone, email, stripeCustomerId || null, address, city, state, zipCode, now, req.params.id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ success: true, id: req.params.id });
     });
 });
+
 
 app.delete('/api/customers/:id', requireMechanicAuth, (req, res) => {
     workshopDb.run('DELETE FROM jobs WHERE customerId=?', [req.params.id], (err) => {
@@ -219,26 +237,27 @@ app.get('/api/invoices', requireMechanicAuth, (req, res) => {
 });
 
 app.post('/api/invoices', requireMechanicAuth, (req, res) => {
-    const { customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, notes } = req.body;
+    const { customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, stripeInvoiceId, hostedInvoiceUrl, notes } = req.body;
     const now = new Date().toISOString();
     const itemsStr = JSON.stringify(items || []);
-    const sql = `INSERT INTO invoices (customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, notes, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-    workshopDb.run(sql, [customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, total, notes, now, now], function(err) {
+    const sql = `INSERT INTO invoices (customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, stripeInvoiceId, hostedInvoiceUrl, notes, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    workshopDb.run(sql, [customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, total, stripeInvoiceId || null, hostedInvoiceUrl || null, notes, now, now], function(err) {
         if (err) return res.status(500).json({ error: err.message });
-        res.json({ id: this.lastID, customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, notes, createdAt: now, updatedAt: now });
+        res.json({ id: this.lastID, customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, stripeInvoiceId, hostedInvoiceUrl, notes, createdAt: now, updatedAt: now });
     });
 });
 
 app.put('/api/invoices/:id', requireMechanicAuth, (req, res) => {
-    const { customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, notes } = req.body;
+    const { customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, stripeInvoiceId, hostedInvoiceUrl, notes } = req.body;
     const now = new Date().toISOString();
     const itemsStr = JSON.stringify(items || []);
-    const sql = `UPDATE invoices SET customerId=?, type=?, status=?, issueDate=?, dueDate=?, items=?, subtotal=?, tax=?, total=?, notes=?, updatedAt=? WHERE id=?`;
-    workshopDb.run(sql, [customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, total, notes, now, req.params.id], function(err) {
+    const sql = `UPDATE invoices SET customerId=?, type=?, status=?, issueDate=?, dueDate=?, items=?, subtotal=?, tax=?, total=?, stripeInvoiceId=?, hostedInvoiceUrl=?, notes=?, updatedAt=? WHERE id=?`;
+    workshopDb.run(sql, [customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, total, stripeInvoiceId || null, hostedInvoiceUrl || null, notes, now, req.params.id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ success: true, id: req.params.id });
     });
 });
+
 
 app.delete('/api/invoices/:id', requireMechanicAuth, (req, res) => {
     workshopDb.run('DELETE FROM invoices WHERE id=?', [req.params.id], function(err) {
@@ -620,6 +639,205 @@ app.post('/api/send-build-pdf', requireMechanicAuth, async (req, res) => {
     }
 });
 
+// Stripe Invoice Operations (Create & Send)
+app.post('/api/invoices/:id/send-stripe', requireMechanicAuth, async (req, res) => {
+    const invoiceId = req.params.id;
+    workshopDb.get('SELECT * FROM invoices WHERE id = ?', [invoiceId], async (err, invoice) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+
+        // Retrieve customer
+        workshopDb.get('SELECT * FROM customers WHERE id = ?', [invoice.customerId], async (err, customer) => {
+            if (err) return res.status(500).json({ error: err.message });
+            if (!customer) return res.status(404).json({ error: 'Customer not found' });
+            if (!customer.email) return res.status(400).json({ error: 'Customer must have an email address to send a Stripe invoice.' });
+
+            const items = invoice.items ? JSON.parse(invoice.items) : [];
+            const stripeSecret = process.env.STRIPE_SECRET_KEY;
+            
+            // Fallback to Simulator Mode if secret is not configured
+            const isMockMode = !stripeSecret || stripeSecret.includes('placeholder') || stripeSecret === '';
+
+            if (isMockMode) {
+                console.log('[Stripe Simulator] Generating mock Stripe hosted invoice.');
+                const mockInvoiceId = 'in_mock_' + Math.random().toString(36).substr(2, 9);
+                const mockHostedUrl = `http://localhost:3000/tracker/?mock-pay-invoice=${mockInvoiceId}`;
+                
+                let customerStripeId = customer.stripeCustomerId || ('cus_mock_' + Math.random().toString(36).substr(2, 9));
+                
+                workshopDb.run('UPDATE customers SET stripeCustomerId=? WHERE id=?', [customerStripeId, customer.id], (err) => {
+                    if (err) console.error('Error updating customer stripeCustomerId:', err);
+                });
+
+                const now = new Date().toISOString();
+                const updateSql = `UPDATE invoices SET stripeInvoiceId=?, hostedInvoiceUrl=?, status=?, updatedAt=? WHERE id=?`;
+                workshopDb.run(updateSql, [mockInvoiceId, mockHostedUrl, 'Sent', now, invoiceId], function(err) {
+                    if (err) return res.status(500).json({ error: err.message });
+                    res.json({
+                        success: true,
+                        isMock: true,
+                        invoice: {
+                            ...invoice,
+                            items,
+                            stripeInvoiceId: mockInvoiceId,
+                            hostedInvoiceUrl: mockHostedUrl,
+                            status: 'Sent',
+                            updatedAt: now
+                        }
+                    });
+                });
+            } else {
+                try {
+                    const stripe = require('stripe')(stripeSecret);
+                    let stripeCustomerId = customer.stripeCustomerId;
+
+                    // 1. Create Stripe Customer if missing
+                    if (!stripeCustomerId) {
+                        const stripeCust = await stripe.customers.create({
+                            name: `${customer.firstName} ${customer.lastName}`,
+                            email: customer.email,
+                            phone: customer.phone || undefined,
+                            address: customer.address ? {
+                                line1: customer.address,
+                                city: customer.city || undefined,
+                                state: customer.state || undefined,
+                                postal_code: customer.zipCode || undefined,
+                                country: 'US'
+                            } : undefined
+                        });
+                        stripeCustomerId = stripeCust.id;
+                        
+                        workshopDb.run('UPDATE customers SET stripeCustomerId=? WHERE id=?', [stripeCustomerId, customer.id], (err) => {
+                            if (err) console.error('Error saving customer stripeCustomerId:', err);
+                        });
+                    }
+
+                    // 2. Create Stripe Invoice object
+                    const stripeInvoice = await stripe.invoices.create({
+                        customer: stripeCustomerId,
+                        collection_method: 'send_invoice',
+                        days_until_due: 30,
+                        auto_advance: true
+                    });
+
+                    // 3. Create Stripe Line items
+                    for (const item of items) {
+                        const qty = item.quantity || 1;
+                        const priceCents = Math.round((item.price || 0) * 100);
+                        
+                        let taxRates = [];
+                        if (item.taxable) {
+                            const rates = await stripe.taxRates.list({ limit: 100 });
+                            let kyTaxRate = rates.data.find(r => r.percentage === 6 && r.active);
+                            if (!kyTaxRate) {
+                                kyTaxRate = await stripe.taxRates.create({
+                                    display_name: 'KY Sales Tax',
+                                    description: 'Kentucky Sales Tax',
+                                    jurisdiction: 'US - KY',
+                                    percentage: 6,
+                                    inclusive: false,
+                                });
+                            }
+                            taxRates = [kyTaxRate.id];
+                        }
+
+                        await stripe.invoiceItems.create({
+                            customer: stripeCustomerId,
+                            invoice: stripeInvoice.id,
+                            amount: priceCents * qty,
+                            currency: 'usd',
+                            description: item.description,
+                            tax_rates: taxRates
+                        });
+                    }
+
+                    // 4. Send the Stripe Invoice
+                    const finalizedInvoice = await stripe.invoices.sendInvoice(stripeInvoice.id);
+
+                    const now = new Date().toISOString();
+                    const updateSql = `UPDATE invoices SET stripeInvoiceId=?, hostedInvoiceUrl=?, status=?, updatedAt=? WHERE id=?`;
+                    workshopDb.run(updateSql, [finalizedInvoice.id, finalizedInvoice.hosted_invoice_url, 'Sent', now, invoiceId], function(err) {
+                        if (err) return res.status(500).json({ error: err.message });
+                        res.json({
+                            success: true,
+                            isMock: false,
+                            invoice: {
+                                ...invoice,
+                                items,
+                                stripeInvoiceId: finalizedInvoice.id,
+                                hostedInvoiceUrl: finalizedInvoice.hosted_invoice_url,
+                                status: 'Sent',
+                                updatedAt: now
+                            }
+                        });
+                    });
+
+                } catch (stripeErr) {
+                    console.error('Stripe invoice creation error:', stripeErr);
+                    res.status(500).json({ error: `Stripe Error: ${stripeErr.message}` });
+                }
+            }
+        });
+    });
+});
+
+// Mock Stripe Payment Webhook Simulator
+app.post('/api/public/mock-stripe-pay', (req, res) => {
+    const { stripeInvoiceId } = req.body;
+    if (!stripeInvoiceId) {
+        return res.status(400).json({ error: 'Missing stripeInvoiceId' });
+    }
+
+    console.log(`[Stripe Simulator] Simulating payment webhook for: ${stripeInvoiceId}`);
+    const now = new Date().toISOString();
+    
+    workshopDb.run("UPDATE invoices SET status=?, updatedAt=? WHERE stripeInvoiceId=?", ['Paid', now, stripeInvoiceId], function(err) {
+        if (err) {
+            console.error('Error in mock invoice payment update:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({ success: true, stripeInvoiceId, status: 'Paid', updatedAt: now });
+    });
+});
+
+// Real Stripe Webhook Handler
+app.post('/api/webhooks/stripe', (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    const stripeSecret = process.env.STRIPE_SECRET_KEY;
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    if (!stripeSecret) {
+        return res.status(400).send('Stripe not configured.');
+    }
+
+    const stripe = require('stripe')(stripeSecret);
+    let event;
+
+    try {
+        event = stripe.webhooks.constructEvent(req.rawBody, sig, webhookSecret);
+    } catch (err) {
+        console.error('Stripe Webhook signature verification failed:', err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    if (event.type === 'invoice.paid') {
+        const stripeInvoice = event.data.object;
+        console.log(`[Stripe Webhook] Invoice ${stripeInvoice.id} marked as PAID.`);
+        
+        const now = new Date().toISOString();
+        workshopDb.run('UPDATE invoices SET status=?, updatedAt=? WHERE stripeInvoiceId=?', ['Paid', now, stripeInvoice.id], function(err) {
+            if (err) {
+                console.error('Failed to update invoice in database:', err);
+                return res.status(500).send('Database update failed');
+            }
+            res.json({ received: true });
+        });
+    } else {
+        res.json({ received: true });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Weeecycle API server running on port ${PORT}`);
 });
+
