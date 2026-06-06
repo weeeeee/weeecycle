@@ -108,6 +108,22 @@ workshopDb.serialize(() => {
         createdAt TEXT,
         updatedAt TEXT
     )`);
+
+    workshopDb.run(`CREATE TABLE IF NOT EXISTS invoices (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        customerId INTEGER,
+        type TEXT,
+        status TEXT,
+        issueDate TEXT,
+        dueDate TEXT,
+        items TEXT,
+        subtotal REAL,
+        tax REAL,
+        total REAL,
+        notes TEXT,
+        createdAt TEXT,
+        updatedAt TEXT
+    )`);
 });
 
 // REST API Endpoints for Customers (Protected by requireMechanicAuth)
@@ -185,6 +201,47 @@ app.put('/api/jobs/:id', requireMechanicAuth, (req, res) => {
 
 app.delete('/api/jobs/:id', requireMechanicAuth, (req, res) => {
     workshopDb.run('DELETE FROM jobs WHERE id=?', [req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true });
+    });
+});
+
+// REST API Endpoints for Invoices (Protected by requireMechanicAuth)
+app.get('/api/invoices', requireMechanicAuth, (req, res) => {
+    workshopDb.all('SELECT * FROM invoices ORDER BY id DESC', [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        const parsedRows = rows.map(row => ({
+            ...row,
+            items: row.items ? JSON.parse(row.items) : []
+        }));
+        res.json(parsedRows);
+    });
+});
+
+app.post('/api/invoices', requireMechanicAuth, (req, res) => {
+    const { customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, notes } = req.body;
+    const now = new Date().toISOString();
+    const itemsStr = JSON.stringify(items || []);
+    const sql = `INSERT INTO invoices (customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, notes, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    workshopDb.run(sql, [customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, total, notes, now, now], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ id: this.lastID, customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, notes, createdAt: now, updatedAt: now });
+    });
+});
+
+app.put('/api/invoices/:id', requireMechanicAuth, (req, res) => {
+    const { customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, notes } = req.body;
+    const now = new Date().toISOString();
+    const itemsStr = JSON.stringify(items || []);
+    const sql = `UPDATE invoices SET customerId=?, type=?, status=?, issueDate=?, dueDate=?, items=?, subtotal=?, tax=?, total=?, notes=?, updatedAt=? WHERE id=?`;
+    workshopDb.run(sql, [customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, total, notes, now, req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, id: req.params.id });
+    });
+});
+
+app.delete('/api/invoices/:id', requireMechanicAuth, (req, res) => {
+    workshopDb.run('DELETE FROM invoices WHERE id=?', [req.params.id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ success: true });
     });
