@@ -41,14 +41,14 @@ function requireMechanicAuth(req, res, next) {
         if (req.path.startsWith('/api/')) {
             return res.status(401).json({ error: 'Unauthorized. Please login.' });
         }
-        return res.redirect('https://weeecycle.net/mechanic-login.html');
+        return res.redirect('/mechanic-login.html');
     }
     const expectedToken = generateMechanicToken(process.env.MECHANIC_USER || 'steve');
     if (token !== expectedToken) {
         if (req.path.startsWith('/api/')) {
             return res.status(401).json({ error: 'Invalid token. Please login.' });
         }
-        return res.redirect('https://weeecycle.net/mechanic-login.html');
+        return res.redirect('/mechanic-login.html');
     }
     next();
 }
@@ -64,10 +64,11 @@ app.post('/api/mechanic-login', (req, res) => {
 
     if (username === validUser && password === validPass) {
         const token = generateMechanicToken(username);
+        const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
         res.cookie('mechanic_token', token, {
             httpOnly: true,
-            secure: true,
-            sameSite: 'none',
+            secure: isSecure,
+            sameSite: isSecure ? 'none' : 'lax',
             maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
         });
         return res.json({ success: true, token, redirect: '/tracker/' });
@@ -77,8 +78,9 @@ app.post('/api/mechanic-login', (req, res) => {
 
 // POST /api/mechanic-logout
 app.post('/api/mechanic-logout', (req, res) => {
-    res.clearCookie('mechanic_token', { sameSite: 'none', secure: true });
-    res.json({ success: true, redirect: 'https://weeecycle.net/mechanic-login.html' });
+    const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+    res.clearCookie('mechanic_token', { sameSite: isSecure ? 'none' : 'lax', secure: isSecure });
+    res.json({ success: true, redirect: '/mechanic-login.html' });
 });
 
 // SQLite Workshop Database Setup (Permanent Server-Side Persistence)
@@ -799,7 +801,7 @@ app.post('/api/invoices/:id/send-stripe', requireMechanicAuth, async (req, res) 
             if (isMockMode) {
                 console.log('[Stripe Simulator] Generating mock Stripe hosted invoice.');
                 const mockInvoiceId = 'in_mock_' + Math.random().toString(36).substr(2, 9);
-                const mockHostedUrl = `https://weeecycle.net/tracker/?mock-pay-invoice=${mockInvoiceId}`;
+                const mockHostedUrl = `${req.protocol}://${req.get('host')}/tracker/?mock-pay-invoice=${mockInvoiceId}`;
                 
                 let customerStripeId = customer.stripeCustomerId || ('cus_mock_' + Math.random().toString(36).substr(2, 9));
                 
