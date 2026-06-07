@@ -799,7 +799,7 @@ app.post('/api/invoices/:id/send-stripe', requireMechanicAuth, async (req, res) 
             if (isMockMode) {
                 console.log('[Stripe Simulator] Generating mock Stripe hosted invoice.');
                 const mockInvoiceId = 'in_mock_' + Math.random().toString(36).substr(2, 9);
-                const mockHostedUrl = `http://localhost:3000/tracker/?mock-pay-invoice=${mockInvoiceId}`;
+                const mockHostedUrl = `https://weeecycle.net/tracker/?mock-pay-invoice=${mockInvoiceId}`;
                 
                 let customerStripeId = customer.stripeCustomerId || ('cus_mock_' + Math.random().toString(36).substr(2, 9));
                 
