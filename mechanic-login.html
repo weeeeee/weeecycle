@@ -123,7 +123,7 @@
             btnSpinner.classList.remove('hidden');
 
             try {
-                const res = await fetch('http://localhost:3000/api/mechanic-login', {
+                const res = await fetch('https://weeecycle.net/api/mechanic-login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
