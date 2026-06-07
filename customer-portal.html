@@ -578,7 +578,7 @@
             };
 
             try {
-                const res = await fetch('https://weeecycle.net/api/public/signup', {
+                const res = await fetch('/api/public/signup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(fields)
@@ -611,7 +611,7 @@
             wrapper.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 2rem;">🔍 Locating your repair records...</div>';
 
             try {
-                const res = await fetch(`https://weeecycle.net/api/public/status?phone=${encodeURIComponent(phone)}`);
+                const res = await fetch(`/api/public/status?phone=${encodeURIComponent(phone)}`);
                 const data = await res.json();
 
                 if (!res.ok) {
