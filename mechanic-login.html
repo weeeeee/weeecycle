@@ -129,6 +129,12 @@
                     body: JSON.stringify({ username, password })
                 });
 
+                // Guard against HTML/empty responses (e.g. Netlify 404 when server is offline)
+                const ct = res.headers.get('content-type') || '';
+                if (!ct.includes('application/json')) {
+                    throw new Error('Workshop server is offline or unreachable. Please try again later.');
+                }
+
                 const data = await res.json();
                 if (res.ok && data.success) {
                     sessionStorage.setItem('mechanic_token', data.token);
