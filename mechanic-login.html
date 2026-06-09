@@ -126,8 +126,8 @@
                 const res = await fetch('https://api.weeecycle.net/api/mechanic-login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password }),
-                    credentials: 'include'
+                    credentials: 'include',
+                    body: JSON.stringify({ username, password })
                 });
 
                 // Guard against HTML/empty responses (e.g. Netlify 404 when server is offline)
