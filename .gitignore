@@ -2,6 +2,7 @@ node_modules/
 server.log
 workshop.db
 weeecycle.db
+weeecycle-workshop.db
 *.log
 .env
 .DS_Store

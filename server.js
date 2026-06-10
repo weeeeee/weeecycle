@@ -53,8 +53,8 @@ function requireMechanicAuth(req, res, next) {
     next();
 }
 
-// Mount protected /tracker route serving bike-build-app/dist
-app.use('/tracker', requireMechanicAuth, express.static(path.join(__dirname, 'bike-build-app/dist')));
+// Mount protected /tracker route
+app.use('/tracker', requireMechanicAuth, express.static(path.join(__dirname, 'tracker')));
 
 // POST /api/mechanic-login
 app.post('/api/mechanic-login', (req, res) => {
@@ -85,7 +85,7 @@ app.post('/api/mechanic-logout', (req, res) => {
 
 // SQLite Workshop Database Setup (Permanent Server-Side Persistence)
 const sqlite3 = require('sqlite3').verbose();
-const dbPath = path.join(__dirname, 'weeecycle-workshop.db');
+const dbPath = process.env.DB_PATH || path.join(__dirname, 'weeecycle-workshop.db');
 const workshopDb = new sqlite3.Database(dbPath, (err) => {
     if (err) console.error('Error opening SQLite database:', err);
     else console.log('SQLite workshop database connected.');
