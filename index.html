@@ -130,6 +130,8 @@
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
                     href="customer-portal.html">Repair Status</a>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="shop.html">Shop</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
                     href="mechanic-login.html">Shop Mechanic</a>
                 <a class="bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase tracking-wider py-2 px-6 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50"
                     href="#services">Book Service</a>
@@ -163,6 +165,9 @@
                 <a class="text-xl font-display uppercase tracking-wide text-gray-200"
                     href="customer-portal.html"
                     onclick="this.closest('#mobile-menu').classList.add('hidden')">Repair Status</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200"
+                    href="shop.html"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop</a>
                 <a class="text-xl font-display uppercase tracking-wide text-gray-200"
                     href="mechanic-login.html"
                     onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop Mechanic</a>
@@ -460,6 +465,36 @@
 
                 </div>
 
+            </div>
+        </div>
+    </section>
+
+    <!-- Shop Section -->
+    <section class="py-20 bg-gradient-to-r from-[#0B0B2B] via-brand-dark to-[#0B0B2B] border-t border-brand-orange/30 relative overflow-hidden" id="shop">
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute top-0 left-1/4 w-96 h-96 bg-brand-orange/10 rounded-full blur-[120px]"></div>
+            <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-brand-orange/5 rounded-full blur-[100px]"></div>
+        </div>
+        <div class="container mx-auto px-4 max-w-5xl relative z-10">
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-10">
+                <div class="text-center lg:text-left">
+                    <span class="text-brand-orange uppercase font-display font-bold tracking-widest text-lg">Weeecycle Store</span>
+                    <h2 class="font-display font-bold text-5xl md:text-6xl text-white uppercase tracking-tight leading-none mt-2 mb-4">
+                        Parts. Gear. <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-orange-300">Accessories.</span>
+                    </h2>
+                    <p class="text-gray-300 text-lg font-light max-w-xl">
+                        Browse our curated selection of road and gravel cycling components, tools, and accessories — hand-picked by the Weeecycle workshop.
+                    </p>
+                </div>
+                <div class="flex flex-col items-center gap-4 flex-shrink-0">
+                    <a href="https://weeecycle.myshopify.com" target="_blank"
+                        class="group inline-flex items-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-2xl uppercase tracking-wider py-5 px-12 rounded-xl transition transform hover:scale-105 shadow-2xl shadow-orange-900/50">
+                        <i class="fa-solid fa-bag-shopping"></i>
+                        <span>Visit the Shop</span>
+                        <i class="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1"></i>
+                    </a>
+                    <span class="text-gray-500 text-sm uppercase tracking-wider">Opens in Shopify Store</span>
+                </div>
             </div>
         </div>
     </section>
