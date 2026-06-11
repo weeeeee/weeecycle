@@ -83,238 +83,492 @@ app.post('/api/mechanic-logout', (req, res) => {
     res.json({ success: true, redirect: '/mechanic-login.html' });
 });
 
-// PostgreSQL Database Setup
-const { Pool } = require('pg');
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
-});
-
-(async () => {
-    try {
-        await pool.query(`CREATE TABLE IF NOT EXISTS customers (
-            id SERIAL PRIMARY KEY,
-            "firstName" TEXT,
-            "lastName" TEXT,
-            phone TEXT,
-            email TEXT,
-            "stripeCustomerId" TEXT,
-            address TEXT,
-            city TEXT,
-            state TEXT,
-            "zipCode" TEXT,
-            "createdAt" TEXT,
-            "updatedAt" TEXT
-        )`);
-        await pool.query(`CREATE TABLE IF NOT EXISTS jobs (
-            id SERIAL PRIMARY KEY,
-            "customerId" INTEGER,
-            title TEXT,
-            stage TEXT,
-            "bikeModel" TEXT,
-            "estimatedCost" TEXT,
-            notes TEXT,
-            "createdAt" TEXT,
-            "updatedAt" TEXT
-        )`);
-        await pool.query(`CREATE TABLE IF NOT EXISTS invoices (
-            id SERIAL PRIMARY KEY,
-            "customerId" INTEGER,
-            type TEXT,
-            status TEXT,
-            "issueDate" TEXT,
-            "dueDate" TEXT,
-            items TEXT,
-            subtotal REAL,
-            tax REAL,
-            total REAL,
-            "stripeInvoiceId" TEXT,
-            "hostedInvoiceUrl" TEXT,
-            notes TEXT,
-            "createdAt" TEXT,
-            "updatedAt" TEXT
-        )`);
-        await pool.query(`CREATE TABLE IF NOT EXISTS settings (
-            key TEXT PRIMARY KEY,
-            value TEXT
-        )`);
-        console.log('PostgreSQL database connected.');
-    } catch (err) {
-        console.error('Error initialising database:', err);
-    }
-})();
+// SQLite Workshop Database Setup (Permanent Server-Side Persistence)
+const BetterSQLite = require('better-sqlite3');
+const dbPath = process.env.DB_PATH || path.join(__dirname, 'weeecycle-workshop.db');
+let workshopDb;
+try {
+    workshopDb = new BetterSQLite(dbPath);
+    workshopDb.exec(`
+        CREATE TABLE IF NOT EXISTS customers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            firstName TEXT, lastName TEXT, phone TEXT, email TEXT,
+            stripeCustomerId TEXT, address TEXT, city TEXT, state TEXT,
+            zipCode TEXT, createdAt TEXT, updatedAt TEXT
+        );
+        CREATE TABLE IF NOT EXISTS jobs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            customerId INTEGER, title TEXT, stage TEXT, bikeModel TEXT,
+            estimatedCost TEXT, notes TEXT, createdAt TEXT, updatedAt TEXT
+        );
+        CREATE TABLE IF NOT EXISTS invoices (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            customerId INTEGER, type TEXT, status TEXT, issueDate TEXT,
+            dueDate TEXT, items TEXT, subtotal REAL, tax REAL, total REAL,
+            stripeInvoiceId TEXT, hostedInvoiceUrl TEXT, notes TEXT,
+            createdAt TEXT, updatedAt TEXT
+        );
+        CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);
+        CREATE TABLE IF NOT EXISTS manual_parts_costs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            customerId INTEGER, name TEXT, price REAL, createdAt TEXT
+        );
+        CREATE TABLE IF NOT EXISTS builds (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT, description TEXT, customerId INTEGER,
+            createdAt TEXT, updatedAt TEXT
+        );
+        CREATE TABLE IF NOT EXISTS components (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            buildId INTEGER, type TEXT, name TEXT,
+            imageUrls TEXT, price TEXT, description TEXT,
+            notes TEXT, sourceUrl TEXT, status TEXT
+        );
+        CREATE TABLE IF NOT EXISTS orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            buildId INTEGER, componentType TEXT, itemName TEXT,
+            vendor TEXT, price TEXT, orderDate TEXT,
+            expectedDelivery TEXT, trackingNumber TEXT,
+            status TEXT, notes TEXT, createdAt TEXT
+        );
+        CREATE TABLE IF NOT EXISTS extras (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            buildId INTEGER, name TEXT, category TEXT,
+            quantity TEXT, price TEXT, description TEXT,
+            notes TEXT, sourceUrl TEXT, imageUrls TEXT,
+            status TEXT, createdAt TEXT
+        );
+        CREATE TABLE IF NOT EXISTS geometry (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            buildId INTEGER UNIQUE, seatTubeCC TEXT,
+            seatTubeCT TEXT, effectiveTopTube TEXT,
+            stack TEXT, reach TEXT, standOver TEXT,
+            headTube TEXT, headTubeAngle TEXT,
+            seatTubeAngle TEXT, bbHeight TEXT, bbDrop TEXT,
+            chainstay TEXT, wheelbase TEXT, updatedAt TEXT
+        );
+    `);
+    // Safe migration: add columns that may not exist in older db files
+    for (const sql of [
+        "ALTER TABLE customers ADD COLUMN email TEXT",
+        "ALTER TABLE customers ADD COLUMN stripeCustomerId TEXT",
+        "ALTER TABLE invoices ADD COLUMN stripeInvoiceId TEXT",
+        "ALTER TABLE invoices ADD COLUMN hostedInvoiceUrl TEXT",
+    ]) { try { workshopDb.exec(sql); } catch (_) {} }
+    console.log('SQLite workshop database connected.');
+} catch (err) {
+    console.error('Error opening SQLite database:', err);
+}
 
 
 // REST API Endpoints for Customers (Protected by requireMechanicAuth)
-app.get('/api/customers', requireMechanicAuth, async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM customers ORDER BY id DESC');
-        res.json(result.rows);
-    } catch (err) { res.status(500).json({ error: err.message }); }
+app.get('/api/customers', requireMechanicAuth, (req, res) => {
+    try { res.json(workshopDb.prepare('SELECT * FROM customers ORDER BY id DESC').all()); }
+    catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.post('/api/customers', requireMechanicAuth, async (req, res) => {
+app.post('/api/customers', requireMechanicAuth, (req, res) => {
     const { firstName, lastName, phone, email, stripeCustomerId, address, city, state, zipCode } = req.body;
     const now = new Date().toISOString();
     try {
-        const result = await pool.query(
-            `INSERT INTO customers ("firstName","lastName",phone,email,"stripeCustomerId",address,city,state,"zipCode","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id`,
-            [firstName, lastName, phone, email, stripeCustomerId || null, address, city, state, zipCode, now, now]
-        );
-        res.json({ id: result.rows[0].id, firstName, lastName, phone, email, stripeCustomerId, address, city, state, zipCode, createdAt: now, updatedAt: now });
+        const info = workshopDb.prepare(
+            `INSERT INTO customers (firstName,lastName,phone,email,stripeCustomerId,address,city,state,zipCode,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?)`
+        ).run(firstName, lastName, phone, email, stripeCustomerId || null, address, city, state, zipCode, now, now);
+        res.json({ id: info.lastInsertRowid, firstName, lastName, phone, email, stripeCustomerId, address, city, state, zipCode, createdAt: now, updatedAt: now });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.put('/api/customers/:id', requireMechanicAuth, async (req, res) => {
+app.put('/api/customers/:id', requireMechanicAuth, (req, res) => {
     const { firstName, lastName, phone, email, stripeCustomerId, address, city, state, zipCode } = req.body;
     const now = new Date().toISOString();
     try {
-        await pool.query(
-            `UPDATE customers SET "firstName"=$1,"lastName"=$2,phone=$3,email=$4,"stripeCustomerId"=$5,address=$6,city=$7,state=$8,"zipCode"=$9,"updatedAt"=$10 WHERE id=$11`,
-            [firstName, lastName, phone, email, stripeCustomerId || null, address, city, state, zipCode, now, req.params.id]
-        );
+        workshopDb.prepare(
+            `UPDATE customers SET firstName=?,lastName=?,phone=?,email=?,stripeCustomerId=?,address=?,city=?,state=?,zipCode=?,updatedAt=? WHERE id=?`
+        ).run(firstName, lastName, phone, email, stripeCustomerId || null, address, city, state, zipCode, now, req.params.id);
         res.json({ success: true, id: req.params.id });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.delete('/api/customers/:id', requireMechanicAuth, async (req, res) => {
+app.delete('/api/customers/:id', requireMechanicAuth, (req, res) => {
     try {
-        await pool.query('DELETE FROM jobs WHERE "customerId"=$1', [req.params.id]);
-        await pool.query('DELETE FROM customers WHERE id=$1', [req.params.id]);
+        workshopDb.prepare('DELETE FROM jobs WHERE customerId=?').run(req.params.id);
+        workshopDb.prepare('DELETE FROM customers WHERE id=?').run(req.params.id);
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // REST API Endpoints for Jobs
-app.get('/api/jobs', requireMechanicAuth, async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM jobs ORDER BY id DESC');
-        res.json(result.rows);
-    } catch (err) { res.status(500).json({ error: err.message }); }
+app.get('/api/jobs', requireMechanicAuth, (req, res) => {
+    try { res.json(workshopDb.prepare('SELECT * FROM jobs ORDER BY id DESC').all()); }
+    catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.post('/api/jobs', requireMechanicAuth, async (req, res) => {
+app.post('/api/jobs', requireMechanicAuth, (req, res) => {
     const { customerId, title, stage, bikeModel, estimatedCost, notes } = req.body;
     const now = new Date().toISOString();
     try {
-        const result = await pool.query(
-            `INSERT INTO jobs ("customerId",title,stage,"bikeModel","estimatedCost",notes,"createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
-            [customerId, title, stage, bikeModel, estimatedCost, notes, now, now]
-        );
-        res.json({ id: result.rows[0].id, customerId, title, stage, bikeModel, estimatedCost, notes, createdAt: now, updatedAt: now });
+        const info = workshopDb.prepare(
+            `INSERT INTO jobs (customerId,title,stage,bikeModel,estimatedCost,notes,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?)`
+        ).run(customerId, title, stage, bikeModel, estimatedCost, notes, now, now);
+        res.json({ id: info.lastInsertRowid, customerId, title, stage, bikeModel, estimatedCost, notes, createdAt: now, updatedAt: now });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.put('/api/jobs/:id', requireMechanicAuth, async (req, res) => {
+app.put('/api/jobs/:id', requireMechanicAuth, (req, res) => {
     const { stage, notes, estimatedCost } = req.body;
     const now = new Date().toISOString();
     try {
-        let sql, params;
         if (stage && !notes && !estimatedCost) {
-            sql = `UPDATE jobs SET stage=$1,"updatedAt"=$2 WHERE id=$3`;
-            params = [stage, now, req.params.id];
+            workshopDb.prepare(`UPDATE jobs SET stage=?,updatedAt=? WHERE id=?`).run(stage, now, req.params.id);
         } else {
-            sql = `UPDATE jobs SET notes=$1,"estimatedCost"=$2,"updatedAt"=$3 WHERE id=$4`;
-            params = [notes, estimatedCost, now, req.params.id];
+            workshopDb.prepare(`UPDATE jobs SET notes=?,estimatedCost=?,updatedAt=? WHERE id=?`).run(notes, estimatedCost, now, req.params.id);
         }
-        await pool.query(sql, params);
         res.json({ success: true, id: req.params.id });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.delete('/api/jobs/:id', requireMechanicAuth, async (req, res) => {
-    try {
-        await pool.query('DELETE FROM jobs WHERE id=$1', [req.params.id]);
-        res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message }); }
+app.delete('/api/jobs/:id', requireMechanicAuth, (req, res) => {
+    try { workshopDb.prepare('DELETE FROM jobs WHERE id=?').run(req.params.id); res.json({ success: true }); }
+    catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // REST API Endpoints for Invoices (Protected by requireMechanicAuth)
-app.get('/api/invoices', requireMechanicAuth, async (req, res) => {
+app.get('/api/invoices', requireMechanicAuth, (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM invoices ORDER BY id DESC');
-        res.json(result.rows.map(row => ({ ...row, items: row.items ? JSON.parse(row.items) : [] })));
+        const rows = workshopDb.prepare('SELECT * FROM invoices ORDER BY id DESC').all();
+        res.json(rows.map(row => ({ ...row, items: row.items ? JSON.parse(row.items) : [] })));
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.post('/api/invoices', requireMechanicAuth, async (req, res) => {
+app.post('/api/invoices', requireMechanicAuth, (req, res) => {
     const { customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, stripeInvoiceId, hostedInvoiceUrl, notes } = req.body;
     const now = new Date().toISOString();
     const itemsStr = JSON.stringify(items || []);
     try {
-        const result = await pool.query(
-            `INSERT INTO invoices ("customerId",type,status,"issueDate","dueDate",items,subtotal,tax,total,"stripeInvoiceId","hostedInvoiceUrl",notes,"createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING id`,
-            [customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, total, stripeInvoiceId || null, hostedInvoiceUrl || null, notes, now, now]
-        );
-        res.json({ id: result.rows[0].id, customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, stripeInvoiceId, hostedInvoiceUrl, notes, createdAt: now, updatedAt: now });
+        const info = workshopDb.prepare(
+            `INSERT INTO invoices (customerId,type,status,issueDate,dueDate,items,subtotal,tax,total,stripeInvoiceId,hostedInvoiceUrl,notes,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+        ).run(customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, total, stripeInvoiceId || null, hostedInvoiceUrl || null, notes, now, now);
+        res.json({ id: info.lastInsertRowid, customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, stripeInvoiceId, hostedInvoiceUrl, notes, createdAt: now, updatedAt: now });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.put('/api/invoices/:id', requireMechanicAuth, async (req, res) => {
+app.put('/api/invoices/:id', requireMechanicAuth, (req, res) => {
     const { customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, stripeInvoiceId, hostedInvoiceUrl, notes } = req.body;
     const now = new Date().toISOString();
     const itemsStr = JSON.stringify(items || []);
     try {
-        await pool.query(
-            `UPDATE invoices SET "customerId"=$1,type=$2,status=$3,"issueDate"=$4,"dueDate"=$5,items=$6,subtotal=$7,tax=$8,total=$9,"stripeInvoiceId"=$10,"hostedInvoiceUrl"=$11,notes=$12,"updatedAt"=$13 WHERE id=$14`,
-            [customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, total, stripeInvoiceId || null, hostedInvoiceUrl || null, notes, now, req.params.id]
-        );
+        workshopDb.prepare(
+            `UPDATE invoices SET customerId=?,type=?,status=?,issueDate=?,dueDate=?,items=?,subtotal=?,tax=?,total=?,stripeInvoiceId=?,hostedInvoiceUrl=?,notes=?,updatedAt=? WHERE id=?`
+        ).run(customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, total, stripeInvoiceId || null, hostedInvoiceUrl || null, notes, now, req.params.id);
         res.json({ success: true, id: req.params.id });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.delete('/api/invoices/:id', requireMechanicAuth, async (req, res) => {
+app.delete('/api/invoices/:id', requireMechanicAuth, (req, res) => {
+    try { workshopDb.prepare('DELETE FROM invoices WHERE id=?').run(req.params.id); res.json({ success: true }); }
+    catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// REST API Endpoints for Manual Parts Costs (Protected by requireMechanicAuth)
+app.get('/api/manual-parts-costs', requireMechanicAuth, (_req, res) => {
+    try { res.json(workshopDb.prepare('SELECT * FROM manual_parts_costs ORDER BY id ASC').all()); }
+    catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/manual-parts-costs', requireMechanicAuth, (req, res) => {
+    const { customerId, name, price } = req.body;
+    const now = new Date().toISOString();
     try {
-        await pool.query('DELETE FROM invoices WHERE id=$1', [req.params.id]);
+        const info = workshopDb.prepare(
+            `INSERT INTO manual_parts_costs (customerId,name,price,createdAt) VALUES (?,?,?,?)`
+        ).run(customerId, name, parseFloat(price) || 0, now);
+        res.json({ id: info.lastInsertRowid, customerId, name, price: parseFloat(price) || 0, createdAt: now });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/manual-parts-costs/:id', requireMechanicAuth, (req, res) => {
+    try { workshopDb.prepare('DELETE FROM manual_parts_costs WHERE id=?').run(req.params.id); res.json({ success: true }); }
+    catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── Builds, Components, Orders, Extras, Geometry ─────────────────────────────
+
+const BUILD_COMPONENT_TYPES = ['frame','wheelset','bottomBracket','crank','frontDerailleur','rearDerailleur','levers','cassette','chain','seat','seatPost','headset','stem','fork','handlebars'];
+
+// Helper: parse imageUrls JSON from SQLite row
+function parseImageUrls(row) {
+    try { return row.imageUrls ? JSON.parse(row.imageUrls) : []; }
+    catch (_) { return []; }
+}
+
+// GET /api/builds — returns all builds + all nested data for sync
+app.get('/api/builds', requireMechanicAuth, (_req, res) => {
+    try {
+        const builds = workshopDb.prepare('SELECT * FROM builds ORDER BY createdAt ASC').all();
+        const components = workshopDb.prepare('SELECT * FROM components ORDER BY id ASC').all()
+            .map(r => ({ ...r, imageUrls: parseImageUrls(r) }));
+        const orders = workshopDb.prepare('SELECT * FROM orders ORDER BY id ASC').all();
+        const extras = workshopDb.prepare('SELECT * FROM extras ORDER BY id ASC').all()
+            .map(r => ({ ...r, imageUrls: parseImageUrls(r) }));
+        const geometry = workshopDb.prepare('SELECT * FROM geometry ORDER BY id ASC').all();
+        res.json({ builds, components, orders, extras, geometry });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// POST /api/builds — create build + 15 component stubs
+app.post('/api/builds', requireMechanicAuth, (req, res) => {
+    const { name, description } = req.body;
+    const now = new Date().toISOString();
+    try {
+        const buildInfo = workshopDb.prepare(
+            `INSERT INTO builds (name,description,createdAt,updatedAt) VALUES (?,?,?,?)`
+        ).run(name || 'Untitled Build', description || '', now, now);
+        const buildId = buildInfo.lastInsertRowid;
+
+        const insertComp = workshopDb.prepare(
+            `INSERT INTO components (buildId,type,name,imageUrls,price,description,notes,sourceUrl,status) VALUES (?,?,?,?,?,?,?,?,?)`
+        );
+        const components = [];
+        workshopDb.transaction(() => {
+            for (const type of BUILD_COMPONENT_TYPES) {
+                const ci = insertComp.run(buildId, type, '', '[]', '', '', '', '', 'planned');
+                components.push({ id: ci.lastInsertRowid, buildId, type, name: '', imageUrls: [], price: '', description: '', notes: '', sourceUrl: '', status: 'planned' });
+            }
+        })();
+
+        res.json({ build: { id: buildId, name, description: description || '', customerId: null, createdAt: now, updatedAt: now }, components });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// PUT /api/builds/:id — update build name / description / customerId
+app.put('/api/builds/:id', requireMechanicAuth, (req, res) => {
+    const { name, description, customerId } = req.body;
+    const now = new Date().toISOString();
+    try {
+        workshopDb.prepare(`UPDATE builds SET name=?,description=?,customerId=?,updatedAt=? WHERE id=?`)
+            .run(name, description || '', customerId !== undefined ? customerId : null, now, req.params.id);
+        res.json({ success: true, id: req.params.id });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// DELETE /api/builds/:id — cascade delete build + all children
+app.delete('/api/builds/:id', requireMechanicAuth, (req, res) => {
+    try {
+        workshopDb.transaction(() => {
+            workshopDb.prepare('DELETE FROM components WHERE buildId=?').run(req.params.id);
+            workshopDb.prepare('DELETE FROM orders WHERE buildId=?').run(req.params.id);
+            workshopDb.prepare('DELETE FROM extras WHERE buildId=?').run(req.params.id);
+            workshopDb.prepare('DELETE FROM geometry WHERE buildId=?').run(req.params.id);
+            workshopDb.prepare('DELETE FROM builds WHERE id=?').run(req.params.id);
+        })();
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Public REST API Endpoints for Customer Portal (No mechanic auth required)
-app.post('/api/public/signup', async (req, res) => {
+// PUT /api/components/:id — update a single component
+app.put('/api/components/:id', requireMechanicAuth, (req, res) => {
+    const { name, price, description, notes, sourceUrl, status, imageUrls } = req.body;
+    const imageUrlsStr = JSON.stringify(Array.isArray(imageUrls) ? imageUrls : []);
+    try {
+        // also bump build updatedAt
+        const comp = workshopDb.prepare('SELECT buildId FROM components WHERE id=?').get(req.params.id);
+        if (comp) {
+            workshopDb.prepare('UPDATE builds SET updatedAt=? WHERE id=?')
+                .run(new Date().toISOString(), comp.buildId);
+        }
+        workshopDb.prepare(
+            `UPDATE components SET name=?,price=?,description=?,notes=?,sourceUrl=?,status=?,imageUrls=? WHERE id=?`
+        ).run(name || '', price || '', description || '', notes || '', sourceUrl || '', status || 'planned', imageUrlsStr, req.params.id);
+        res.json({ success: true, id: req.params.id });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// GET /api/builds/:id/orders
+app.get('/api/builds/:id/orders', requireMechanicAuth, (req, res) => {
+    try { res.json(workshopDb.prepare('SELECT * FROM orders WHERE buildId=? ORDER BY id ASC').all(req.params.id)); }
+    catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// POST /api/builds/:id/orders
+app.post('/api/builds/:id/orders', requireMechanicAuth, (req, res) => {
+    const { componentType, itemName, vendor, price, orderDate, expectedDelivery, trackingNumber, status, notes } = req.body;
+    const now = new Date().toISOString();
+    try {
+        const info = workshopDb.prepare(
+            `INSERT INTO orders (buildId,componentType,itemName,vendor,price,orderDate,expectedDelivery,trackingNumber,status,notes,createdAt) VALUES (?,?,?,?,?,?,?,?,?,?,?)`
+        ).run(req.params.id, componentType || '', itemName || '', vendor || '', price || '', orderDate || '', expectedDelivery || '', trackingNumber || '', status || 'pending', notes || '', now);
+        res.json({ id: info.lastInsertRowid, buildId: parseInt(req.params.id), componentType, itemName, vendor, price, orderDate, expectedDelivery, trackingNumber, status, notes, createdAt: now });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// PUT /api/orders/:id
+app.put('/api/orders/:id', requireMechanicAuth, (req, res) => {
+    const { componentType, itemName, vendor, price, orderDate, expectedDelivery, trackingNumber, status, notes } = req.body;
+    try {
+        workshopDb.prepare(
+            `UPDATE orders SET componentType=?,itemName=?,vendor=?,price=?,orderDate=?,expectedDelivery=?,trackingNumber=?,status=?,notes=? WHERE id=?`
+        ).run(componentType || '', itemName || '', vendor || '', price || '', orderDate || '', expectedDelivery || '', trackingNumber || '', status || 'pending', notes || '', req.params.id);
+        res.json({ success: true, id: req.params.id });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// DELETE /api/orders/:id
+app.delete('/api/orders/:id', requireMechanicAuth, (req, res) => {
+    try { workshopDb.prepare('DELETE FROM orders WHERE id=?').run(req.params.id); res.json({ success: true }); }
+    catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// GET /api/builds/:id/extras
+app.get('/api/builds/:id/extras', requireMechanicAuth, (req, res) => {
+    try {
+        const rows = workshopDb.prepare('SELECT * FROM extras WHERE buildId=? ORDER BY id ASC').all(req.params.id);
+        res.json(rows.map(r => ({ ...r, imageUrls: parseImageUrls(r) })));
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// POST /api/builds/:id/extras
+app.post('/api/builds/:id/extras', requireMechanicAuth, (req, res) => {
+    const { name, category, quantity, price, description, notes, sourceUrl, imageUrls, status } = req.body;
+    const now = new Date().toISOString();
+    const imageUrlsStr = JSON.stringify(Array.isArray(imageUrls) ? imageUrls : []);
+    try {
+        const info = workshopDb.prepare(
+            `INSERT INTO extras (buildId,name,category,quantity,price,description,notes,sourceUrl,imageUrls,status,createdAt) VALUES (?,?,?,?,?,?,?,?,?,?,?)`
+        ).run(req.params.id, name || '', category || '', quantity || '1', price || '', description || '', notes || '', sourceUrl || '', imageUrlsStr, status || 'planned', now);
+        res.json({ id: info.lastInsertRowid, buildId: parseInt(req.params.id), name, category, quantity, price, description, notes, sourceUrl, imageUrls: imageUrls || [], status, createdAt: now });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// PUT /api/extras/:id
+app.put('/api/extras/:id', requireMechanicAuth, (req, res) => {
+    const { name, category, quantity, price, description, notes, sourceUrl, imageUrls, status } = req.body;
+    const imageUrlsStr = JSON.stringify(Array.isArray(imageUrls) ? imageUrls : []);
+    try {
+        workshopDb.prepare(
+            `UPDATE extras SET name=?,category=?,quantity=?,price=?,description=?,notes=?,sourceUrl=?,imageUrls=?,status=? WHERE id=?`
+        ).run(name || '', category || '', quantity || '1', price || '', description || '', notes || '', sourceUrl || '', imageUrlsStr, status || 'planned', req.params.id);
+        res.json({ success: true, id: req.params.id });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// DELETE /api/extras/:id
+app.delete('/api/extras/:id', requireMechanicAuth, (req, res) => {
+    try { workshopDb.prepare('DELETE FROM extras WHERE id=?').run(req.params.id); res.json({ success: true }); }
+    catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// GET /api/builds/:id/geometry
+app.get('/api/builds/:id/geometry', requireMechanicAuth, (req, res) => {
+    try {
+        const row = workshopDb.prepare('SELECT * FROM geometry WHERE buildId=?').get(req.params.id);
+        res.json(row || null);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// PUT /api/builds/:id/geometry — upsert
+app.put('/api/builds/:id/geometry', requireMechanicAuth, (req, res) => {
+    const f = req.body;
+    const now = new Date().toISOString();
+    try {
+        workshopDb.prepare(`
+            INSERT INTO geometry (buildId,seatTubeCC,seatTubeCT,effectiveTopTube,stack,reach,standOver,headTube,headTubeAngle,seatTubeAngle,bbHeight,bbDrop,chainstay,wheelbase,updatedAt)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            ON CONFLICT(buildId) DO UPDATE SET
+                seatTubeCC=excluded.seatTubeCC, seatTubeCT=excluded.seatTubeCT,
+                effectiveTopTube=excluded.effectiveTopTube, stack=excluded.stack,
+                reach=excluded.reach, standOver=excluded.standOver,
+                headTube=excluded.headTube, headTubeAngle=excluded.headTubeAngle,
+                seatTubeAngle=excluded.seatTubeAngle, bbHeight=excluded.bbHeight,
+                bbDrop=excluded.bbDrop, chainstay=excluded.chainstay,
+                wheelbase=excluded.wheelbase, updatedAt=excluded.updatedAt
+        `).run(req.params.id, f.seatTubeCC||'', f.seatTubeCT||'', f.effectiveTopTube||'', f.stack||'', f.reach||'', f.standOver||'', f.headTube||'', f.headTubeAngle||'', f.seatTubeAngle||'', f.bbHeight||'', f.bbDrop||'', f.chainstay||'', f.wheelbase||'', now);
+        const row = workshopDb.prepare('SELECT * FROM geometry WHERE buildId=?').get(req.params.id);
+        res.json(row);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// POST /api/builds/migrate — one-time push of a local build + all its children
+app.post('/api/builds/migrate', requireMechanicAuth, (req, res) => {
+    const { build, components = [], orders = [], extras = [], geometry } = req.body;
+    const now = new Date().toISOString();
+    try {
+        // Deduplicate: skip if same name + createdAt already exists
+        const existing = workshopDb.prepare('SELECT id FROM builds WHERE name=? AND createdAt=?').get(build.name, build.createdAt || now);
+        if (existing) {
+            return res.json({ skipped: true, buildId: existing.id });
+        }
+        let newBuildId;
+        workshopDb.transaction(() => {
+            const bi = workshopDb.prepare(
+                `INSERT INTO builds (name,description,customerId,createdAt,updatedAt) VALUES (?,?,?,?,?)`
+            ).run(build.name || 'Untitled', build.description || '', build.customerId || null, build.createdAt || now, build.updatedAt || now);
+            newBuildId = bi.lastInsertRowid;
+
+            const insertComp = workshopDb.prepare(
+                `INSERT INTO components (buildId,type,name,imageUrls,price,description,notes,sourceUrl,status) VALUES (?,?,?,?,?,?,?,?,?)`
+            );
+            for (const c of components) {
+                insertComp.run(newBuildId, c.type, c.name||'', JSON.stringify(Array.isArray(c.imageUrls)?c.imageUrls:[]), c.price||'', c.description||'', c.notes||'', c.sourceUrl||'', c.status||'planned');
+            }
+            const insertOrder = workshopDb.prepare(
+                `INSERT INTO orders (buildId,componentType,itemName,vendor,price,orderDate,expectedDelivery,trackingNumber,status,notes,createdAt) VALUES (?,?,?,?,?,?,?,?,?,?,?)`
+            );
+            for (const o of orders) {
+                insertOrder.run(newBuildId, o.componentType||'', o.itemName||'', o.vendor||'', o.price||'', o.orderDate||'', o.expectedDelivery||'', o.trackingNumber||'', o.status||'pending', o.notes||'', o.createdAt||now);
+            }
+            const insertExtra = workshopDb.prepare(
+                `INSERT INTO extras (buildId,name,category,quantity,price,description,notes,sourceUrl,imageUrls,status,createdAt) VALUES (?,?,?,?,?,?,?,?,?,?,?)`
+            );
+            for (const e of extras) {
+                insertExtra.run(newBuildId, e.name||'', e.category||'', e.quantity||'1', e.price||'', e.description||'', e.notes||'', e.sourceUrl||'', JSON.stringify(Array.isArray(e.imageUrls)?e.imageUrls:[]), e.status||'planned', e.createdAt||now);
+            }
+            if (geometry) {
+                workshopDb.prepare(`
+                    INSERT OR REPLACE INTO geometry (buildId,seatTubeCC,seatTubeCT,effectiveTopTube,stack,reach,standOver,headTube,headTubeAngle,seatTubeAngle,bbHeight,bbDrop,chainstay,wheelbase,updatedAt)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                `).run(newBuildId, geometry.seatTubeCC||'', geometry.seatTubeCT||'', geometry.effectiveTopTube||'', geometry.stack||'', geometry.reach||'', geometry.standOver||'', geometry.headTube||'', geometry.headTubeAngle||'', geometry.seatTubeAngle||'', geometry.bbHeight||'', geometry.bbDrop||'', geometry.chainstay||'', geometry.wheelbase||'', geometry.updatedAt||now);
+            }
+        })();
+        res.json({ success: true, buildId: newBuildId });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+
+app.post('/api/public/signup', (req, res) => {
     const { firstName, lastName, phone, address, city, state, zipCode, requestedService, bikeModel } = req.body;
     if (!firstName || !lastName || !phone) {
         return res.status(400).json({ error: 'First Name, Last Name, and Phone Number are required.' });
     }
     const now = new Date().toISOString();
     try {
-        const existing = (await pool.query('SELECT * FROM customers WHERE phone=$1', [phone.trim()])).rows[0];
+        const existing = workshopDb.prepare('SELECT * FROM customers WHERE phone=?').get(phone.trim());
         let customerId;
         if (existing) {
-            await pool.query(
-                `UPDATE customers SET "firstName"=$1,"lastName"=$2,address=$3,city=$4,state=$5,"zipCode"=$6,"updatedAt"=$7 WHERE id=$8`,
-                [firstName.trim(), lastName.trim(), address?.trim(), city?.trim(), state, zipCode?.trim(), now, existing.id]
-            );
+            workshopDb.prepare(`UPDATE customers SET firstName=?,lastName=?,address=?,city=?,state=?,zipCode=?,updatedAt=? WHERE id=?`)
+                .run(firstName.trim(), lastName.trim(), address?.trim(), city?.trim(), state, zipCode?.trim(), now, existing.id);
             customerId = existing.id;
         } else {
-            const result = await pool.query(
-                `INSERT INTO customers ("firstName","lastName",phone,address,city,state,"zipCode","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
-                [firstName.trim(), lastName.trim(), phone.trim(), address?.trim(), city?.trim(), state, zipCode?.trim(), now, now]
-            );
-            customerId = result.rows[0].id;
+            const info = workshopDb.prepare(`INSERT INTO customers (firstName,lastName,phone,address,city,state,zipCode,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?)`)
+                .run(firstName.trim(), lastName.trim(), phone.trim(), address?.trim(), city?.trim(), state, zipCode?.trim(), now, now);
+            customerId = info.lastInsertRowid;
         }
         if (requestedService && requestedService.trim() !== '') {
-            const jobResult = await pool.query(
-                `INSERT INTO jobs ("customerId",title,stage,"bikeModel","estimatedCost",notes,"createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
-                [customerId, requestedService.trim(), 'In the shop', bikeModel || 'Customer Bike', '', 'Customer self-service intake request.', now, now]
-            );
-            res.json({ success: true, customerId, jobId: jobResult.rows[0].id });
+            const jobInfo = workshopDb.prepare(`INSERT INTO jobs (customerId,title,stage,bikeModel,estimatedCost,notes,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?)`)
+                .run(customerId, requestedService.trim(), 'In the shop', bikeModel || 'Customer Bike', '', 'Customer self-service intake request.', now, now);
+            res.json({ success: true, customerId, jobId: jobInfo.lastInsertRowid });
         } else {
             res.json({ success: true, customerId });
         }
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.get('/api/public/status', async (req, res) => {
+app.get('/api/public/status', (req, res) => {
     const { phone } = req.query;
     if (!phone) return res.status(400).json({ error: 'Phone number is required to look up repair status.' });
     try {
-        const customer = (await pool.query('SELECT * FROM customers WHERE phone=$1', [phone.trim()])).rows[0];
+        const customer = workshopDb.prepare('SELECT * FROM customers WHERE phone=?').get(phone.trim());
         if (!customer) return res.status(404).json({ error: 'No customer found matching that phone number.' });
-        const jobs = (await pool.query(
-            `SELECT id,title,stage,"bikeModel","estimatedCost",notes,"updatedAt" FROM jobs WHERE "customerId"=$1 ORDER BY id DESC`,
-            [customer.id]
-        )).rows;
+        const jobs = workshopDb.prepare(`SELECT id,title,stage,bikeModel,estimatedCost,notes,updatedAt FROM jobs WHERE customerId=? ORDER BY id DESC`).all(customer.id);
         res.json({ customer: { firstName: customer.firstName, lastName: customer.lastName, phone: customer.phone }, jobs });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -635,19 +889,24 @@ app.post('/api/send-build-pdf', requireMechanicAuth, async (req, res) => {
 
 // Settings DB helpers
 function getSetting(key) {
-    return pool.query('SELECT value FROM settings WHERE key=$1', [key])
-        .then(r => r.rows[0] ? r.rows[0].value : null);
+    try {
+        const row = workshopDb.prepare('SELECT value FROM settings WHERE key=?').get(key);
+        return Promise.resolve(row ? row.value : null);
+    } catch (err) { return Promise.reject(err); }
 }
 
 function saveSetting(key, value) {
-    return pool.query(
-        'INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value',
-        [key, value]
-    ).then(() => {});
+    try {
+        workshopDb.prepare('INSERT INTO settings (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(key, value);
+        return Promise.resolve();
+    } catch (err) { return Promise.reject(err); }
 }
 
 function deleteSetting(key) {
-    return pool.query('DELETE FROM settings WHERE key=$1', [key]).then(() => {});
+    try {
+        workshopDb.prepare('DELETE FROM settings WHERE key=?').run(key);
+        return Promise.resolve();
+    } catch (err) { return Promise.reject(err); }
 }
 
 async function getStripeKeys() {
@@ -759,10 +1018,10 @@ app.post('/api/settings/stripe', requireMechanicAuth, async (req, res) => {
 app.post('/api/invoices/:id/send-stripe', requireMechanicAuth, async (req, res) => {
     const invoiceId = req.params.id;
     try {
-        const invoice = (await pool.query('SELECT * FROM invoices WHERE id=$1', [invoiceId])).rows[0];
+        const invoice = workshopDb.prepare('SELECT * FROM invoices WHERE id=?').get(invoiceId);
         if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
 
-        const customer = (await pool.query('SELECT * FROM customers WHERE id=$1', [invoice.customerId])).rows[0];
+        const customer = workshopDb.prepare('SELECT * FROM customers WHERE id=?').get(invoice.customerId);
         if (!customer) return res.status(404).json({ error: 'Customer not found' });
         if (!customer.email) return res.status(400).json({ error: 'Customer must have an email address to send a Stripe invoice.' });
 
@@ -779,8 +1038,8 @@ app.post('/api/invoices/:id/send-stripe', requireMechanicAuth, async (req, res) 
                 
                 let customerStripeId = customer.stripeCustomerId || ('cus_mock_' + Math.random().toString(36).substr(2, 9));
                 
-                pool.query('UPDATE customers SET "stripeCustomerId"=$1 WHERE id=$2', [customerStripeId, customer.id])
-                    .catch(err => console.error('Error updating customer stripeCustomerId:', err));
+                try { workshopDb.prepare('UPDATE customers SET stripeCustomerId=? WHERE id=?').run(customerStripeId, customer.id); }
+                catch (err) { console.error('Error updating customer stripeCustomerId:', err); }
 
                 // Send email to customer via SMTP in simulator mode
                 if (transporter) {
@@ -847,10 +1106,8 @@ app.post('/api/invoices/:id/send-stripe', requireMechanicAuth, async (req, res) 
                 }
 
                 const now = new Date().toISOString();
-                await pool.query(
-                    `UPDATE invoices SET "stripeInvoiceId"=$1,"hostedInvoiceUrl"=$2,status=$3,"updatedAt"=$4 WHERE id=$5`,
-                    [mockInvoiceId, mockHostedUrl, 'Sent', now, invoiceId]
-                );
+                workshopDb.prepare(`UPDATE invoices SET stripeInvoiceId=?,hostedInvoiceUrl=?,status=?,updatedAt=? WHERE id=?`)
+                    .run(mockInvoiceId, mockHostedUrl, 'Sent', now, invoiceId);
                 res.json({
                     success: true,
                     isMock: true,
@@ -877,8 +1134,8 @@ app.post('/api/invoices/:id/send-stripe', requireMechanicAuth, async (req, res) 
                         });
                         stripeCustomerId = stripeCust.id;
                         
-                        pool.query('UPDATE customers SET "stripeCustomerId"=$1 WHERE id=$2', [stripeCustomerId, customer.id])
-                            .catch(err => console.error('Error saving customer stripeCustomerId:', err));
+                        try { workshopDb.prepare('UPDATE customers SET stripeCustomerId=? WHERE id=?').run(stripeCustomerId, customer.id); }
+                        catch (err) { console.error('Error saving customer stripeCustomerId:', err); }
                     }
 
                     // 2. Create Stripe Invoice object
@@ -924,10 +1181,8 @@ app.post('/api/invoices/:id/send-stripe', requireMechanicAuth, async (req, res) 
                     const finalizedInvoice = await stripe.invoices.sendInvoice(stripeInvoice.id);
 
                     const now = new Date().toISOString();
-                    await pool.query(
-                        `UPDATE invoices SET "stripeInvoiceId"=$1,"hostedInvoiceUrl"=$2,status=$3,"updatedAt"=$4 WHERE id=$5`,
-                        [finalizedInvoice.id, finalizedInvoice.hosted_invoice_url, 'Sent', now, invoiceId]
-                    );
+                    workshopDb.prepare(`UPDATE invoices SET stripeInvoiceId=?,hostedInvoiceUrl=?,status=?,updatedAt=? WHERE id=?`)
+                        .run(finalizedInvoice.id, finalizedInvoice.hosted_invoice_url, 'Sent', now, invoiceId);
                     res.json({
                         success: true,
                         isMock: false,
@@ -949,7 +1204,7 @@ app.post('/api/public/mock-stripe-pay', async (req, res) => {
     console.log(`[Stripe Simulator] Simulating payment webhook for: ${stripeInvoiceId}`);
     const now = new Date().toISOString();
     try {
-        await pool.query(`UPDATE invoices SET status=$1,"updatedAt"=$2 WHERE "stripeInvoiceId"=$3`, ['Paid', now, stripeInvoiceId]);
+        workshopDb.prepare(`UPDATE invoices SET status=?,updatedAt=? WHERE stripeInvoiceId=?`).run('Paid', now, stripeInvoiceId);
         res.json({ success: true, stripeInvoiceId, status: 'Paid', updatedAt: now });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -978,12 +1233,9 @@ app.post('/api/webhooks/stripe', async (req, res) => {
         console.log(`[Stripe Webhook] Invoice ${stripeInvoice.id} marked as PAID.`);
         const now = new Date().toISOString();
         try {
-            await pool.query(`UPDATE invoices SET status=$1,"updatedAt"=$2 WHERE "stripeInvoiceId"=$3`, ['Paid', now, stripeInvoice.id]);
+            workshopDb.prepare(`UPDATE invoices SET status=?,updatedAt=? WHERE stripeInvoiceId=?`).run('Paid', now, stripeInvoice.id);
             res.json({ received: true });
-        } catch (err) {
-            console.error('Failed to update invoice in database:', err);
-            res.status(500).send('Database update failed');
-        }
+        } catch (err) { console.error('Failed to update invoice in database:', err); res.status(500).send('Database update failed'); }
     } else {
         res.json({ received: true });
     }
