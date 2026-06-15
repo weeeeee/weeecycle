@@ -12,15 +12,14 @@
     </script>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Product Reviews — Coming Soon | Weeecycle.net</title>
-    <meta name="description" content="Honest, shop-tested product reviews on road and gravel cycling gear, components, and tools — coming soon from Weeecycle." />
-    <meta name="robots" content="noindex, nofollow" />
+    <title>Product Reviews | Weeecycle.net</title>
+    <meta name="description" content="Shop-tested, ride-proven product reviews on road and gravel cycling gear, components, and tools from the Weeecycle workshop." />
     <link rel="canonical" href="https://weeecycle.net/reviews.html" />
 
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://weeecycle.net/reviews.html" />
-    <meta property="og:title" content="Product Reviews — Coming Soon | Weeecycle.net" />
-    <meta property="og:description" content="Honest, shop-tested product reviews on road and gravel cycling gear, components, and tools." />
+    <meta property="og:title" content="Product Reviews | Weeecycle.net" />
+    <meta property="og:description" content="Shop-tested, ride-proven product reviews on road and gravel cycling gear, components, and tools." />
     <meta property="og:image" content="https://weeecycle.net/images/hero_gravel_realistic.png" />
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -44,36 +43,65 @@
         ::-webkit-scrollbar-track { background: #050511; }
         ::-webkit-scrollbar-thumb { background: #FF8000; border-radius: 4px; }
 
-        @keyframes pulse-glow {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.05); }
+        .review-body h2 {
+            font-family: 'Teko', sans-serif;
+            font-weight: 700;
+            font-size: 1.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #ffffff;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255,128,0,0.2);
         }
-        .glow-pulse { animation: pulse-glow 4s ease-in-out infinite; }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-12px); }
+        .review-body p {
+            color: #d1d5db;
+            font-size: 1.05rem;
+            line-height: 1.75;
+            margin-bottom: 1rem;
+            font-weight: 300;
         }
-        .float { animation: float 6s ease-in-out infinite; }
-
-        @keyframes shimmer {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
+        .review-body ul {
+            list-style: none;
+            margin-bottom: 1rem;
+            padding: 0;
         }
-        .shimmer-text {
-            background: linear-gradient(90deg, #FF8000 0%, #ffd280 40%, #FF8000 60%, #ffd280 100%);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: shimmer 4s linear infinite;
+        .review-body ul li {
+            color: #d1d5db;
+            font-size: 1.05rem;
+            font-weight: 300;
+            padding: 0.4rem 0 0.4rem 1.75rem;
+            position: relative;
+            line-height: 1.6;
         }
-
-        .category-chip {
-            transition: all 0.2s ease;
+        .review-body ul li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.75rem;
+            width: 8px;
+            height: 8px;
+            background: #FF8000;
+            border-radius: 50%;
         }
-        .category-chip:hover {
-            transform: translateY(-2px);
+        .review-body strong {
+            color: #ffffff;
+            font-weight: 700;
+        }
+        .half-star {
+            position: relative;
+            display: inline-block;
+            color: #374151;
+        }
+        .half-star::before {
+            content: '★';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 50%;
+            overflow: hidden;
+            color: #00b67a;
         }
     </style>
     <link rel="icon" type="image/png" href="images/logo/gradient-bike.png" />
@@ -81,7 +109,7 @@
     <link rel="manifest" href="/manifest.json" />
 </head>
 
-<body class="bg-brand-dark text-gray-200 font-body antialiased selection:bg-brand-orange selection:text-white pb-20 md:pb-0 min-h-screen flex flex-col">
+<body class="bg-brand-dark text-gray-200 font-body antialiased selection:bg-brand-orange selection:text-white pb-20 md:pb-0">
 
     <!-- Navigation -->
     <nav class="fixed top-0 w-full z-50 bg-brand-dark/95 backdrop-blur border-b border-brand-orange/20 shadow-xl transition-all duration-300">
@@ -137,102 +165,205 @@
         </div>
     </nav>
 
-    <!-- Main Coming Soon Content -->
-    <main class="flex-grow flex items-center justify-center relative overflow-hidden pt-20">
+    <!-- Page Hero -->
+    <section class="pt-32 pb-12 bg-brand-dark border-b border-gray-900 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-[500px] h-[300px] bg-brand-orange/5 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="container mx-auto px-4 max-w-6xl relative z-10">
+            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                <div>
+                    <span class="text-brand-orange uppercase font-display font-bold tracking-widest text-lg">From the Workshop</span>
+                    <h1 class="font-display font-bold text-6xl md:text-7xl text-white uppercase tracking-tight leading-none mt-1">
+                        Product <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-orange-300">Reviews</span>
+                    </h1>
+                    <p class="text-gray-400 text-lg font-light mt-3 max-w-xl">Shop-tested. Ride-proven. No-nonsense takes on the gear that actually matters.</p>
+                </div>
+                <div class="flex items-center gap-2 bg-[#0B0B2B] border border-gray-800 rounded-xl px-5 py-3 self-start md:self-auto">
+                    <i class="fa-solid fa-star text-brand-orange"></i>
+                    <span class="font-display font-bold text-white uppercase tracking-wide text-lg">1 Review Published</span>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        <!-- Background ambient glows -->
-        <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-brand-orange/8 rounded-full blur-[140px] pointer-events-none glow-pulse"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-brand-orange/5 rounded-full blur-[120px] pointer-events-none glow-pulse" style="animation-delay: 2s;"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-blue/30 rounded-full blur-[200px] pointer-events-none"></div>
+    <!-- Review Article -->
+    <article class="py-16 bg-brand-dark" id="superteam-carbon-wheelset">
+        <div class="container mx-auto px-4 max-w-4xl">
 
-        <!-- Decorative grid lines -->
-        <div class="absolute inset-0 pointer-events-none opacity-5" style="background-image: linear-gradient(rgba(255,128,0,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,128,0,0.5) 1px, transparent 1px); background-size: 60px 60px;"></div>
+            <!-- Category + Meta -->
+            <div class="flex flex-wrap items-center gap-3 mb-6">
+                <span class="bg-brand-orange/10 text-brand-orange font-display font-bold text-xs uppercase tracking-widest py-1.5 px-4 rounded-full border border-brand-orange/20">
+                    <i class="fa-solid fa-circle mr-1 text-xs"></i>Wheels
+                </span>
+                <span class="text-gray-600 text-sm font-display uppercase tracking-wider">1,000+ Miles Tested</span>
+                <span class="text-gray-700">·</span>
+                <span class="text-gray-600 text-sm font-display uppercase tracking-wider">Under $500</span>
+                <span class="text-gray-700">·</span>
+                <span class="text-gray-600 text-sm font-display uppercase tracking-wider">Road</span>
+            </div>
 
-        <div class="relative z-10 container mx-auto px-4 max-w-4xl py-20 text-center">
+            <!-- Title -->
+            <h2 class="font-display font-bold text-5xl md:text-6xl text-white uppercase tracking-tight leading-tight mb-4">
+                Superteam Carbon Wheelset<br />
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-orange-300 text-4xl md:text-5xl">700c · 50mm · 25mm</span>
+            </h2>
 
-            <!-- Floating icon -->
-            <div class="inline-block mb-8 float">
-                <div class="relative">
-                    <div class="absolute inset-0 bg-brand-orange/20 rounded-full blur-xl scale-150"></div>
-                    <div class="relative w-24 h-24 bg-[#0B0B2B] border-2 border-brand-orange/40 rounded-full flex items-center justify-center mx-auto shadow-2xl shadow-orange-900/30">
-                        <i class="fa-solid fa-star text-brand-orange text-4xl"></i>
+            <!-- Rating Row -->
+            <div class="flex items-center gap-4 mb-8 pb-8 border-b border-gray-800">
+                <div class="flex items-center gap-1">
+                    <span class="text-[#00b67a] text-3xl leading-none">★★★★</span>
+                    <span class="text-3xl leading-none relative inline-block" style="color:#374151;">
+                        ★
+                        <span class="absolute inset-0 overflow-hidden w-1/2 text-[#00b67a]">★</span>
+                    </span>
+                </div>
+                <div>
+                    <span class="font-display font-bold text-white text-2xl">4.5 / 5</span>
+                    <p class="text-gray-500 text-xs uppercase tracking-wider font-display mt-0.5">Weeecycle Workshop Rating</p>
+                </div>
+            </div>
+
+            <!-- Specs at a Glance -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+                <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-4 text-center">
+                    <div class="text-brand-orange font-display font-bold text-2xl">3.5 lbs</div>
+                    <div class="text-gray-500 text-xs uppercase tracking-wider font-display mt-1">Weight (~1580g)</div>
+                </div>
+                <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-4 text-center">
+                    <div class="text-brand-orange font-display font-bold text-2xl">50mm</div>
+                    <div class="text-gray-500 text-xs uppercase tracking-wider font-display mt-1">Rim Depth</div>
+                </div>
+                <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-4 text-center">
+                    <div class="text-brand-orange font-display font-bold text-2xl">25mm</div>
+                    <div class="text-gray-500 text-xs uppercase tracking-wider font-display mt-1">Rim Width</div>
+                </div>
+                <div class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-4 text-center">
+                    <div class="text-brand-orange font-display font-bold text-2xl">&lt;$500</div>
+                    <div class="text-gray-500 text-xs uppercase tracking-wider font-display mt-1">Price</div>
+                </div>
+            </div>
+
+            <!-- Review Body -->
+            <div class="review-body">
+                <p>
+                    If you've been looking for the single most impactful upgrade for your road bike, look no further than your wheels. We put the <strong>Superteam Carbon Wheelset (700c, 50mm depth, 25mm width)</strong> to the test with over 1,000 miles, and for a set that comes in under <strong>$500</strong>, the results are impressive.
+                </p>
+
+                <h2><i class="fa-solid fa-gauge-high text-brand-orange mr-2 text-lg"></i>The Stats: Lightweight and Fast</h2>
+                <p>
+                    The first thing you'll notice is the weight. This wheelset hits that "sweet spot" of being incredibly light — coming in around <strong>3.5 lbs (approx. 1580g)</strong>. On the road, this translates directly to better climbing. Whether you're tackling a local hill or grinding through a Century ride, the reduced rotating mass makes the bike feel significantly easier to get up the hill.
+                </p>
+
+                <h2><i class="fa-solid fa-road text-brand-orange mr-2 text-lg"></i>Versatility: The Best of Both Worlds</h2>
+                <p>These are <strong>clincher-style, tubeless-ready</strong> wheels. This is a massive win for riders who want options:</p>
+                <ul>
+                    <li><strong>Run them with tubes:</strong> Simple, classic, and easy to maintain.</li>
+                    <li><strong>Go tubeless:</strong> Drop your tire pressure for more comfort and better puncture resistance without worrying about pinch flats.</li>
+                </ul>
+
+                <h2><i class="fa-solid fa-bolt text-brand-orange mr-2 text-lg"></i>Performance &amp; Build</h2>
+                <p>
+                    The build quality punches way above its price tag. They feature <strong>aero spokes</strong> which help slice through the wind, and the <strong>50mm depth</strong> provides a noticeable aerodynamic boost once you're up to speed.
+                </p>
+                <ul>
+                    <li><strong>Responsiveness:</strong> They feel stiff and snappy. When you stand up to sprint or take off from a stop, there's no sluggishness — they just go.</li>
+                    <li><strong>Efficiency:</strong> You'll find it takes far less power to maintain your speed from point A to point B.</li>
+                </ul>
+
+                <h2><i class="fa-solid fa-triangle-exclamation text-brand-orange mr-2 text-lg"></i>The Reality Check: Warranty &amp; Support</h2>
+                <p>No product is perfect, and with "budget" carbon, there are always trade-offs.</p>
+                <ul>
+                    <li><strong>The Warranty:</strong> These wheels come with a <strong>3-year warranty</strong> on the rims and spokes (and usually 1 year on the hubs). While 3 years is decent, it's shorter than the "lifetime" warranties offered by premium brands like Zipp or Enve.</li>
+                    <li><strong>Customer Support:</strong> As an overseas brand, getting a hold of support can be a bit of a mystery. Based on rider feedback, the best way to reach them is often through their official website chat or WhatsApp, rather than just email.</li>
+                </ul>
+            </div>
+
+            <!-- Pros / Cons -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-10">
+                <div class="bg-[#0B0B2B] border border-gray-800 rounded-2xl p-6">
+                    <h3 class="font-display font-bold text-2xl text-white uppercase tracking-wide mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-thumbs-up text-[#00b67a]"></i> Pros
+                    </h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3 text-gray-300 font-light text-sm"><i class="fa-solid fa-check text-[#00b67a] mt-0.5 flex-shrink-0"></i>Exceptional weight for the price — ~1580g</li>
+                        <li class="flex items-start gap-3 text-gray-300 font-light text-sm"><i class="fa-solid fa-check text-[#00b67a] mt-0.5 flex-shrink-0"></i>Clincher &amp; tubeless-ready versatility</li>
+                        <li class="flex items-start gap-3 text-gray-300 font-light text-sm"><i class="fa-solid fa-check text-[#00b67a] mt-0.5 flex-shrink-0"></i>Stiff, snappy, and responsive feel</li>
+                        <li class="flex items-start gap-3 text-gray-300 font-light text-sm"><i class="fa-solid fa-check text-[#00b67a] mt-0.5 flex-shrink-0"></i>Real aero benefit from 50mm depth</li>
+                        <li class="flex items-start gap-3 text-gray-300 font-light text-sm"><i class="fa-solid fa-check text-[#00b67a] mt-0.5 flex-shrink-0"></i>1,000+ miles of proven durability</li>
+                        <li class="flex items-start gap-3 text-gray-300 font-light text-sm"><i class="fa-solid fa-check text-[#00b67a] mt-0.5 flex-shrink-0"></i>Game-changing upgrade under $500</li>
+                    </ul>
+                </div>
+                <div class="bg-[#0B0B2B] border border-gray-800 rounded-2xl p-6">
+                    <h3 class="font-display font-bold text-2xl text-white uppercase tracking-wide mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-thumbs-down text-red-500"></i> Cons
+                    </h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3 text-gray-300 font-light text-sm"><i class="fa-solid fa-xmark text-red-500 mt-0.5 flex-shrink-0"></i>3-year warranty vs. lifetime on premium brands</li>
+                        <li class="flex items-start gap-3 text-gray-300 font-light text-sm"><i class="fa-solid fa-xmark text-red-500 mt-0.5 flex-shrink-0"></i>Hub warranty only 1 year</li>
+                        <li class="flex items-start gap-3 text-gray-300 font-light text-sm"><i class="fa-solid fa-xmark text-red-500 mt-0.5 flex-shrink-0"></i>Overseas customer support can be slow to reach</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Final Verdict -->
+            <div class="bg-gradient-to-br from-[#0B0B2B] to-[#0d0d1f] border-2 border-brand-orange/40 rounded-2xl p-8 mb-10 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-48 h-48 bg-brand-orange/5 rounded-full blur-[80px] pointer-events-none"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-brand-orange/10 border border-brand-orange/30 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-trophy text-brand-orange"></i>
+                        </div>
+                        <h3 class="font-display font-bold text-3xl text-white uppercase tracking-wide">Final Verdict</h3>
                     </div>
+                    <p class="text-gray-300 text-lg font-light leading-relaxed">
+                        If you want to transform your bike's feel without spending $2,000, these are a <strong>game-changer</strong>. They are light, aero, and versatile enough for any training day or long-distance event. The minor warranty and support trade-offs are a reasonable price to pay for carbon performance at this price point.
+                    </p>
                 </div>
             </div>
 
-            <!-- Coming Soon Badge -->
-            <div class="inline-flex items-center gap-2 bg-brand-orange/10 border border-brand-orange/30 rounded-full px-6 py-2 mb-6">
-                <span class="w-2 h-2 bg-brand-orange rounded-full animate-pulse"></span>
-                <span class="font-display font-bold text-brand-orange uppercase tracking-widest text-sm">Coming Soon</span>
-                <span class="w-2 h-2 bg-brand-orange rounded-full animate-pulse"></span>
-            </div>
-
-            <!-- Main Headline -->
-            <h1 class="font-display font-bold text-7xl md:text-9xl uppercase tracking-tight leading-[0.85] text-white mb-6 drop-shadow-2xl">
-                Product<br />
-                <span class="shimmer-text">Reviews</span>
-            </h1>
-
-            <!-- Subheadline -->
-            <p class="text-gray-300 text-xl md:text-2xl font-light max-w-2xl mx-auto mb-4 leading-relaxed">
-                Shop-tested. Ride-proven. No-nonsense reviews on the road and gravel gear that actually matters.
-            </p>
-            <p class="text-gray-500 text-base font-light max-w-xl mx-auto mb-12">
-                We're putting together in-depth, unsponsored reviews on components, tools, tires, and accessories — written by the mechanics who use them every day.
-            </p>
-
-            <!-- Categories Preview -->
-            <div class="mb-14">
-                <p class="text-gray-600 text-xs uppercase tracking-[0.25em] font-display mb-5">Categories we'll cover</p>
-                <div class="flex flex-wrap justify-center gap-3">
-                    <span class="category-chip bg-[#0B0B2B] border border-gray-700 hover:border-brand-orange/50 text-gray-300 font-display font-bold uppercase tracking-wider text-sm py-2 px-5 rounded-full cursor-default">
-                        <i class="fa-solid fa-gear text-brand-orange mr-2 text-xs"></i>Drivetrains
-                    </span>
-                    <span class="category-chip bg-[#0B0B2B] border border-gray-700 hover:border-brand-orange/50 text-gray-300 font-display font-bold uppercase tracking-wider text-sm py-2 px-5 rounded-full cursor-default">
-                        <i class="fa-solid fa-circle text-brand-orange mr-2 text-xs"></i>Tires
-                    </span>
-                    <span class="category-chip bg-[#0B0B2B] border border-gray-700 hover:border-brand-orange/50 text-gray-300 font-display font-bold uppercase tracking-wider text-sm py-2 px-5 rounded-full cursor-default">
-                        <i class="fa-solid fa-wrench text-brand-orange mr-2 text-xs"></i>Tools
-                    </span>
-                    <span class="category-chip bg-[#0B0B2B] border border-gray-700 hover:border-brand-orange/50 text-gray-300 font-display font-bold uppercase tracking-wider text-sm py-2 px-5 rounded-full cursor-default">
-                        <i class="fa-solid fa-hand-fist text-brand-orange mr-2 text-xs"></i>Handlebars
-                    </span>
-                    <span class="category-chip bg-[#0B0B2B] border border-gray-700 hover:border-brand-orange/50 text-gray-300 font-display font-bold uppercase tracking-wider text-sm py-2 px-5 rounded-full cursor-default">
-                        <i class="fa-solid fa-circle-stop text-brand-orange mr-2 text-xs"></i>Brakes
-                    </span>
-                    <span class="category-chip bg-[#0B0B2B] border border-gray-700 hover:border-brand-orange/50 text-gray-300 font-display font-bold uppercase tracking-wider text-sm py-2 px-5 rounded-full cursor-default">
-                        <i class="fa-solid fa-person-biking text-brand-orange mr-2 text-xs"></i>Saddles
-                    </span>
-                    <span class="category-chip bg-[#0B0B2B] border border-gray-700 hover:border-brand-orange/50 text-gray-300 font-display font-bold uppercase tracking-wider text-sm py-2 px-5 rounded-full cursor-default">
-                        <i class="fa-solid fa-tshirt text-brand-orange mr-2 text-xs"></i>Apparel
-                    </span>
-                    <span class="category-chip bg-[#0B0B2B] border border-gray-700 hover:border-brand-orange/50 text-gray-300 font-display font-bold uppercase tracking-wider text-sm py-2 px-5 rounded-full cursor-default">
-                        <i class="fa-solid fa-droplet text-brand-orange mr-2 text-xs"></i>Lubes &amp; Consumables
-                    </span>
-                </div>
-            </div>
-
-            <!-- Notify CTA -->
-            <div class="bg-[#0B0B2B] border border-gray-800 rounded-2xl p-8 md:p-10 max-w-lg mx-auto shadow-2xl mb-10">
-                <h2 class="font-display font-bold text-2xl text-white uppercase tracking-wide mb-2">Be First to Know</h2>
-                <p class="text-gray-400 text-sm font-light mb-6">Subscribe to the Weeecycle newsletter and get notified when reviews go live.</p>
-                <a href="https://weeecycle.substack.com/subscribe" target="_blank" rel="noopener noreferrer"
-                    class="group w-full inline-flex items-center justify-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-xl uppercase tracking-wider py-4 px-8 rounded-xl transition transform hover:scale-105 shadow-lg shadow-orange-900/40">
-                    <i class="fa-solid fa-bell"></i>
-                    <span>Notify Me on Substack</span>
+            <!-- Affiliate CTA -->
+            <div class="bg-[#0B0B2B] border border-gray-800 rounded-2xl p-8 text-center">
+                <p class="text-gray-500 text-xs uppercase tracking-[0.2em] font-display mb-2">Support Weeecycle</p>
+                <h3 class="font-display font-bold text-3xl text-white uppercase tracking-wide mb-2">Get This Wheelset</h3>
+                <p class="text-gray-400 text-sm font-light mb-6 max-w-sm mx-auto">Using our affiliate link costs you nothing extra and helps keep the shop running. Every click helps.</p>
+                <a href="https://amzn.to/4oyScFp" target="_blank" rel="noopener noreferrer"
+                    class="group inline-flex items-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-xl uppercase tracking-wider py-4 px-10 rounded-xl transition transform hover:scale-105 shadow-lg shadow-orange-900/40 mb-4">
+                    <i class="fab fa-amazon"></i>
+                    <span>Buy on Amazon</span>
                     <i class="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1"></i>
                 </a>
-                <p class="text-gray-600 text-xs mt-4 uppercase tracking-wider">Free to subscribe. No spam.</p>
+                <p class="text-gray-600 text-xs tracking-wider">*Affiliate link — we may earn a small commission at no cost to you.</p>
             </div>
 
-            <!-- Back to Home -->
-            <a href="index.html" class="inline-flex items-center gap-2 text-gray-500 hover:text-brand-orange transition font-display uppercase tracking-wider text-sm group">
-                <i class="fa-solid fa-arrow-left transition-transform group-hover:-translate-x-1"></i>
-                Back to Weeecycle Home
-            </a>
+            <!-- Author / Date -->
+            <div class="mt-10 pt-8 border-t border-gray-800 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-brand-orange/10 border border-brand-orange/30 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-wrench text-brand-orange"></i>
+                </div>
+                <div>
+                    <p class="text-white font-display font-bold text-lg uppercase tracking-wide leading-none">Weeecycle Workshop</p>
+                    <p class="text-gray-500 text-sm font-display uppercase tracking-wider mt-0.5">Lexington, KY &nbsp;·&nbsp; June 2026</p>
+                </div>
+            </div>
 
         </div>
-    </main>
+    </article>
+
+    <!-- More Coming Soon -->
+    <section class="py-16 bg-[#07070f] border-t border-gray-900">
+        <div class="container mx-auto px-4 max-w-4xl text-center">
+            <div class="inline-flex items-center gap-2 bg-brand-orange/10 border border-brand-orange/20 rounded-full px-5 py-2 mb-5">
+                <span class="w-2 h-2 bg-brand-orange rounded-full animate-pulse"></span>
+                <span class="font-display font-bold text-brand-orange uppercase tracking-widest text-sm">More Reviews on the Way</span>
+            </div>
+            <h2 class="font-display font-bold text-4xl text-white uppercase tracking-tight mb-3">Subscribe to Get Notified</h2>
+            <p class="text-gray-400 text-base font-light mb-8 max-w-md mx-auto">We're testing more gear. New reviews drop on Substack first.</p>
+            <a href="https://weeecycle.substack.com/subscribe" target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center gap-3 bg-transparent border-2 border-brand-orange hover:bg-brand-orange text-white font-display font-bold text-lg uppercase tracking-wider py-3 px-8 rounded-xl transition duration-300">
+                <i class="fa-solid fa-bell"></i>
+                Follow on Substack
+            </a>
+        </div>
+    </section>
 
     <!-- Footer -->
     <footer class="bg-black border-t border-gray-900 py-10">
