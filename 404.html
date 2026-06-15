@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PXE6HLHC80"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-PXE6HLHC80');
+    </script>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Page Not Found | Weeecycle.net</title>
+    <meta name="robots" content="noindex, nofollow" />
+
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { dark: '#050511', blue: '#0B0B3B', orange: '#FF8000', slate: '#1e293b', light: '#f8fafc' }
+                    },
+                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Roboto Condensed', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050511; }
+        ::-webkit-scrollbar-thumb { background: #FF8000; border-radius: 4px; }
+    </style>
+    <link rel="icon" type="image/png" href="images/logo/gradient-bike.png" />
+    <link rel="apple-touch-icon" href="images/logo/gradient-bike.png" />
+    <link rel="manifest" href="/manifest.json" />
+</head>
+
+<body class="bg-brand-dark text-gray-200 font-body antialiased selection:bg-brand-orange selection:text-white">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-brand-dark/95 backdrop-blur border-b border-brand-orange/20 shadow-xl transition-all duration-300">
+        <div class="container mx-auto px-4 h-20 flex items-center justify-between">
+            <a class="flex items-center gap-3 group" href="/">
+                <div class="h-12 w-12 relative overflow-hidden flex items-center justify-center">
+                    <img src="images/logo/gradient-bike.png" alt="Weeecycle Icon"
+                        class="h-10 w-auto object-contain drop-shadow-[0_0_5px_rgba(255,128,0,0.5)]" />
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-display font-bold text-2xl tracking-widest text-white leading-none">WEEECYCLE<span class="text-brand-orange">.NET</span></span>
+                    <span class="font-body text-[10px] text-brand-orange uppercase tracking-[0.2em] leading-none">Recycle the Fun</span>
+                </div>
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="/#services">Services</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="/#handbook">Handbook</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="https://weeecycle.substack.com" target="_blank">Substack</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="customer-portal.html">Repair Status</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="shop.html">Shop</a>
+                <a class="bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase tracking-wider py-2 px-6 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50" href="contact.html">Book Service</a>
+                <div class="flex items-center gap-4 border-l border-gray-700 pl-6 ml-2">
+                    <a href="https://www.instagram.com/weeecycle/" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-instagram text-xl"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61584485203543" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-facebook text-xl"></i></a>
+                    <a href="https://www.youtube.com/@weeecycle" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-youtube text-xl"></i></a>
+                    <a href="https://www.tiktok.com/@weeecycling" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-tiktok text-xl"></i></a>
+                </div>
+            </div>
+            <button class="md:hidden text-white hover:text-brand-orange transition"
+                onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                <span class="material-symbols-outlined text-4xl">menu</span>
+            </button>
+        </div>
+        <!-- Mobile Menu -->
+        <div class="hidden md:hidden bg-brand-dark border-t border-brand-orange/20 absolute w-full left-0 shadow-2xl" id="mobile-menu">
+            <div class="flex flex-col p-4 space-y-4">
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition" href="/#services" onclick="this.closest('#mobile-menu').classList.add('hidden')">Services</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition" href="/#handbook" onclick="this.closest('#mobile-menu').classList.add('hidden')">Handbook</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="https://weeecycle.substack.com" target="_blank">Substack</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="customer-portal.html" onclick="this.closest('#mobile-menu').classList.add('hidden')">Repair Status</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="shop.html" onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop</a>
+                <a class="text-brand-orange text-xl font-display font-bold uppercase tracking-wide" href="contact.html" onclick="this.closest('#mobile-menu').classList.add('hidden')">Book Now</a>
+                <div class="flex gap-6 pt-4 border-t border-gray-800">
+                    <a href="https://www.instagram.com/weeecycle/" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-instagram text-2xl"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61584485203543" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-facebook text-2xl"></i></a>
+                    <a href="https://www.youtube.com/@weeecycle" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-youtube text-2xl"></i></a>
+                    <a href="https://www.tiktok.com/@weeecycling" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-tiktok text-2xl"></i></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 404 Content -->
+    <main class="min-h-screen flex items-center justify-center px-4 pt-20">
+        <div class="text-center max-w-2xl mx-auto">
+
+            <!-- Icon -->
+            <div class="mb-6 flex justify-center">
+                <span class="material-symbols-outlined text-brand-orange text-7xl drop-shadow-lg">tire_repair</span>
+            </div>
+
+            <!-- 404 Number -->
+            <div class="font-display font-bold text-[10rem] md:text-[14rem] leading-none tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-brand-orange to-orange-900 select-none">
+                404
+            </div>
+
+            <!-- Message -->
+            <h1 class="font-display font-bold text-4xl md:text-5xl uppercase tracking-wide text-white mt-2 mb-4">
+                Chain Dropped
+            </h1>
+            <p class="font-body text-lg text-gray-400 mb-10 max-w-md mx-auto">
+                Looks like this page has gone off-route. Let's get you back on the road.
+            </p>
+
+            <!-- Quick Links -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="/"
+                    class="w-full sm:w-auto bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-xl uppercase tracking-wider py-3 px-8 rounded transition transform hover:scale-105 shadow-lg shadow-orange-900/50">
+                    Back to Homepage
+                </a>
+                <a href="contact.html"
+                    class="w-full sm:w-auto bg-transparent border border-brand-orange text-brand-orange hover:bg-brand-orange hover:text-white font-display font-bold text-xl uppercase tracking-wider py-3 px-8 rounded transition">
+                    Book a Service
+                </a>
+                <a href="services.html"
+                    class="w-full sm:w-auto bg-transparent border border-gray-700 text-gray-400 hover:border-brand-orange hover:text-brand-orange font-display font-bold text-xl uppercase tracking-wider py-3 px-8 rounded transition">
+                    View Services
+                </a>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black border-t border-gray-900 py-12 mt-20">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex flex-col items-center md:items-start">
+                <span class="font-display font-bold text-3xl tracking-widest text-white leading-none">WEEECYCLE<span class="text-brand-orange">.NET</span></span>
+                <span class="text-gray-500 text-xs uppercase tracking-[0.2em] mt-2">Building Speed. Fixing Fun.</span>
+            </div>
+            <div class="flex flex-col items-center md:items-end gap-2">
+                <a href="https://www.trustpilot.com/review/weeecycle.net" target="_blank" rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 text-[#00b67a] hover:text-white transition text-sm font-display uppercase tracking-wider">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+                    Review us on Trustpilot
+                </a>
+                <span class="text-gray-600 text-xs uppercase tracking-wider">&copy; 2026 Weeecycle | Lexington, KY. All rights reserved.</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://chatonbo.com/widget/chatonbo-widget.js" data-bot-id="8c5103fa-8367-42d1-92a8-b60504758ccd"></script>
+</body>
+
+</html>
