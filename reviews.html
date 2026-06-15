@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PXE6HLHC80"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-PXE6HLHC80');
+    </script>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Product Reviews — Coming Soon | Weeecycle.net</title>
+    <meta name="description" content="Honest, shop-tested product reviews on road and gravel cycling gear, components, and tools — coming soon from Weeecycle." />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href="https://weeecycle.net/reviews.html" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://weeecycle.net/reviews.html" />
+    <meta property="og:title" content="Product Reviews — Coming Soon | Weeecycle.net" />
+    <meta property="og:description" content="Honest, shop-tested product reviews on road and gravel cycling gear, components, and tools." />
+    <meta property="og:image" content="https://weeecycle.net/images/hero_gravel_realistic.png" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { dark: '#050511', blue: '#0B0B3B', orange: '#FF8000', slate: '#1e293b', light: '#f8fafc' }
+                    },
+                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Roboto Condensed', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050511; }
+        ::-webkit-scrollbar-thumb { background: #FF8000; border-radius: 4px; }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.05); }
+        }
+        .glow-pulse { animation: pulse-glow 4s ease-in-out infinite; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+        }
+        .float { animation: float 6s ease-in-out infinite; }
+
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        .shimmer-text {
+            background: linear-gradient(90deg, #FF8000 0%, #ffd280 40%, #FF8000 60%, #ffd280 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 4s linear infinite;
+        }
+
+        .category-chip {
+            transition: all 0.2s ease;
+        }
+        .category-chip:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+    <link rel="icon" type="image/png" href="images/logo/gradient-bike.png" />
+    <link rel="apple-touch-icon" href="images/logo/gradient-bike.png" />
+    <link rel="manifest" href="/manifest.json" />
+</head>
+
+<body class="bg-brand-dark text-gray-200 font-body antialiased selection:bg-brand-orange selection:text-white pb-20 md:pb-0 min-h-screen flex flex-col">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-brand-dark/95 backdrop-blur border-b border-brand-orange/20 shadow-xl transition-all duration-300">
+        <div class="container mx-auto px-4 h-20 flex items-center justify-between">
+            <a class="flex items-center gap-3 group" href="index.html">
+                <div class="h-12 w-12 relative overflow-hidden flex items-center justify-center">
+                    <img src="images/logo/gradient-bike.png" alt="Weeecycle Icon"
+                        class="h-10 w-auto object-contain drop-shadow-[0_0_5px_rgba(255,128,0,0.5)]" />
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-display font-bold text-2xl tracking-widest text-white leading-none">WEEECYCLE<span class="text-brand-orange">.NET</span></span>
+                    <span class="font-body text-[10px] text-brand-orange uppercase tracking-[0.2em] leading-none">Recycle the Fun</span>
+                </div>
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="index.html#services">Services</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="index.html#handbook">Handbook</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="https://weeecycle.substack.com" target="_blank">Substack</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="customer-portal.html">Repair Status</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="shop.html">Shop</a>
+                <a class="font-display text-lg text-brand-orange font-bold uppercase tracking-wide" href="reviews.html">Reviews</a>
+                <a class="bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase tracking-wider py-2 px-6 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50"
+                    href="index.html#services">Book Service</a>
+                <div class="flex items-center gap-4 border-l border-gray-700 pl-6 ml-2">
+                    <a href="https://www.instagram.com/weeecycle/" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-instagram text-xl"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61584485203543" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-facebook text-xl"></i></a>
+                    <a href="https://www.youtube.com/@weeecycle" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-youtube text-xl"></i></a>
+                    <a href="https://www.tiktok.com/@weeecycling" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-tiktok text-xl"></i></a>
+                </div>
+            </div>
+            <button class="md:hidden text-white hover:text-brand-orange transition"
+                onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                <span class="material-symbols-outlined text-4xl">menu</span>
+            </button>
+        </div>
+        <!-- Mobile Menu -->
+        <div class="hidden md:hidden bg-brand-dark border-t border-brand-orange/20 absolute w-full left-0 shadow-2xl" id="mobile-menu">
+            <div class="flex flex-col p-4 space-y-4">
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition" href="index.html#services" onclick="this.closest('#mobile-menu').classList.add('hidden')">Services</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition" href="index.html#handbook" onclick="this.closest('#mobile-menu').classList.add('hidden')">Handbook</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="https://weeecycle.substack.com" target="_blank">Substack</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="customer-portal.html" onclick="this.closest('#mobile-menu').classList.add('hidden')">Repair Status</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="shop.html" onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop</a>
+                <a class="text-brand-orange text-xl font-display font-bold uppercase tracking-wide" href="reviews.html">Reviews</a>
+                <a class="text-brand-orange text-xl font-display font-bold uppercase tracking-wide" href="index.html#services" onclick="this.closest('#mobile-menu').classList.add('hidden')">Book Now</a>
+                <div class="flex gap-6 pt-4 border-t border-gray-800">
+                    <a href="https://www.instagram.com/weeecycle/" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-instagram text-2xl"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61584485203543" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-facebook text-2xl"></i></a>
+                    <a href="https://www.youtube.com/@weeecycle" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-youtube text-2xl"></i></a>
+                    <a href="https://www.tiktok.com/@weeecycling" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-tiktok text-2xl"></i></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Coming Soon Content -->
+    <main class="flex-grow flex items-center justify-center relative overflow-hidden pt-20">
+
+        <!-- Background ambient glows -->
+        <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-brand-orange/8 rounded-full blur-[140px] pointer-events-none glow-pulse"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-brand-orange/5 rounded-full blur-[120px] pointer-events-none glow-pulse" style="animation-delay: 2s;"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-blue/30 rounded-full blur-[200px] pointer-events-none"></div>
+
+        <!-- Decorative grid lines -->
+        <div class="absolute inset-0 pointer-events-none opacity-5" style="background-image: linear-gradient(rgba(255,128,0,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,128,0,0.5) 1px, transparent 1px); background-size: 60px 60px;"></div>
+
+        <div class="relative z-10 container mx-auto px-4 max-w-4xl py-20 text-center">
+
+            <!-- Floating icon -->
+            <div class="inline-block mb-8 float">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-brand-orange/20 rounded-full blur-xl scale-150"></div>
+                    <div class="relative w-24 h-24 bg-[#0B0B2B] border-2 border-brand-orange/40 rounded-full flex items-center justify-center mx-auto shadow-2xl shadow-orange-900/30">
+                        <i class="fa-solid fa-star text-brand-orange text-4xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coming Soon Badge -->
+            <div class="inline-flex items-center gap-2 bg-brand-orange/10 border border-brand-orange/30 rounded-full px-6 py-2 mb-6">
+                <span class="w-2 h-2 bg-brand-orange rounded-full animate-pulse"></span>
+                <span class="font-display font-bold text-brand-orange uppercase tracking-widest text-sm">Coming Soon</span>
+                <span class="w-2 h-2 bg-brand-orange rounded-full animate-pulse"></span>
+            </div>
+
+            <!-- Main Headline -->
+            <h1 class="font-display font-bold text-7xl md:text-9xl uppercase tracking-tight leading-[0.85] text-white mb-6 drop-shadow-2xl">
+                Product<br />
+                <span class="shimmer-text">Reviews</span>
+            </h1>
+
+            <!-- Subheadline -->
+            <p class="text-gray-300 text-xl md:text-2xl font-light max-w-2xl mx-auto mb-4 leading-relaxed">
+                Shop-tested. Ride-proven. No-nonsense reviews on the road and gravel gear that actually matters.
+            </p>
+            <p class="text-gray-500 text-base font-light max-w-xl mx-auto mb-12">
+                We're putting together in-depth, unsponsored reviews on components, tools, tires, and accessories — written by the mechanics who use them every day.
+            </p>
+
+            <!-- Categories Preview -->
+            <div class="mb-14">
+                <p class="text-gray-600 text-xs uppercase tracking-[0.25em] font-display mb-5">Categories we'll cover</p>
+                <div class="flex flex-wrap justify-center gap-3">
+                    <span class="category-chip bg-[#0B0B2B] border border-gray-700 hover:border-brand-orange/50 text-gray-300 font-display font-bold uppercase tracking-wider text-sm py-2 px-5 rounded-full cursor-default">
+                        <i class="fa-solid fa-gear text-brand-orange mr-2 text-xs"></i>Drivetrains
+                    </span>
+                    <span class="category-chip bg-[#0B0B2B] border border-gray-700 hover:border-brand-orange/50 text-gray-300 font-display font-bold uppercase tracking-wider text-sm py-2 px-5 rounded-full cursor-default">
+                        <i class="fa-solid fa-circle text-brand-orange mr-2 text-xs"></i>Tires
+                    </span>
+                    <span class="category-chip bg-[#0B0B2B] border border-gray-700 hover:border-brand-orange/50 text-gray-300 font-display font-bold uppercase tracking-wider text-sm py-2 px-5 rounded-full cursor-default">
+                        <i class="fa-solid fa-wrench text-brand-orange mr-2 text-xs"></i>Tools
+                    </span>
+                    <span class="category-chip bg-[#0B0B2B] border border-gray-700 hover:border-brand-orange/50 text-gray-300 font-display font-bold uppercase tracking-wider text-sm py-2 px-5 rounded-full cursor-default">
+                        <i class="fa-solid fa-hand-fist text-brand-orange mr-2 text-xs"></i>Handlebars
+                    </span>
+                    <span class="category-chip bg-[#0B0B2B] border border-gray-700 hover:border-brand-orange/50 text-gray-300 font-display font-bold uppercase tracking-wider text-sm py-2 px-5 rounded-full cursor-default">
+                        <i class="fa-solid fa-circle-stop text-brand-orange mr-2 text-xs"></i>Brakes
+                    </span>
+                    <span class="category-chip bg-[#0B0B2B] border border-gray-700 hover:border-brand-orange/50 text-gray-300 font-display font-bold uppercase tracking-wider text-sm py-2 px-5 rounded-full cursor-default">
+                        <i class="fa-solid fa-person-biking text-brand-orange mr-2 text-xs"></i>Saddles
+                    </span>
+                    <span class="category-chip bg-[#0B0B2B] border border-gray-700 hover:border-brand-orange/50 text-gray-300 font-display font-bold uppercase tracking-wider text-sm py-2 px-5 rounded-full cursor-default">
+                        <i class="fa-solid fa-tshirt text-brand-orange mr-2 text-xs"></i>Apparel
+                    </span>
+                    <span class="category-chip bg-[#0B0B2B] border border-gray-700 hover:border-brand-orange/50 text-gray-300 font-display font-bold uppercase tracking-wider text-sm py-2 px-5 rounded-full cursor-default">
+                        <i class="fa-solid fa-droplet text-brand-orange mr-2 text-xs"></i>Lubes &amp; Consumables
+                    </span>
+                </div>
+            </div>
+
+            <!-- Notify CTA -->
+            <div class="bg-[#0B0B2B] border border-gray-800 rounded-2xl p-8 md:p-10 max-w-lg mx-auto shadow-2xl mb-10">
+                <h2 class="font-display font-bold text-2xl text-white uppercase tracking-wide mb-2">Be First to Know</h2>
+                <p class="text-gray-400 text-sm font-light mb-6">Subscribe to the Weeecycle newsletter and get notified when reviews go live.</p>
+                <a href="https://weeecycle.substack.com/subscribe" target="_blank" rel="noopener noreferrer"
+                    class="group w-full inline-flex items-center justify-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-xl uppercase tracking-wider py-4 px-8 rounded-xl transition transform hover:scale-105 shadow-lg shadow-orange-900/40">
+                    <i class="fa-solid fa-bell"></i>
+                    <span>Notify Me on Substack</span>
+                    <i class="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1"></i>
+                </a>
+                <p class="text-gray-600 text-xs mt-4 uppercase tracking-wider">Free to subscribe. No spam.</p>
+            </div>
+
+            <!-- Back to Home -->
+            <a href="index.html" class="inline-flex items-center gap-2 text-gray-500 hover:text-brand-orange transition font-display uppercase tracking-wider text-sm group">
+                <i class="fa-solid fa-arrow-left transition-transform group-hover:-translate-x-1"></i>
+                Back to Weeecycle Home
+            </a>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black border-t border-gray-900 py-10">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex flex-col items-center md:items-start">
+                <span class="font-display font-bold text-3xl tracking-widest text-white leading-none">WEEECYCLE<span class="text-brand-orange">.NET</span></span>
+                <span class="text-gray-500 text-xs uppercase tracking-[0.2em] mt-2">Building Speed. Fixing Fun.</span>
+            </div>
+            <div class="flex flex-col items-center md:items-end gap-2">
+                <a href="https://www.trustpilot.com/review/weeecycle.net" target="_blank" rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 text-[#00b67a] hover:text-white transition text-sm font-display uppercase tracking-wider">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+                    Review us on Trustpilot
+                </a>
+                <span class="text-gray-600 text-xs uppercase tracking-wider">&copy; 2026 Weeecycle | Lexington, KY. All rights reserved. &nbsp;&middot;&nbsp; <a href="/privacy.html" class="hover:text-brand-orange transition-colors">Privacy Policy</a></span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://chatonbo.com/widget/chatonbo-widget.js" data-bot-id="8c5103fa-8367-42d1-92a8-b60504758ccd"></script>
+</body>
+
+</html>
