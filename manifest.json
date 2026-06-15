@@ -1,0 +1,17 @@
+{
+  "name": "Weeecycle.net",
+  "short_name": "Weeecycle",
+  "description": "Expert road and gravel bike repair, tuning, and custom builds.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#050511",
+  "theme_color": "#FF8000",
+  "icons": [
+    {
+      "src": "/images/logo/gradient-bike.png",
+      "sizes": "1024x819",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
