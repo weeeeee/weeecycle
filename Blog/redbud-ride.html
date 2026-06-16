@@ -1,154 +1,4 @@
-#!/usr/bin/env node
-/**
- * import-substack.js
- *
- * Converts Substack export HTML files into Weeecycle blog post pages.
- *
- * Setup (one-time):
- *   npm install cheerio
- *
- * Usage:
- *   node scripts/import-substack.js <path-to-substack-export-folder>
- *
- * Point it at the top-level export folder (the one containing posts/ and posts.csv).
- * It reads posts.csv for titles, subtitles, and dates, then converts each HTML post.
- */
-
-'use strict';
-
-const fs   = require('fs');
-const path = require('path');
-
-let cheerio;
-try {
-  cheerio = require('cheerio');
-} catch {
-  console.error('\nMissing dependency. Run: npm install cheerio\n');
-  process.exit(1);
-}
-
-const ROOT     = path.join(__dirname, '..');
-const BLOG_DIR = path.join(ROOT, 'Blog');
-
-// ── Utilities ─────────────────────────────────────────────────────────────────
-
-function slugify(str) {
-  return str
-    .toLowerCase()
-    .replace(/[''""]/g, '')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
-function escHtml(str) {
-  return String(str || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function readTime(text) {
-  const mins = Math.max(1, Math.ceil(text.trim().split(/\s+/).length / 200));
-  return `${mins} min read`;
-}
-
-function isoDate(str) {
-  try { return new Date(str).toISOString().split('T')[0]; }
-  catch { return new Date().toISOString().split('T')[0]; }
-}
-
-function displayDate(str) {
-  try {
-    return new Date(str).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  } catch { return 'June 2026'; }
-}
-
-// ── Parse posts.csv ───────────────────────────────────────────────────────────
-// Columns: post_id, post_date, is_published, email_sent_at, inbox_sent_at,
-//          type, audience, title, subtitle, podcast_url
-
-function parseCSVLine(line) {
-  const fields = [];
-  let cur = '';
-  let inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"' && !inQ)                        { inQ = true; }
-    else if (ch === '"' && inQ && line[i+1] === '"') { cur += '"'; i++; }
-    else if (ch === '"' && inQ)                    { inQ = false; }
-    else if (ch === ',' && !inQ)                   { fields.push(cur); cur = ''; }
-    else                                           { cur += ch; }
-  }
-  fields.push(cur);
-  return fields;
-}
-
-function loadPostsMeta(csvPath) {
-  const lines = fs.readFileSync(csvPath, 'utf8').split('\n').filter(Boolean);
-  const meta  = {};
-  for (let i = 1; i < lines.length; i++) {        // skip header
-    const cols = parseCSVLine(lines[i]);
-    if (cols.length < 8) continue;
-    const postId   = cols[0].trim();               // e.g. "182864584.cycling-for-beginners…"
-    const numId    = postId.split('.')[0];          // just the numeric part
-    meta[postId]   = { date: cols[1], title: cols[7], subtitle: cols[8] || '' };
-    meta[numId]    = meta[postId];                  // also index by number alone
-  }
-  return meta;
-}
-
-// ── Parse a Substack export HTML file ────────────────────────────────────────
-// The export is raw post content — no <html>/<body> wrapper.
-// The entire file IS the article body.
-
-function parsePost(html, fallbackTitle) {
-  const $ = cheerio.load(html);
-
-  // Extract title from first non-empty <h1>
-  let title = '';
-  $('h1').each((_, el) => {
-    const t = $(el).text().trim();
-    if (t && !title) title = t;
-  });
-  if (!title) title = fallbackTitle || 'Untitled';
-
-  // Remove elements we don't want in the output
-  $('h1').each((_, el) => {
-    // remove empty h1s and the title h1 (we render our own styled title)
-    if (!$(el).text().trim() || $(el).text().trim() === title) $(el).remove();
-  });
-
-  // Remove Substack UI chrome
-  $('[data-component-name="SubscribeWidgetToDOM"]').remove();
-  $('.subscription-widget-wrap-editor').remove();
-  $('.subscription-widget-wrap').remove();
-  $('.subscription-widget').remove();
-  // Remove the expand/restack button overlays on images (keep the actual img)
-  $('.image-link-expand').remove();
-  // Remove pencraft UI elements (share/restack icons)
-  $('[class^="pencraft"]').remove();
-
-  const bodyHtml = $.html() || '';
-  const bodyText = $.text() || '';
-
-  return { title, bodyHtml, bodyText };
-}
-
-// ── Generate a full blog post page ───────────────────────────────────────────
-
-function buildPostPage({ title, subtitle, dateRaw, bodyHtml, bodyText, slug, category }) {
-  const pubDate  = isoDate(dateRaw);
-  const dispDate = displayDate(dateRaw);
-  const rt       = readTime(bodyText);
-  const desc     = escHtml(subtitle || title);
-  const titleEsc = escHtml(title);
-  const canonical = `https://weeecycle.net/Blog/${slug}.html`;
-  const postSlug  = `Blog/${slug}`;
-
-  return `<!DOCTYPE html>
+<!DOCTYPE html>
 <html class="scroll-smooth" lang="en">
 
 <head>
@@ -162,20 +12,20 @@ function buildPostPage({ title, subtitle, dateRaw, bodyHtml, bodyText, slug, cat
     </script>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>${titleEsc} | Weeecycle Blog</title>
-    <meta name="description" content="${desc}" />
-    <link rel="canonical" href="${canonical}" />
+    <title>RedBud Ride | Weeecycle Blog</title>
+    <meta name="description" content="Event #1 of #5 rides for Bluegrass Cycling Challenge. " />
+    <link rel="canonical" href="https://weeecycle.net/Blog/redbud-ride.html" />
     <meta name="robots" content="index, follow" />
 
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
-      "headline": "${titleEsc}",
-      "description": "${desc}",
+      "headline": "RedBud Ride",
+      "description": "Event #1 of #5 rides for Bluegrass Cycling Challenge. ",
       "image": "https://weeecycle.net/images/hero_gravel_realistic.png",
-      "datePublished": "${pubDate}",
-      "dateModified": "${pubDate}",
+      "datePublished": "2026-05-17",
+      "dateModified": "2026-05-17",
       "author": { "@type": "Person", "name": "Weeecycle", "url": "https://weeecycle.net" },
       "publisher": {
         "@type": "Organization",
@@ -183,18 +33,18 @@ function buildPostPage({ title, subtitle, dateRaw, bodyHtml, bodyText, slug, cat
         "url": "https://weeecycle.net",
         "logo": { "@type": "ImageObject", "url": "https://weeecycle.net/images/logo/gradient-bike.png" }
       },
-      "mainEntityOfPage": { "@type": "WebPage", "@id": "${canonical}" }
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://weeecycle.net/Blog/redbud-ride.html" }
     }
     </script>
 
     <meta property="og:type" content="article" />
-    <meta property="og:url" content="${canonical}" />
-    <meta property="og:title" content="${titleEsc} | Weeecycle Blog" />
-    <meta property="og:description" content="${desc}" />
+    <meta property="og:url" content="https://weeecycle.net/Blog/redbud-ride.html" />
+    <meta property="og:title" content="RedBud Ride | Weeecycle Blog" />
+    <meta property="og:description" content="Event #1 of #5 rides for Bluegrass Cycling Challenge. " />
     <meta property="og:image" content="https://weeecycle.net/images/hero_gravel_realistic.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${titleEsc}" />
-    <meta name="twitter:description" content="${desc}" />
+    <meta name="twitter:title" content="RedBud Ride" />
+    <meta name="twitter:description" content="Event #1 of #5 rides for Bluegrass Cycling Challenge. " />
     <meta name="twitter:image" content="https://weeecycle.net/images/hero_gravel_realistic.png" />
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -306,24 +156,24 @@ function buildPostPage({ title, subtitle, dateRaw, bodyHtml, bodyText, slug, cat
             <div class="flex items-center gap-2 text-gray-600 text-sm font-display uppercase tracking-wider mb-6">
                 <a href="../blog.html" class="hover:text-brand-orange transition-colors">Blog</a>
                 <span>/</span>
-                <span class="text-gray-400">${escHtml(category)}</span>
+                <span class="text-gray-400">Blog Post</span>
             </div>
             <div class="flex flex-wrap items-center gap-3 mb-6">
                 <span class="bg-brand-orange/10 text-brand-orange font-display font-bold text-xs uppercase tracking-widest py-1.5 px-4 rounded-full border border-brand-orange/20">
-                    <i class="fa-solid fa-circle mr-1 text-xs"></i>${escHtml(category)}
+                    <i class="fa-solid fa-circle mr-1 text-xs"></i>Blog Post
                 </span>
-                <span class="text-gray-600 text-sm font-display uppercase tracking-wider">${dispDate}</span>
+                <span class="text-gray-600 text-sm font-display uppercase tracking-wider">May 2026</span>
                 <span class="text-gray-700">·</span>
-                <span class="text-gray-600 text-sm font-display uppercase tracking-wider">${rt}</span>
+                <span class="text-gray-600 text-sm font-display uppercase tracking-wider">4 min read</span>
             </div>
             <h1 class="font-display font-bold text-5xl md:text-7xl text-white uppercase tracking-tight leading-tight mb-6">
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-orange-300">${titleEsc}</span>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-orange-300">RedBud Ride</span>
             </h1>
-            <p class="text-gray-400 text-xl font-light leading-relaxed max-w-2xl">${escHtml(subtitle)}</p>
+            <p class="text-gray-400 text-xl font-light leading-relaxed max-w-2xl">Event #1 of #5 rides for Bluegrass Cycling Challenge. </p>
         </div>
         <div class="w-full max-w-4xl mx-auto px-4">
             <div class="rounded-2xl overflow-hidden border border-gray-800 shadow-2xl">
-                <img src="../images/hero_gravel_realistic.png" alt="${titleEsc}" class="w-full h-72 md:h-96 object-cover" />
+                <img src="../images/hero_gravel_realistic.png" alt="RedBud Ride" class="w-full h-72 md:h-96 object-cover" />
             </div>
         </div>
     </section>
@@ -337,11 +187,11 @@ function buildPostPage({ title, subtitle, dateRaw, bodyHtml, bodyText, slug, cat
                 </div>
                 <div>
                     <p class="text-white font-display font-bold text-lg uppercase tracking-wide leading-none">Weeecycle</p>
-                    <p class="text-gray-500 text-sm font-display uppercase tracking-wider mt-0.5">Lexington, KY &nbsp;·&nbsp; ${dispDate}</p>
+                    <p class="text-gray-500 text-sm font-display uppercase tracking-wider mt-0.5">Lexington, KY &nbsp;·&nbsp; May 2026</p>
                 </div>
             </div>
             <div class="post-body" itemprop="articleBody">
-${bodyHtml}
+<html><head></head><body><div class="captioned-image-container"><figure><a class="image-link image2 is-viewable-img" target="_blank" href="https://substackcdn.com/image/fetch/$s_!I1le!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fed7783e3-e4f5-4ea3-ba0d-ec7f9d14324a_4096x2304.jpeg" data-component-name="Image2ToDOM"><div class="image2-inset"><picture><source type="image/webp" srcset="https://substackcdn.com/image/fetch/$s_!I1le!,w_424,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fed7783e3-e4f5-4ea3-ba0d-ec7f9d14324a_4096x2304.jpeg 424w, https://substackcdn.com/image/fetch/$s_!I1le!,w_848,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fed7783e3-e4f5-4ea3-ba0d-ec7f9d14324a_4096x2304.jpeg 848w, https://substackcdn.com/image/fetch/$s_!I1le!,w_1272,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fed7783e3-e4f5-4ea3-ba0d-ec7f9d14324a_4096x2304.jpeg 1272w, https://substackcdn.com/image/fetch/$s_!I1le!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fed7783e3-e4f5-4ea3-ba0d-ec7f9d14324a_4096x2304.jpeg 1456w" sizes="100vw"><img src="https://substack-post-media.s3.amazonaws.com/public/images/ed7783e3-e4f5-4ea3-ba0d-ec7f9d14324a_4096x2304.jpeg" width="1456" height="819" data-attrs="{&quot;src&quot;:&quot;https://substack-post-media.s3.amazonaws.com/public/images/ed7783e3-e4f5-4ea3-ba0d-ec7f9d14324a_4096x2304.jpeg&quot;,&quot;srcNoWatermark&quot;:null,&quot;fullscreen&quot;:null,&quot;imageSize&quot;:null,&quot;height&quot;:819,&quot;width&quot;:1456,&quot;resizeWidth&quot;:null,&quot;bytes&quot;:2925432,&quot;alt&quot;:null,&quot;title&quot;:null,&quot;type&quot;:&quot;image/jpeg&quot;,&quot;href&quot;:null,&quot;belowTheFold&quot;:false,&quot;topImage&quot;:true,&quot;internalRedirect&quot;:&quot;https://weeecycle.substack.com/i/195406932?img=https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fed7783e3-e4f5-4ea3-ba0d-ec7f9d14324a_4096x2304.jpeg&quot;,&quot;isProcessing&quot;:false,&quot;align&quot;:null,&quot;offset&quot;:false}" class="sizing-normal" alt="" srcset="https://substackcdn.com/image/fetch/$s_!I1le!,w_424,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fed7783e3-e4f5-4ea3-ba0d-ec7f9d14324a_4096x2304.jpeg 424w, https://substackcdn.com/image/fetch/$s_!I1le!,w_848,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fed7783e3-e4f5-4ea3-ba0d-ec7f9d14324a_4096x2304.jpeg 848w, https://substackcdn.com/image/fetch/$s_!I1le!,w_1272,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fed7783e3-e4f5-4ea3-ba0d-ec7f9d14324a_4096x2304.jpeg 1272w, https://substackcdn.com/image/fetch/$s_!I1le!,w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fed7783e3-e4f5-4ea3-ba0d-ec7f9d14324a_4096x2304.jpeg 1456w" sizes="100vw" fetchpriority="high"></picture></div></a></figure></div><p><br><br>The first event, “The Redbud Ride” in London, KY is in the books. It was a 72 mile ride through London, Ky and surrounding counties in and around London. It was a windy day but it was in the mid 70 degrees with mostly sunny skies. It was a good ride. </p><p>I started around 7am and was there early. I learned from last year’s event, the Licking Valley ride where I was almost 45 minutes later than the rest of the riders causing me to ride by myself, solo. I got lost on that ride and I learned it the hard way. </p><p>This ride was very well organized with the course marked out throughout with posters and painted arrows on the ground. It was for the most part, fairly normal hills with exception of 4 climbs where 2 of them were rated with category 4 climbs with average of 5% grade throughout the climb. </p><p>Climbs aren’t my specialty as they once was last year. I have gained about 15 pounds since I was hitting those 11% grade climbs with no issues at all. This weight gain has made the climbs more difficult. The first climb, I was able to do tackle it with no issues but raising my heart rate to my max. The second climb was a challenge as the total climb was almost 2 miles long, with a starting grade of 9% to 11% and then it sloped out to about a 4% grade and then boom, turned a right and faced “The Tussey Hill” which was a whopping 19% grade hill. Tussey Hill was a short climb in theory but extremely steep. A person was taking pictures in the middle of the climb, I am assuming to see the struggle in most faces. </p><div class="captioned-image-container"><figure><a class="image-link image2 is-viewable-img" target="_blank" href="https://substackcdn.com/image/fetch/$s_!afrq!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc25398cc-6b75-4fc4-8a22-61085ae65eff_4096x2304.jpeg" data-component-name="Image2ToDOM"><div class="image2-inset"><picture><source type="image/webp" srcset="https://substackcdn.com/image/fetch/$s_!afrq!,w_424,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc25398cc-6b75-4fc4-8a22-61085ae65eff_4096x2304.jpeg 424w, https://substackcdn.com/image/fetch/$s_!afrq!,w_848,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc25398cc-6b75-4fc4-8a22-61085ae65eff_4096x2304.jpeg 848w, https://substackcdn.com/image/fetch/$s_!afrq!,w_1272,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc25398cc-6b75-4fc4-8a22-61085ae65eff_4096x2304.jpeg 1272w, https://substackcdn.com/image/fetch/$s_!afrq!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc25398cc-6b75-4fc4-8a22-61085ae65eff_4096x2304.jpeg 1456w" sizes="100vw"><img src="https://substack-post-media.s3.amazonaws.com/public/images/c25398cc-6b75-4fc4-8a22-61085ae65eff_4096x2304.jpeg" width="1456" height="819" data-attrs="{&quot;src&quot;:&quot;https://substack-post-media.s3.amazonaws.com/public/images/c25398cc-6b75-4fc4-8a22-61085ae65eff_4096x2304.jpeg&quot;,&quot;srcNoWatermark&quot;:null,&quot;fullscreen&quot;:null,&quot;imageSize&quot;:null,&quot;height&quot;:819,&quot;width&quot;:1456,&quot;resizeWidth&quot;:null,&quot;bytes&quot;:6401765,&quot;alt&quot;:null,&quot;title&quot;:null,&quot;type&quot;:&quot;image/jpeg&quot;,&quot;href&quot;:null,&quot;belowTheFold&quot;:false,&quot;topImage&quot;:false,&quot;internalRedirect&quot;:&quot;https://weeecycle.substack.com/i/195406932?img=https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc25398cc-6b75-4fc4-8a22-61085ae65eff_4096x2304.jpeg&quot;,&quot;isProcessing&quot;:false,&quot;align&quot;:null,&quot;offset&quot;:false}" class="sizing-normal" alt="" srcset="https://substackcdn.com/image/fetch/$s_!afrq!,w_424,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc25398cc-6b75-4fc4-8a22-61085ae65eff_4096x2304.jpeg 424w, https://substackcdn.com/image/fetch/$s_!afrq!,w_848,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc25398cc-6b75-4fc4-8a22-61085ae65eff_4096x2304.jpeg 848w, https://substackcdn.com/image/fetch/$s_!afrq!,w_1272,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc25398cc-6b75-4fc4-8a22-61085ae65eff_4096x2304.jpeg 1272w, https://substackcdn.com/image/fetch/$s_!afrq!,w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc25398cc-6b75-4fc4-8a22-61085ae65eff_4096x2304.jpeg 1456w" sizes="100vw"></picture></div></a></figure></div><p></p><p>My thought before this ride is that I wasn’t ready. I didn’t train as I normally do with this sort of ride, or at least I thought I didn’t. The rides through the wintertime on the smart trainer with Zwift helped my power outputs and I did try and be consistent on riding. I stayed normally running zone 2 but then spread out some Tempo rides and FTP rides in the mix. </p><p>I decided about a month ago to get rid of the power meter from my bike and upgraded my crankset along with my front derailleur (the previous front derailleur was for a 10 speed and I have a 11 speed cassette which is the reason it didn’t work). I did away with the spider power meter didn’t fit the new Ultegra crankset so I sold it. I no longer am tracking my power on the bike any longer as I had become too fixated on watt numbers throughout the ride. </p><p>FTP isn’t a thing in my book as it doesn’t gauge what I ultimately look for in a ride. I look for the pure enjoyment of riding for a distance of time. I am not looking for speed or racing so I personally felt no need to track my FTP. I do track my zones for heart rate as the secondary goal is set to keep aerobic so it’s important for me to track where I am in my zones for training to get stronger with cardiovascular purposes. </p><p>Not watching the power constantly has allowed me to really enjoy my ride and pay attention to all the surrounds me when I do ride. I also appreciate what my body is doing and going through in the process. I feel more in tune to the bike and just enjoy my rides more without watching power. </p><p></p><p></p></body></html>
             </div>
             <div class="mt-12 pt-8 border-t border-gray-800 flex items-center gap-4">
                 <div class="w-14 h-14 rounded-full bg-brand-orange/10 border border-brand-orange/30 flex items-center justify-center flex-shrink-0">
@@ -448,24 +298,24 @@ ${bodyHtml}
     <script src="https://chatonbo.com/widget/chatonbo-widget.js" data-bot-id="8c5103fa-8367-42d1-92a8-b60504758ccd"></script>
 
     <script>
-        const POST_SLUG = '${postSlug}';
+        const POST_SLUG = 'Blog/redbud-ride';
 
         async function loadComments() {
             try {
-                const res = await fetch(\`/api/comments?post=\${encodeURIComponent(POST_SLUG)}\`);
+                const res = await fetch(`/api/comments?post=${encodeURIComponent(POST_SLUG)}`);
                 const comments = await res.json();
                 const list = document.getElementById('comments-list');
                 const noComments = document.getElementById('no-comments');
                 const countEl = document.getElementById('comment-count');
                 if (!Array.isArray(comments) || comments.length === 0) { noComments.classList.remove('hidden'); return; }
-                countEl.textContent = \`(\${comments.length})\`;
+                countEl.textContent = `(${comments.length})`;
                 list.innerHTML = comments.map(c => {
                     const date = new Date(c.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
                     const initials = c.author_name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
                     const nameHtml = c.author_website
-                        ? \`<a href="\${c.author_website}" target="_blank" rel="noopener noreferrer nofollow" class="text-white font-display font-bold uppercase tracking-wide hover:text-brand-orange transition-colors">\${c.author_name}</a>\`
-                        : \`<span class="text-white font-display font-bold uppercase tracking-wide">\${c.author_name}</span>\`;
-                    return \`<div class="flex gap-4"><div class="w-11 h-11 rounded-full bg-brand-orange/20 border border-brand-orange/30 flex items-center justify-center flex-shrink-0 font-display font-bold text-brand-orange text-sm">\${initials}</div><div class="flex-1 bg-[#0B0B2B] border border-gray-800 rounded-2xl p-5"><div class="flex items-center gap-3 mb-3">\${nameHtml}<span class="text-gray-600 text-xs font-display uppercase tracking-wider">\${date}</span></div><p class="text-gray-300 font-light text-sm leading-relaxed">\${c.body.replace(/\\n/g, '<br>')}</p></div></div>\`;
+                        ? `<a href="${c.author_website}" target="_blank" rel="noopener noreferrer nofollow" class="text-white font-display font-bold uppercase tracking-wide hover:text-brand-orange transition-colors">${c.author_name}</a>`
+                        : `<span class="text-white font-display font-bold uppercase tracking-wide">${c.author_name}</span>`;
+                    return `<div class="flex gap-4"><div class="w-11 h-11 rounded-full bg-brand-orange/20 border border-brand-orange/30 flex items-center justify-center flex-shrink-0 font-display font-bold text-brand-orange text-sm">${initials}</div><div class="flex-1 bg-[#0B0B2B] border border-gray-800 rounded-2xl p-5"><div class="flex items-center gap-3 mb-3">${nameHtml}<span class="text-gray-600 text-xs font-display uppercase tracking-wider">${date}</span></div><p class="text-gray-300 font-light text-sm leading-relaxed">${c.body.replace(/\n/g, '<br>')}</p></div></div>`;
                 }).join('');
             } catch (err) { console.error('Failed to load comments:', err); }
         }
@@ -498,9 +348,9 @@ ${bodyHtml}
             }
         });
 
-        function shareToFacebook() { window.open(\`https://www.facebook.com/sharer/sharer.php?u=\${encodeURIComponent(window.location.href)}\`, '_blank', 'width=600,height=400'); }
-        function shareToX() { window.open(\`https://twitter.com/intent/tweet?url=\${encodeURIComponent(window.location.href)}&text=\${encodeURIComponent(document.title)}\`, '_blank', 'width=600,height=400'); }
-        function shareToWhatsApp() { window.open(\`https://wa.me/?text=\${encodeURIComponent(document.title + ' ' + window.location.href)}\`, '_blank'); }
+        function shareToFacebook() { window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank', 'width=600,height=400'); }
+        function shareToX() { window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(document.title)}`, '_blank', 'width=600,height=400'); }
+        function shareToWhatsApp() { window.open(`https://wa.me/?text=${encodeURIComponent(document.title + ' ' + window.location.href)}`, '_blank'); }
         async function copyLink(btn) {
             try {
                 await navigator.clipboard.writeText(window.location.href);
@@ -514,170 +364,4 @@ ${bodyHtml}
         loadComments();
     </script>
 </body>
-</html>`;
-}
-
-// ── Blog card for blog.html ───────────────────────────────────────────────────
-
-function buildBlogCard({ title, slug, excerpt, dateRaw, category }) {
-  const dispDate = displayDate(dateRaw);
-  const titleEsc = escHtml(title);
-  const excerptEsc = escHtml(excerpt).substring(0, 160);
-  return `
-                <!-- Post: ${titleEsc} -->
-                <article class="bg-[#0B0B2B] border border-gray-800 rounded-2xl overflow-hidden hover:border-brand-orange/40 transition-all duration-300 group flex flex-col">
-                    <a href="Blog/${slug}.html" class="block h-52 relative overflow-hidden">
-                        <img src="images/hero_gravel_realistic.png" alt="${titleEsc}" class="w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500" />
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                    </a>
-                    <div class="p-6 flex flex-col flex-grow">
-                        <div class="flex flex-wrap items-center gap-3 mb-3">
-                            <span class="bg-brand-orange/10 text-brand-orange font-display font-bold text-xs uppercase tracking-widest py-1 px-3 rounded-full border border-brand-orange/20">${escHtml(category)}</span>
-                            <span class="text-gray-600 text-sm font-display uppercase tracking-wider">${dispDate}</span>
-                        </div>
-                        <h2 class="font-display font-bold text-3xl text-white uppercase tracking-tight leading-tight mb-3 group-hover:text-brand-orange transition-colors">
-                            <a href="Blog/${slug}.html">${titleEsc}</a>
-                        </h2>
-                        <p class="text-gray-400 font-light text-sm leading-relaxed mb-6 flex-grow">${excerptEsc}</p>
-                        <a href="Blog/${slug}.html" class="inline-flex items-center gap-2 text-brand-orange font-display font-bold uppercase tracking-wider text-sm hover:gap-3 transition-all">
-                            Read More <i class="fa-solid fa-arrow-right text-xs"></i>
-                        </a>
-                    </div>
-                </article>`;
-}
-
-// ── Update blog.html ──────────────────────────────────────────────────────────
-
-function updateBlogIndex(newCards, totalPosts) {
-  const blogPath = path.join(ROOT, 'blog.html');
-  let html = fs.readFileSync(blogPath, 'utf8');
-
-  if (!html.includes('<!-- IMPORT_END -->')) {
-    console.warn('\n  [WARN] blog.html missing <!-- IMPORT_END --> marker.');
-    console.log('  Add these cards manually to the grid in blog.html:\n');
-    newCards.forEach(c => console.log(c));
-    return;
-  }
-
-  html = html.replace('<!-- IMPORT_END -->', newCards.join('\n') + '\n            <!-- IMPORT_END -->');
-  html = html.replace(/\d+ Posts? Published/, `${totalPosts} Post${totalPosts !== 1 ? 's' : ''} Published`);
-  fs.writeFileSync(blogPath, html);
-  console.log(`  blog.html updated (${totalPosts} posts total)`);
-}
-
-// ── Update sitemap.xml ───────────────────────────────────────────────────────
-
-function updateSitemap(posts) {
-  const sitemapPath = path.join(ROOT, 'sitemap.xml');
-  let sitemap = fs.readFileSync(sitemapPath, 'utf8');
-  const today = new Date().toISOString().split('T')[0];
-
-  const entries = posts
-    .filter(({ slug }) => !sitemap.includes(`Blog/${slug}.html`))
-    .map(({ slug, dateRaw }) => `  <url>
-    <loc>https://weeecycle.net/Blog/${slug}.html</loc>
-    <lastmod>${dateRaw ? isoDate(dateRaw) : today}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>`);
-
-  if (entries.length) {
-    sitemap = sitemap.replace('</urlset>', entries.join('\n') + '\n</urlset>');
-    fs.writeFileSync(sitemapPath, sitemap);
-    console.log(`  sitemap.xml updated (+${entries.length} URLs)`);
-  }
-}
-
-// ── Main ─────────────────────────────────────────────────────────────────────
-
-const exportDir = process.argv[2];
-if (!exportDir) {
-  console.log('\nUsage:  node scripts/import-substack.js <substack-export-folder>');
-  console.log('Example: node scripts/import-substack.js ~/Downloads/substack_export\n');
-  process.exit(1);
-}
-
-const postsDir  = path.join(exportDir, 'posts');
-const csvPath   = path.join(exportDir, 'posts.csv');
-
-if (!fs.existsSync(postsDir)) {
-  console.error(`\nCould not find posts/ folder inside: ${exportDir}`);
-  process.exit(1);
-}
-
-// Load metadata from posts.csv
-const meta = fs.existsSync(csvPath) ? loadPostsMeta(csvPath) : {};
-if (!Object.keys(meta).length) {
-  console.warn('  [WARN] posts.csv not found — titles and dates will be extracted from HTML only');
-}
-
-const htmlFiles = fs.readdirSync(postsDir)
-  .filter(f => f.endsWith('.html'))
-  .sort();
-
-console.log(`\nFound ${htmlFiles.length} HTML post(s) in ${postsDir}\n`);
-
-const imported = [];
-const cards    = [];
-let   skipped  = 0;
-
-for (const file of htmlFiles) {
-  // Filename: "182864584.cycling-for-beginners-over-50-5-steps.html"
-  const basename = path.basename(file, '.html');          // "182864584.cycling-for-..."
-  const numId    = basename.split('.')[0];                 // "182864584"
-  const fileSlug = basename.slice(numId.length + 1);      // "cycling-for-..."
-
-  // Look up metadata from CSV (match by full basename or numeric ID)
-  const csvMeta  = meta[basename] || meta[numId] || {};
-  const title    = csvMeta.title  || '';
-  const subtitle = csvMeta.subtitle || '';
-  const dateRaw  = csvMeta.date   || new Date().toISOString();
-
-  // Parse HTML body
-  const html     = fs.readFileSync(path.join(postsDir, file), 'utf8');
-  const parsed   = parsePost(html, title || fileSlug.replace(/-/g, ' '));
-  const finalTitle = csvMeta.title || parsed.title;
-  const slug     = fileSlug || slugify(finalTitle);
-  const category = 'Blog Post';
-
-  // Skip if already exists
-  const outPath = path.join(BLOG_DIR, `${slug}.html`);
-  if (fs.existsSync(outPath)) {
-    console.log(`  [SKIP] Blog/${slug}.html — already exists`);
-    skipped++;
-    continue;
-  }
-
-  // Build and write post page
-  const pageHtml = buildPostPage({
-    title: finalTitle,
-    subtitle,
-    dateRaw,
-    bodyHtml: parsed.bodyHtml,
-    bodyText: parsed.bodyText,
-    slug,
-    category,
-  });
-  fs.writeFileSync(outPath, pageHtml);
-
-  // Build blog card
-  const excerpt = (subtitle || parsed.bodyText.replace(/\s+/g, ' ').substring(0, 150)).trim() + '…';
-  cards.push(buildBlogCard({ title: finalTitle, slug, excerpt, dateRaw, category }));
-  imported.push({ title: finalTitle, slug, dateRaw });
-
-  const rt = readTime(parsed.bodyText);
-  console.log(`  [OK]  Blog/${slug}.html  "${finalTitle}"  (${rt})`);
-}
-
-if (imported.length) {
-  console.log('');
-  const totalPosts = fs.readdirSync(BLOG_DIR).filter(f => f.endsWith('.html')).length;
-  updateBlogIndex(cards, totalPosts);
-  updateSitemap(imported);
-  console.log(`\nDone! Imported ${imported.length} post(s), skipped ${skipped}.`);
-  console.log('\nNext steps:');
-  console.log('  1. Review the pages in Blog/ — check images and formatting');
-  console.log('  2. git add Blog/ blog.html sitemap.xml && git commit -m "feat: import Substack posts" && git push');
-} else {
-  console.log(`\nNothing new to import (${skipped} already existed).`);
-}
+</html>

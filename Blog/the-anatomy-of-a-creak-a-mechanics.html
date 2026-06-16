@@ -1,154 +1,4 @@
-#!/usr/bin/env node
-/**
- * import-substack.js
- *
- * Converts Substack export HTML files into Weeecycle blog post pages.
- *
- * Setup (one-time):
- *   npm install cheerio
- *
- * Usage:
- *   node scripts/import-substack.js <path-to-substack-export-folder>
- *
- * Point it at the top-level export folder (the one containing posts/ and posts.csv).
- * It reads posts.csv for titles, subtitles, and dates, then converts each HTML post.
- */
-
-'use strict';
-
-const fs   = require('fs');
-const path = require('path');
-
-let cheerio;
-try {
-  cheerio = require('cheerio');
-} catch {
-  console.error('\nMissing dependency. Run: npm install cheerio\n');
-  process.exit(1);
-}
-
-const ROOT     = path.join(__dirname, '..');
-const BLOG_DIR = path.join(ROOT, 'Blog');
-
-// ── Utilities ─────────────────────────────────────────────────────────────────
-
-function slugify(str) {
-  return str
-    .toLowerCase()
-    .replace(/[''""]/g, '')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
-function escHtml(str) {
-  return String(str || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function readTime(text) {
-  const mins = Math.max(1, Math.ceil(text.trim().split(/\s+/).length / 200));
-  return `${mins} min read`;
-}
-
-function isoDate(str) {
-  try { return new Date(str).toISOString().split('T')[0]; }
-  catch { return new Date().toISOString().split('T')[0]; }
-}
-
-function displayDate(str) {
-  try {
-    return new Date(str).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  } catch { return 'June 2026'; }
-}
-
-// ── Parse posts.csv ───────────────────────────────────────────────────────────
-// Columns: post_id, post_date, is_published, email_sent_at, inbox_sent_at,
-//          type, audience, title, subtitle, podcast_url
-
-function parseCSVLine(line) {
-  const fields = [];
-  let cur = '';
-  let inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"' && !inQ)                        { inQ = true; }
-    else if (ch === '"' && inQ && line[i+1] === '"') { cur += '"'; i++; }
-    else if (ch === '"' && inQ)                    { inQ = false; }
-    else if (ch === ',' && !inQ)                   { fields.push(cur); cur = ''; }
-    else                                           { cur += ch; }
-  }
-  fields.push(cur);
-  return fields;
-}
-
-function loadPostsMeta(csvPath) {
-  const lines = fs.readFileSync(csvPath, 'utf8').split('\n').filter(Boolean);
-  const meta  = {};
-  for (let i = 1; i < lines.length; i++) {        // skip header
-    const cols = parseCSVLine(lines[i]);
-    if (cols.length < 8) continue;
-    const postId   = cols[0].trim();               // e.g. "182864584.cycling-for-beginners…"
-    const numId    = postId.split('.')[0];          // just the numeric part
-    meta[postId]   = { date: cols[1], title: cols[7], subtitle: cols[8] || '' };
-    meta[numId]    = meta[postId];                  // also index by number alone
-  }
-  return meta;
-}
-
-// ── Parse a Substack export HTML file ────────────────────────────────────────
-// The export is raw post content — no <html>/<body> wrapper.
-// The entire file IS the article body.
-
-function parsePost(html, fallbackTitle) {
-  const $ = cheerio.load(html);
-
-  // Extract title from first non-empty <h1>
-  let title = '';
-  $('h1').each((_, el) => {
-    const t = $(el).text().trim();
-    if (t && !title) title = t;
-  });
-  if (!title) title = fallbackTitle || 'Untitled';
-
-  // Remove elements we don't want in the output
-  $('h1').each((_, el) => {
-    // remove empty h1s and the title h1 (we render our own styled title)
-    if (!$(el).text().trim() || $(el).text().trim() === title) $(el).remove();
-  });
-
-  // Remove Substack UI chrome
-  $('[data-component-name="SubscribeWidgetToDOM"]').remove();
-  $('.subscription-widget-wrap-editor').remove();
-  $('.subscription-widget-wrap').remove();
-  $('.subscription-widget').remove();
-  // Remove the expand/restack button overlays on images (keep the actual img)
-  $('.image-link-expand').remove();
-  // Remove pencraft UI elements (share/restack icons)
-  $('[class^="pencraft"]').remove();
-
-  const bodyHtml = $.html() || '';
-  const bodyText = $.text() || '';
-
-  return { title, bodyHtml, bodyText };
-}
-
-// ── Generate a full blog post page ───────────────────────────────────────────
-
-function buildPostPage({ title, subtitle, dateRaw, bodyHtml, bodyText, slug, category }) {
-  const pubDate  = isoDate(dateRaw);
-  const dispDate = displayDate(dateRaw);
-  const rt       = readTime(bodyText);
-  const desc     = escHtml(subtitle || title);
-  const titleEsc = escHtml(title);
-  const canonical = `https://weeecycle.net/Blog/${slug}.html`;
-  const postSlug  = `Blog/${slug}`;
-
-  return `<!DOCTYPE html>
+<!DOCTYPE html>
 <html class="scroll-smooth" lang="en">
 
 <head>
@@ -162,20 +12,20 @@ function buildPostPage({ title, subtitle, dateRaw, bodyHtml, bodyText, slug, cat
     </script>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>${titleEsc} | Weeecycle Blog</title>
-    <meta name="description" content="${desc}" />
-    <link rel="canonical" href="${canonical}" />
+    <title>The Anatomy of a Creak: A Mechanic’s Guide to Hunting Down Bike Noises | Weeecycle Blog</title>
+    <meta name="description" content="Before you blame your bottom bracket, follow this systematic checklist to isolate and destroy that annoying phantom sound." />
+    <link rel="canonical" href="https://weeecycle.net/Blog/the-anatomy-of-a-creak-a-mechanics.html" />
     <meta name="robots" content="index, follow" />
 
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
-      "headline": "${titleEsc}",
-      "description": "${desc}",
+      "headline": "The Anatomy of a Creak: A Mechanic’s Guide to Hunting Down Bike Noises",
+      "description": "Before you blame your bottom bracket, follow this systematic checklist to isolate and destroy that annoying phantom sound.",
       "image": "https://weeecycle.net/images/hero_gravel_realistic.png",
-      "datePublished": "${pubDate}",
-      "dateModified": "${pubDate}",
+      "datePublished": "2026-05-22",
+      "dateModified": "2026-05-22",
       "author": { "@type": "Person", "name": "Weeecycle", "url": "https://weeecycle.net" },
       "publisher": {
         "@type": "Organization",
@@ -183,18 +33,18 @@ function buildPostPage({ title, subtitle, dateRaw, bodyHtml, bodyText, slug, cat
         "url": "https://weeecycle.net",
         "logo": { "@type": "ImageObject", "url": "https://weeecycle.net/images/logo/gradient-bike.png" }
       },
-      "mainEntityOfPage": { "@type": "WebPage", "@id": "${canonical}" }
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://weeecycle.net/Blog/the-anatomy-of-a-creak-a-mechanics.html" }
     }
     </script>
 
     <meta property="og:type" content="article" />
-    <meta property="og:url" content="${canonical}" />
-    <meta property="og:title" content="${titleEsc} | Weeecycle Blog" />
-    <meta property="og:description" content="${desc}" />
+    <meta property="og:url" content="https://weeecycle.net/Blog/the-anatomy-of-a-creak-a-mechanics.html" />
+    <meta property="og:title" content="The Anatomy of a Creak: A Mechanic’s Guide to Hunting Down Bike Noises | Weeecycle Blog" />
+    <meta property="og:description" content="Before you blame your bottom bracket, follow this systematic checklist to isolate and destroy that annoying phantom sound." />
     <meta property="og:image" content="https://weeecycle.net/images/hero_gravel_realistic.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${titleEsc}" />
-    <meta name="twitter:description" content="${desc}" />
+    <meta name="twitter:title" content="The Anatomy of a Creak: A Mechanic’s Guide to Hunting Down Bike Noises" />
+    <meta name="twitter:description" content="Before you blame your bottom bracket, follow this systematic checklist to isolate and destroy that annoying phantom sound." />
     <meta name="twitter:image" content="https://weeecycle.net/images/hero_gravel_realistic.png" />
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -306,24 +156,24 @@ function buildPostPage({ title, subtitle, dateRaw, bodyHtml, bodyText, slug, cat
             <div class="flex items-center gap-2 text-gray-600 text-sm font-display uppercase tracking-wider mb-6">
                 <a href="../blog.html" class="hover:text-brand-orange transition-colors">Blog</a>
                 <span>/</span>
-                <span class="text-gray-400">${escHtml(category)}</span>
+                <span class="text-gray-400">Blog Post</span>
             </div>
             <div class="flex flex-wrap items-center gap-3 mb-6">
                 <span class="bg-brand-orange/10 text-brand-orange font-display font-bold text-xs uppercase tracking-widest py-1.5 px-4 rounded-full border border-brand-orange/20">
-                    <i class="fa-solid fa-circle mr-1 text-xs"></i>${escHtml(category)}
+                    <i class="fa-solid fa-circle mr-1 text-xs"></i>Blog Post
                 </span>
-                <span class="text-gray-600 text-sm font-display uppercase tracking-wider">${dispDate}</span>
+                <span class="text-gray-600 text-sm font-display uppercase tracking-wider">May 2026</span>
                 <span class="text-gray-700">·</span>
-                <span class="text-gray-600 text-sm font-display uppercase tracking-wider">${rt}</span>
+                <span class="text-gray-600 text-sm font-display uppercase tracking-wider">5 min read</span>
             </div>
             <h1 class="font-display font-bold text-5xl md:text-7xl text-white uppercase tracking-tight leading-tight mb-6">
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-orange-300">${titleEsc}</span>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-orange-300">The Anatomy of a Creak: A Mechanic’s Guide to Hunting Down Bike Noises</span>
             </h1>
-            <p class="text-gray-400 text-xl font-light leading-relaxed max-w-2xl">${escHtml(subtitle)}</p>
+            <p class="text-gray-400 text-xl font-light leading-relaxed max-w-2xl">Before you blame your bottom bracket, follow this systematic checklist to isolate and destroy that annoying phantom sound.</p>
         </div>
         <div class="w-full max-w-4xl mx-auto px-4">
             <div class="rounded-2xl overflow-hidden border border-gray-800 shadow-2xl">
-                <img src="../images/hero_gravel_realistic.png" alt="${titleEsc}" class="w-full h-72 md:h-96 object-cover" />
+                <img src="../images/hero_gravel_realistic.png" alt="The Anatomy of a Creak: A Mechanic’s Guide to Hunting Down Bike Noises" class="w-full h-72 md:h-96 object-cover" />
             </div>
         </div>
     </section>
@@ -337,11 +187,11 @@ function buildPostPage({ title, subtitle, dateRaw, bodyHtml, bodyText, slug, cat
                 </div>
                 <div>
                     <p class="text-white font-display font-bold text-lg uppercase tracking-wide leading-none">Weeecycle</p>
-                    <p class="text-gray-500 text-sm font-display uppercase tracking-wider mt-0.5">Lexington, KY &nbsp;·&nbsp; ${dispDate}</p>
+                    <p class="text-gray-500 text-sm font-display uppercase tracking-wider mt-0.5">Lexington, KY &nbsp;·&nbsp; May 2026</p>
                 </div>
             </div>
             <div class="post-body" itemprop="articleBody">
-${bodyHtml}
+<html><head></head><body><div class="captioned-image-container"><figure><a class="image-link image2 is-viewable-img" target="_blank" href="https://substackcdn.com/image/fetch/$s_!h_qX!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8f0ea23d-3ec9-4f30-9c1d-2697d1401006_1024x559.jpeg" data-component-name="Image2ToDOM"><div class="image2-inset"><picture><source type="image/webp" srcset="https://substackcdn.com/image/fetch/$s_!h_qX!,w_424,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8f0ea23d-3ec9-4f30-9c1d-2697d1401006_1024x559.jpeg 424w, https://substackcdn.com/image/fetch/$s_!h_qX!,w_848,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8f0ea23d-3ec9-4f30-9c1d-2697d1401006_1024x559.jpeg 848w, https://substackcdn.com/image/fetch/$s_!h_qX!,w_1272,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8f0ea23d-3ec9-4f30-9c1d-2697d1401006_1024x559.jpeg 1272w, https://substackcdn.com/image/fetch/$s_!h_qX!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8f0ea23d-3ec9-4f30-9c1d-2697d1401006_1024x559.jpeg 1456w" sizes="100vw"><img src="https://substack-post-media.s3.amazonaws.com/public/images/8f0ea23d-3ec9-4f30-9c1d-2697d1401006_1024x559.jpeg" width="1024" height="559" data-attrs="{&quot;src&quot;:&quot;https://substack-post-media.s3.amazonaws.com/public/images/8f0ea23d-3ec9-4f30-9c1d-2697d1401006_1024x559.jpeg&quot;,&quot;srcNoWatermark&quot;:null,&quot;fullscreen&quot;:null,&quot;imageSize&quot;:null,&quot;height&quot;:559,&quot;width&quot;:1024,&quot;resizeWidth&quot;:null,&quot;bytes&quot;:138140,&quot;alt&quot;:null,&quot;title&quot;:null,&quot;type&quot;:&quot;image/jpeg&quot;,&quot;href&quot;:null,&quot;belowTheFold&quot;:false,&quot;topImage&quot;:true,&quot;internalRedirect&quot;:&quot;https://weeecycle.substack.com/i/198171077?img=https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8f0ea23d-3ec9-4f30-9c1d-2697d1401006_1024x559.jpeg&quot;,&quot;isProcessing&quot;:false,&quot;align&quot;:null,&quot;offset&quot;:false}" class="sizing-normal" alt="" srcset="https://substackcdn.com/image/fetch/$s_!h_qX!,w_424,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8f0ea23d-3ec9-4f30-9c1d-2697d1401006_1024x559.jpeg 424w, https://substackcdn.com/image/fetch/$s_!h_qX!,w_848,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8f0ea23d-3ec9-4f30-9c1d-2697d1401006_1024x559.jpeg 848w, https://substackcdn.com/image/fetch/$s_!h_qX!,w_1272,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8f0ea23d-3ec9-4f30-9c1d-2697d1401006_1024x559.jpeg 1272w, https://substackcdn.com/image/fetch/$s_!h_qX!,w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8f0ea23d-3ec9-4f30-9c1d-2697d1401006_1024x559.jpeg 1456w" sizes="100vw" fetchpriority="high"></picture></div></a></figure></div><p></p><p>There is a distinct mental tax that comes with riding a noisy bicycle. You’re spinning down a beautiful, quiet backroad or a secluded gravel track, and every single pedal stroke is accompanied by a rhythmic, infuriating <em>click</em>, <em>snap</em>, or <em>creak</em>.</p><p>It drives you crazy. It ruins the ride. And too often, it leads to a common diagnostic mistake: assuming the bottom bracket is dead.</p><p>As a mechanic, I can tell you that while the bottom bracket gets 90% of the blame, it’s only responsible for a fraction of the actual noise. Carbon frames and modern aluminum tubes act like acoustic amplifiers; a dry saddle rail can resonate through the seattube and sound exactly like it’s coming from your cranks.</p><p>Before you roll into your local shop and pay for a component replacement you might not need, use this systematic, step-by-step troubleshooting guide to isolate, identify, and fix the phantom creak.</p><div><hr></div><h3>Step 1: The Seated vs. Standing Test (Isolate the Saddle/Seatpost)</h3><p>The absolute first step to diagnosing any rhythmic creak is to change your riding position when the noise occurs.</p><ul><li><p><strong>The Test:</strong> When the bike starts creaking, stand up out of the saddle and keep pedaling under load.</p></li><li><p><strong>The Diagnosis:</strong></p><ul><li><p><strong>If the noise disappears instantly:</strong> The issue is located in your seating cluster (saddle rails, seatpost clamp, or the seattube interface).</p></li><li><p><strong>If the noise persists:</strong> The issue is in the drivetrain, pedals, cockpit, or frame pivots.</p></li></ul></li></ul><p><strong>The Fix:</strong> Mark your saddle height with electrical tape, pull the seatpost completely out, and wipe down the inside of the seattube and the post itself. If you have a carbon frame or carbon post, apply fresh carbon friction paste. If it’s aluminum-on-aluminum, apply a thin layer of high-quality bicycle grease. Re-torque the binder bolt to exact specifications. Don’t forget to check the bolts clamping your saddle rails—dry rails under a rider’s shifting weight are an incredibly common culprit.</p><div><hr></div><h3>Step 2: The Coasting Test (Isolate the Drivetrain)</h3><p>If the noise happens while you are standing and pedaling, we need to determine if it is tied to the motion of the drivetrain or the motion of the bike shifting under your weight.</p><ul><li><p><strong>The Test:</strong> Stand up, stop pedaling, and coast. While coasting, gently bounce or shift your weight side to side to flex the frame.</p></li><li><p><strong>The Diagnosis:</strong></p><ul><li><p><strong>If the noise disappears while coasting:</strong> The problem is actively tied to your pedaling load (drivetrain, pedals, chainrings, or bottom bracket).</p></li><li><p><strong>If the noise continues while coasting:</strong> The issue is likely external to the drivetrain—think loose wheel skewers/thru-axles, a loose headset, or handlebar clamp flex.</p></li></ul></li></ul><div><hr></div><h3>Step 3: Check the Pedals and Cleats</h3><p>Pedals take an immense amount of abuse, constant dirt spray, and high torque. They are the second most common source of phantom creaks.</p><ul><li><p><strong>The Test:</strong> Try pedaling with one foot unclipped (if using clipless pedals), then swap. Does the noise happen on both sides or just one?</p></li><li><p><strong>The Fix:</strong></p><ol><li><p><strong>Cleats:</strong> Spray a little silicone lube on your shoe cleats. Worn-out plastic or dry metal-on-pedal interfaces click constantly.</p></li><li><p><strong>Pedal Threads:</strong> Unthread your pedals from the crank arms. Clean the threads thoroughly on both the pedal spindle and the crank arm. Apply fresh grease to the threads, ensure the washers are in place, and thread them back on tightly. <em>Reminder: The left pedal is left-hand (reverse) threaded.</em></p></li></ol></li></ul><div><hr></div><h3>Step 4: Inspect the Chainring Bolts</h3><p>If you are running a 2x road setup or a 1x gravel drivetrain, your chainrings are bolted or direct-mounted to your crankset. Under high torque, microscopic movement between the chainring and the crank arm causes a sharp, metallic clicking sound that perfectly mimics a bad bearing.</p><ul><li><p><strong>The Fix:</strong> Use a hex or Torx wrench to check the tightness of every single chainring bolt. If they haven’t been serviced in a long time, back them out completely, clean the threads, apply a drop of medium threadlocker (blue Loctite), and torque them in a cross-pattern.</p></li></ul><div><hr></div><h3>Step 5: The Ultimate Culprit—Wheels and Thru-Axles</h3><p>Before we finally sentence the bottom bracket to death, check the simplest, easiest-to-overlook component on modern disc-brake road and gravel bikes: the thru-axles.</p><ul><li><p><strong>The Fix:</strong> A dry, ungreased thru-axle or quick-release skewer shifting minutely inside the frame dropouts under load will create a loud creak. Remove the thru-axles, wipe away old grit, apply a thin film of fresh grease to the shaft and the threads, and thread them back in to spec. While you’re there, ensure your cassette lockring is tight and your rear derailleur hanger bolt isn’t loose.</p></li><li><p>Don’t make the mistake I did by going to the bike shop to realize that all it was that my Quick Release axle just needed to be tightened better. </p></li></ul><div><hr></div><h3>Step 6: When It Actually <em>Is</em> the Bottom Bracket</h3><p>If you have systematically gone through steps 1 to 5—your seatpost is prepped, your pedals are greased, your chainrings are tight, your axles are lubed, and the bike <em>still</em> creaks under load—you have successfully isolated the issue to the bottom bracket shell.</p><p>Whether you run a threaded external cup system or a press-fit standard, bearings eventually wear down, contaminants get past the seals, or the cups begin to shift slightly in the frame. At this stage, the fix requires specialized tools (bottom bracket tools, bearing pullers, or presses) to remove the cranks, extract the cups, clean the frame shell, re-grease or re-retaining compound the interface, and install new bearings.</p><h3>The Takeaway</h3><p>Next time your bike starts talking to you on a long ride, don’t panic and don’t immediately order a new bottom bracket. Take a deep breath, go through the seated vs. standing test, isolate the load, and work your way from the simplest fix to the most complex. Your sanity—and your wallet—will thank you.</p><div><hr></div><p><em>What’s the most frustrating phantom noise you’ve ever had to chase down on your bike? Let me know in the comments below, and don’t forget to subscribe for more mechanical deep-dives and technical tips.</em></p><div><hr></div><h3></h3></body></html>
             </div>
             <div class="mt-12 pt-8 border-t border-gray-800 flex items-center gap-4">
                 <div class="w-14 h-14 rounded-full bg-brand-orange/10 border border-brand-orange/30 flex items-center justify-center flex-shrink-0">
@@ -448,24 +298,24 @@ ${bodyHtml}
     <script src="https://chatonbo.com/widget/chatonbo-widget.js" data-bot-id="8c5103fa-8367-42d1-92a8-b60504758ccd"></script>
 
     <script>
-        const POST_SLUG = '${postSlug}';
+        const POST_SLUG = 'Blog/the-anatomy-of-a-creak-a-mechanics';
 
         async function loadComments() {
             try {
-                const res = await fetch(\`/api/comments?post=\${encodeURIComponent(POST_SLUG)}\`);
+                const res = await fetch(`/api/comments?post=${encodeURIComponent(POST_SLUG)}`);
                 const comments = await res.json();
                 const list = document.getElementById('comments-list');
                 const noComments = document.getElementById('no-comments');
                 const countEl = document.getElementById('comment-count');
                 if (!Array.isArray(comments) || comments.length === 0) { noComments.classList.remove('hidden'); return; }
-                countEl.textContent = \`(\${comments.length})\`;
+                countEl.textContent = `(${comments.length})`;
                 list.innerHTML = comments.map(c => {
                     const date = new Date(c.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
                     const initials = c.author_name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
                     const nameHtml = c.author_website
-                        ? \`<a href="\${c.author_website}" target="_blank" rel="noopener noreferrer nofollow" class="text-white font-display font-bold uppercase tracking-wide hover:text-brand-orange transition-colors">\${c.author_name}</a>\`
-                        : \`<span class="text-white font-display font-bold uppercase tracking-wide">\${c.author_name}</span>\`;
-                    return \`<div class="flex gap-4"><div class="w-11 h-11 rounded-full bg-brand-orange/20 border border-brand-orange/30 flex items-center justify-center flex-shrink-0 font-display font-bold text-brand-orange text-sm">\${initials}</div><div class="flex-1 bg-[#0B0B2B] border border-gray-800 rounded-2xl p-5"><div class="flex items-center gap-3 mb-3">\${nameHtml}<span class="text-gray-600 text-xs font-display uppercase tracking-wider">\${date}</span></div><p class="text-gray-300 font-light text-sm leading-relaxed">\${c.body.replace(/\\n/g, '<br>')}</p></div></div>\`;
+                        ? `<a href="${c.author_website}" target="_blank" rel="noopener noreferrer nofollow" class="text-white font-display font-bold uppercase tracking-wide hover:text-brand-orange transition-colors">${c.author_name}</a>`
+                        : `<span class="text-white font-display font-bold uppercase tracking-wide">${c.author_name}</span>`;
+                    return `<div class="flex gap-4"><div class="w-11 h-11 rounded-full bg-brand-orange/20 border border-brand-orange/30 flex items-center justify-center flex-shrink-0 font-display font-bold text-brand-orange text-sm">${initials}</div><div class="flex-1 bg-[#0B0B2B] border border-gray-800 rounded-2xl p-5"><div class="flex items-center gap-3 mb-3">${nameHtml}<span class="text-gray-600 text-xs font-display uppercase tracking-wider">${date}</span></div><p class="text-gray-300 font-light text-sm leading-relaxed">${c.body.replace(/\n/g, '<br>')}</p></div></div>`;
                 }).join('');
             } catch (err) { console.error('Failed to load comments:', err); }
         }
@@ -498,9 +348,9 @@ ${bodyHtml}
             }
         });
 
-        function shareToFacebook() { window.open(\`https://www.facebook.com/sharer/sharer.php?u=\${encodeURIComponent(window.location.href)}\`, '_blank', 'width=600,height=400'); }
-        function shareToX() { window.open(\`https://twitter.com/intent/tweet?url=\${encodeURIComponent(window.location.href)}&text=\${encodeURIComponent(document.title)}\`, '_blank', 'width=600,height=400'); }
-        function shareToWhatsApp() { window.open(\`https://wa.me/?text=\${encodeURIComponent(document.title + ' ' + window.location.href)}\`, '_blank'); }
+        function shareToFacebook() { window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank', 'width=600,height=400'); }
+        function shareToX() { window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(document.title)}`, '_blank', 'width=600,height=400'); }
+        function shareToWhatsApp() { window.open(`https://wa.me/?text=${encodeURIComponent(document.title + ' ' + window.location.href)}`, '_blank'); }
         async function copyLink(btn) {
             try {
                 await navigator.clipboard.writeText(window.location.href);
@@ -514,170 +364,4 @@ ${bodyHtml}
         loadComments();
     </script>
 </body>
-</html>`;
-}
-
-// ── Blog card for blog.html ───────────────────────────────────────────────────
-
-function buildBlogCard({ title, slug, excerpt, dateRaw, category }) {
-  const dispDate = displayDate(dateRaw);
-  const titleEsc = escHtml(title);
-  const excerptEsc = escHtml(excerpt).substring(0, 160);
-  return `
-                <!-- Post: ${titleEsc} -->
-                <article class="bg-[#0B0B2B] border border-gray-800 rounded-2xl overflow-hidden hover:border-brand-orange/40 transition-all duration-300 group flex flex-col">
-                    <a href="Blog/${slug}.html" class="block h-52 relative overflow-hidden">
-                        <img src="images/hero_gravel_realistic.png" alt="${titleEsc}" class="w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500" />
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                    </a>
-                    <div class="p-6 flex flex-col flex-grow">
-                        <div class="flex flex-wrap items-center gap-3 mb-3">
-                            <span class="bg-brand-orange/10 text-brand-orange font-display font-bold text-xs uppercase tracking-widest py-1 px-3 rounded-full border border-brand-orange/20">${escHtml(category)}</span>
-                            <span class="text-gray-600 text-sm font-display uppercase tracking-wider">${dispDate}</span>
-                        </div>
-                        <h2 class="font-display font-bold text-3xl text-white uppercase tracking-tight leading-tight mb-3 group-hover:text-brand-orange transition-colors">
-                            <a href="Blog/${slug}.html">${titleEsc}</a>
-                        </h2>
-                        <p class="text-gray-400 font-light text-sm leading-relaxed mb-6 flex-grow">${excerptEsc}</p>
-                        <a href="Blog/${slug}.html" class="inline-flex items-center gap-2 text-brand-orange font-display font-bold uppercase tracking-wider text-sm hover:gap-3 transition-all">
-                            Read More <i class="fa-solid fa-arrow-right text-xs"></i>
-                        </a>
-                    </div>
-                </article>`;
-}
-
-// ── Update blog.html ──────────────────────────────────────────────────────────
-
-function updateBlogIndex(newCards, totalPosts) {
-  const blogPath = path.join(ROOT, 'blog.html');
-  let html = fs.readFileSync(blogPath, 'utf8');
-
-  if (!html.includes('<!-- IMPORT_END -->')) {
-    console.warn('\n  [WARN] blog.html missing <!-- IMPORT_END --> marker.');
-    console.log('  Add these cards manually to the grid in blog.html:\n');
-    newCards.forEach(c => console.log(c));
-    return;
-  }
-
-  html = html.replace('<!-- IMPORT_END -->', newCards.join('\n') + '\n            <!-- IMPORT_END -->');
-  html = html.replace(/\d+ Posts? Published/, `${totalPosts} Post${totalPosts !== 1 ? 's' : ''} Published`);
-  fs.writeFileSync(blogPath, html);
-  console.log(`  blog.html updated (${totalPosts} posts total)`);
-}
-
-// ── Update sitemap.xml ───────────────────────────────────────────────────────
-
-function updateSitemap(posts) {
-  const sitemapPath = path.join(ROOT, 'sitemap.xml');
-  let sitemap = fs.readFileSync(sitemapPath, 'utf8');
-  const today = new Date().toISOString().split('T')[0];
-
-  const entries = posts
-    .filter(({ slug }) => !sitemap.includes(`Blog/${slug}.html`))
-    .map(({ slug, dateRaw }) => `  <url>
-    <loc>https://weeecycle.net/Blog/${slug}.html</loc>
-    <lastmod>${dateRaw ? isoDate(dateRaw) : today}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>`);
-
-  if (entries.length) {
-    sitemap = sitemap.replace('</urlset>', entries.join('\n') + '\n</urlset>');
-    fs.writeFileSync(sitemapPath, sitemap);
-    console.log(`  sitemap.xml updated (+${entries.length} URLs)`);
-  }
-}
-
-// ── Main ─────────────────────────────────────────────────────────────────────
-
-const exportDir = process.argv[2];
-if (!exportDir) {
-  console.log('\nUsage:  node scripts/import-substack.js <substack-export-folder>');
-  console.log('Example: node scripts/import-substack.js ~/Downloads/substack_export\n');
-  process.exit(1);
-}
-
-const postsDir  = path.join(exportDir, 'posts');
-const csvPath   = path.join(exportDir, 'posts.csv');
-
-if (!fs.existsSync(postsDir)) {
-  console.error(`\nCould not find posts/ folder inside: ${exportDir}`);
-  process.exit(1);
-}
-
-// Load metadata from posts.csv
-const meta = fs.existsSync(csvPath) ? loadPostsMeta(csvPath) : {};
-if (!Object.keys(meta).length) {
-  console.warn('  [WARN] posts.csv not found — titles and dates will be extracted from HTML only');
-}
-
-const htmlFiles = fs.readdirSync(postsDir)
-  .filter(f => f.endsWith('.html'))
-  .sort();
-
-console.log(`\nFound ${htmlFiles.length} HTML post(s) in ${postsDir}\n`);
-
-const imported = [];
-const cards    = [];
-let   skipped  = 0;
-
-for (const file of htmlFiles) {
-  // Filename: "182864584.cycling-for-beginners-over-50-5-steps.html"
-  const basename = path.basename(file, '.html');          // "182864584.cycling-for-..."
-  const numId    = basename.split('.')[0];                 // "182864584"
-  const fileSlug = basename.slice(numId.length + 1);      // "cycling-for-..."
-
-  // Look up metadata from CSV (match by full basename or numeric ID)
-  const csvMeta  = meta[basename] || meta[numId] || {};
-  const title    = csvMeta.title  || '';
-  const subtitle = csvMeta.subtitle || '';
-  const dateRaw  = csvMeta.date   || new Date().toISOString();
-
-  // Parse HTML body
-  const html     = fs.readFileSync(path.join(postsDir, file), 'utf8');
-  const parsed   = parsePost(html, title || fileSlug.replace(/-/g, ' '));
-  const finalTitle = csvMeta.title || parsed.title;
-  const slug     = fileSlug || slugify(finalTitle);
-  const category = 'Blog Post';
-
-  // Skip if already exists
-  const outPath = path.join(BLOG_DIR, `${slug}.html`);
-  if (fs.existsSync(outPath)) {
-    console.log(`  [SKIP] Blog/${slug}.html — already exists`);
-    skipped++;
-    continue;
-  }
-
-  // Build and write post page
-  const pageHtml = buildPostPage({
-    title: finalTitle,
-    subtitle,
-    dateRaw,
-    bodyHtml: parsed.bodyHtml,
-    bodyText: parsed.bodyText,
-    slug,
-    category,
-  });
-  fs.writeFileSync(outPath, pageHtml);
-
-  // Build blog card
-  const excerpt = (subtitle || parsed.bodyText.replace(/\s+/g, ' ').substring(0, 150)).trim() + '…';
-  cards.push(buildBlogCard({ title: finalTitle, slug, excerpt, dateRaw, category }));
-  imported.push({ title: finalTitle, slug, dateRaw });
-
-  const rt = readTime(parsed.bodyText);
-  console.log(`  [OK]  Blog/${slug}.html  "${finalTitle}"  (${rt})`);
-}
-
-if (imported.length) {
-  console.log('');
-  const totalPosts = fs.readdirSync(BLOG_DIR).filter(f => f.endsWith('.html')).length;
-  updateBlogIndex(cards, totalPosts);
-  updateSitemap(imported);
-  console.log(`\nDone! Imported ${imported.length} post(s), skipped ${skipped}.`);
-  console.log('\nNext steps:');
-  console.log('  1. Review the pages in Blog/ — check images and formatting');
-  console.log('  2. git add Blog/ blog.html sitemap.xml && git commit -m "feat: import Substack posts" && git push');
-} else {
-  console.log(`\nNothing new to import (${skipped} already existed).`);
-}
+</html>
