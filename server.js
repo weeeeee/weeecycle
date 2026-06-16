@@ -1,3 +1,10 @@
+process.on('uncaughtException', (err) => {
+    console.error('UNCAUGHT EXCEPTION:', err.message, err.stack);
+});
+process.on('unhandledRejection', (reason) => {
+    console.error('UNHANDLED REJECTION:', reason);
+});
+
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
@@ -60,6 +67,9 @@ function requireMechanicAuth(req, res, next) {
     }
     next();
 }
+
+// Health check (public, no auth)
+app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
 
 // Mount protected /tracker route
 app.use('/tracker', requireMechanicAuth, express.static(path.join(__dirname, 'tracker')));
