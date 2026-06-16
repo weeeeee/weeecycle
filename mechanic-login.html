@@ -150,7 +150,7 @@
                     btnText.textContent = 'Success! Redirecting...';
                     window.location.href = data.redirect;
                 } else {
-                    throw new Error(data.error || 'Authentication failed.');
+                    throw new Error(data.error || data.message || `Server returned HTTP ${res.status} — check Railway logs.`);
                 }
             } catch (err) {
                 errorBanner.textContent = err.message;

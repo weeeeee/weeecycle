@@ -92,10 +92,14 @@ app.post('/api/mechanic-logout', (req, res) => {
 });
 
 // SQLite Workshop Database Setup (Permanent Server-Side Persistence)
-const BetterSQLite = require('better-sqlite3');
+let BetterSQLite;
+try { BetterSQLite = require('better-sqlite3'); }
+catch (err) { console.error('FATAL: better-sqlite3 failed to load:', err.message); }
+
 const dbPath = process.env.DB_PATH || path.join(__dirname, 'weeecycle-workshop.db');
 let workshopDb;
 try {
+    if (!BetterSQLite) throw new Error('better-sqlite3 not loaded');
     workshopDb = new BetterSQLite(dbPath);
     workshopDb.exec(`
         CREATE TABLE IF NOT EXISTS customers (
