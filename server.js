@@ -34,6 +34,14 @@ function generateMechanicToken(username) {
     return hmac.digest('hex');
 }
 
+// Helper to generate HMAC token for comment moderation one-click links
+function generateCommentToken(commentId, action) {
+    const secret = process.env.SESSION_SECRET || 'fallback_secret_key_2025';
+    const hmac = crypto.createHmac('sha256', secret);
+    hmac.update(`comment:${commentId}:${action}`);
+    return hmac.digest('hex');
+}
+
 // Authentication Middleware for Shop Mechanic (/tracker)
 function requireMechanicAuth(req, res, next) {
     const token = req.cookies.mechanic_token || req.headers.authorization?.split(' ')[1];
@@ -147,6 +155,17 @@ try {
             seatTubeAngle TEXT, bbHeight TEXT, bbDrop TEXT,
             chainstay TEXT, wheelbase TEXT, updatedAt TEXT
         );
+        CREATE TABLE IF NOT EXISTS blog_comments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            post_slug TEXT NOT NULL,
+            author_name TEXT NOT NULL,
+            author_website TEXT,
+            body TEXT NOT NULL,
+            status TEXT DEFAULT 'pending',
+            ip TEXT,
+            created_at TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_blog_comments_slug_status ON blog_comments(post_slug, status);
     `);
     // Safe migration: add columns that may not exist in older db files
     for (const sql of [
@@ -573,6 +592,109 @@ app.get('/api/public/status', (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// ─── Blog Comments ─────────────────────────────────────────────────────────────
+
+// GET /api/comments?post=slug — public, returns approved comments
+app.get('/api/comments', (req, res) => {
+    const { post } = req.query;
+    if (!post) return res.status(400).json({ error: 'post slug required' });
+    try {
+        const rows = workshopDb.prepare(
+            `SELECT id, author_name, author_website, body, created_at FROM blog_comments WHERE post_slug=? AND status='approved' ORDER BY created_at ASC`
+        ).all(post.trim());
+        res.json(rows);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// POST /api/comments — public, submit a new comment (goes to pending)
+app.post('/api/comments', (req, res) => {
+    const { post_slug, author_name, author_website, body, hp } = req.body;
+
+    // Honeypot — bots fill this hidden field
+    if (hp && hp.trim() !== '') return res.json({ success: true });
+
+    if (!post_slug || !author_name?.trim() || !body?.trim()) {
+        return res.status(400).json({ error: 'post_slug, author_name, and body are required.' });
+    }
+    if (author_name.length > 100 || body.length > 5000) {
+        return res.status(400).json({ error: 'Input too long.' });
+    }
+
+    const now = new Date().toISOString();
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
+
+    try {
+        const info = workshopDb.prepare(
+            `INSERT INTO blog_comments (post_slug, author_name, author_website, body, status, ip, created_at) VALUES (?,?,?,?,?,?,?)`
+        ).run(post_slug.trim(), author_name.trim(), author_website?.trim() || null, body.trim(), 'pending', ip, now);
+
+        const commentId = info.lastInsertRowid;
+
+        if (transporter) {
+            const approveToken = generateCommentToken(commentId, 'approve');
+            const deleteToken = generateCommentToken(commentId, 'delete');
+            const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+            const host = req.headers.host || 'weeecycle.net';
+            const approveUrl = `${proto}://${host}/api/admin/comments/${commentId}/approve?token=${approveToken}`;
+            const deleteUrl = `${proto}://${host}/api/admin/comments/${commentId}/delete?token=${deleteToken}`;
+
+            transporter.sendMail({
+                from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
+                to: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
+                subject: `New Comment on "${post_slug}" — Weeecycle`,
+                html: `
+                    <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+                        <div style="background:#FF8000;padding:20px;border-radius:8px 8px 0 0;">
+                            <h2 style="color:#fff;margin:0;font-size:18px;">New Blog Comment</h2>
+                        </div>
+                        <div style="background:#fff;padding:24px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px;">
+                            <p style="margin:0 0 8px 0;"><strong>Post:</strong> ${post_slug}</p>
+                            <p style="margin:0 0 8px 0;"><strong>From:</strong> ${author_name}${author_website ? ` — <a href="${author_website}">${author_website}</a>` : ''}</p>
+                            <blockquote style="border-left:4px solid #FF8000;margin:12px 0;padding:10px 16px;background:#f8fafc;border-radius:0 4px 4px 0;color:#374151;">${body.replace(/\n/g, '<br>')}</blockquote>
+                            <div style="margin-top:20px;">
+                                <a href="${approveUrl}" style="background:#16a34a;color:#fff;padding:10px 22px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block;margin-right:10px;">✓ Approve</a>
+                                <a href="${deleteUrl}" style="background:#dc2626;color:#fff;padding:10px 22px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block;">✗ Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                `
+            }, (err) => { if (err) console.error('Comment notification email failed:', err); });
+        }
+
+        res.json({ success: true, pending: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// GET /api/admin/comments/:id/approve?token=X — one-click approve from email
+app.get('/api/admin/comments/:id/approve', (req, res) => {
+    const expected = generateCommentToken(req.params.id, 'approve');
+    if (req.query.token !== expected) return res.status(403).send('<p>Invalid or expired link.</p>');
+    try {
+        workshopDb.prepare(`UPDATE blog_comments SET status='approved' WHERE id=?`).run(req.params.id);
+        res.send('<p style="font-family:sans-serif;padding:20px;">Comment approved! <a href="/">Back to site</a></p>');
+    } catch (err) { res.status(500).send('<p>Error: ' + err.message + '</p>'); }
+});
+
+// GET /api/admin/comments/:id/delete?token=X — one-click delete from email
+app.get('/api/admin/comments/:id/delete', (req, res) => {
+    const expected = generateCommentToken(req.params.id, 'delete');
+    if (req.query.token !== expected) return res.status(403).send('<p>Invalid or expired link.</p>');
+    try {
+        workshopDb.prepare(`DELETE FROM blog_comments WHERE id=?`).run(req.params.id);
+        res.send('<p style="font-family:sans-serif;padding:20px;">Comment deleted. <a href="/">Back to site</a></p>');
+    } catch (err) { res.status(500).send('<p>Error: ' + err.message + '</p>'); }
+});
+
+// GET /api/admin/comments — list all comments (mechanic auth)
+app.get('/api/admin/comments', requireMechanicAuth, (req, res) => {
+    try {
+        const rows = workshopDb.prepare(
+            `SELECT * FROM blog_comments ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'approved' THEN 1 ELSE 2 END, created_at DESC`
+        ).all();
+        res.json(rows);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // Serve static files from root (for public site assets)
 app.use(express.static(path.join(__dirname, '/')));
 
@@ -680,7 +802,13 @@ app.post('/api/send-build-pdf', requireMechanicAuth, async (req, res) => {
         });
 
         // --- PDF STYLING & CONTENT ---
-        const primaryColor = '#D97706'; // Brand Orange / Amber
+        const primaryColor = '#D97706';
+        const newPage = (x = 50) => {
+            doc.addPage();
+            doc.rect(0, 0, doc.page.width, 16).fill(primaryColor);
+            doc.x = x;
+            doc.y = 50;
+        };
         const textColor = '#1E293B';
         const mutedColor = '#64748B';
         const lineItemBg = '#F8FAFC';
@@ -732,10 +860,7 @@ app.post('/api/send-build-pdf', requireMechanicAuth, async (req, res) => {
             for (const comp of validComponents) {
                 // Check page break
                 if (doc.y > doc.page.height - 180) {
-                    doc.addPage();
-                    doc.rect(0, 0, doc.page.width, 16).fill(primaryColor);
-                    doc.x = 50;
-                    doc.y = 50;
+                    newPage();
                     doc.font('Helvetica-Bold').fontSize(14).fillColor(primaryColor).text('COMPONENT SPECIFICATIONS (CONT.)');
                     doc.moveDown(1);
                 }
@@ -781,10 +906,7 @@ app.post('/api/send-build-pdf', requireMechanicAuth, async (req, res) => {
                                 const renderedH = img.height * scale;
 
                                 if (doc.y + renderedH > doc.page.height - 50) {
-                                    doc.addPage();
-                                    doc.rect(0, 0, doc.page.width, 16).fill(primaryColor);
-                                    doc.x = 60;
-                                    doc.y = 50;
+                                    newPage(60);
                                 }
 
                                 doc.image(img, doc.x, doc.y, { width: renderedW, height: renderedH });
@@ -805,10 +927,7 @@ app.post('/api/send-build-pdf', requireMechanicAuth, async (req, res) => {
         const validExtras = extras.filter(e => e.name && e.name.trim() !== '');
         if (validExtras.length > 0) {
             if (doc.y > doc.page.height - 180) {
-                doc.addPage();
-                doc.rect(0, 0, doc.page.width, 16).fill(primaryColor);
-                doc.x = 50;
-                doc.y = 50;
+                newPage();
             }
 
             doc.font('Helvetica-Bold').fontSize(18).fillColor(primaryColor).text('EXTRAS & ACCESSORIES');
@@ -818,10 +937,7 @@ app.post('/api/send-build-pdf', requireMechanicAuth, async (req, res) => {
 
             for (const extra of validExtras) {
                 if (doc.y > doc.page.height - 150) {
-                    doc.addPage();
-                    doc.rect(0, 0, doc.page.width, 16).fill(primaryColor);
-                    doc.x = 50;
-                    doc.y = 50;
+                    newPage();
                 }
 
                 const currentY = doc.y;
@@ -855,10 +971,7 @@ app.post('/api/send-build-pdf', requireMechanicAuth, async (req, res) => {
                                 const renderedH = img.height * scale;
 
                                 if (doc.y + renderedH > doc.page.height - 50) {
-                                    doc.addPage();
-                                    doc.rect(0, 0, doc.page.width, 16).fill(primaryColor);
-                                    doc.x = 60;
-                                    doc.y = 50;
+                                    newPage(60);
                                 }
 
                                 doc.image(img, doc.x, doc.y, { width: renderedW, height: renderedH });
@@ -889,39 +1002,26 @@ app.post('/api/send-build-pdf', requireMechanicAuth, async (req, res) => {
 
 // Settings DB helpers
 function getSetting(key) {
-    try {
-        const row = workshopDb.prepare('SELECT value FROM settings WHERE key=?').get(key);
-        return Promise.resolve(row ? row.value : null);
-    } catch (err) { return Promise.reject(err); }
+    const row = workshopDb.prepare('SELECT value FROM settings WHERE key=?').get(key);
+    return row ? row.value : null;
 }
 
 function saveSetting(key, value) {
-    try {
-        workshopDb.prepare('INSERT INTO settings (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(key, value);
-        return Promise.resolve();
-    } catch (err) { return Promise.reject(err); }
+    workshopDb.prepare('INSERT INTO settings (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(key, value);
 }
 
 function deleteSetting(key) {
-    try {
-        workshopDb.prepare('DELETE FROM settings WHERE key=?').run(key);
-        return Promise.resolve();
-    } catch (err) { return Promise.reject(err); }
+    workshopDb.prepare('DELETE FROM settings WHERE key=?').run(key);
 }
 
-async function getStripeKeys() {
-    let secretKey = null;
-    let webhookSecret = null;
-    try {
-        secretKey = await getSetting('stripe_secret_key');
-        webhookSecret = await getSetting('stripe_webhook_secret');
-    } catch (err) {
-        console.error('Error fetching settings from database:', err);
-    }
-    
-    if (!secretKey) secretKey = process.env.STRIPE_SECRET_KEY;
-    if (!webhookSecret) webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+function upsertOrDeleteSetting(key, value) {
+    if (value === '') deleteSetting(key);
+    else saveSetting(key, value);
+}
 
+function getStripeKeys() {
+    const secretKey = getSetting('stripe_secret_key') || process.env.STRIPE_SECRET_KEY;
+    const webhookSecret = getSetting('stripe_webhook_secret') || process.env.STRIPE_WEBHOOK_SECRET;
     return { secretKey, webhookSecret };
 }
 
@@ -932,9 +1032,9 @@ function maskKey(key) {
 }
 
 // GET Stripe Settings
-app.get('/api/settings/stripe', requireMechanicAuth, async (req, res) => {
+app.get('/api/settings/stripe', requireMechanicAuth, (req, res) => {
     try {
-        const { secretKey, webhookSecret } = await getStripeKeys();
+        const { secretKey, webhookSecret } = getStripeKeys();
         const host = req.headers.host || 'localhost:3000';
         const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
         const webhookUrl = `${protocol}://${host}/api/webhooks/stripe`;
@@ -958,7 +1058,7 @@ app.post('/api/settings/stripe', requireMechanicAuth, async (req, res) => {
     const { stripeSecretKey, stripeWebhookSecret } = req.body;
 
     try {
-        const currentKeys = await getStripeKeys();
+        const currentKeys = getStripeKeys();
 
         // 1. Process Stripe Secret Key
         let targetSecretKey = stripeSecretKey;
@@ -991,21 +1091,8 @@ app.post('/api/settings/stripe', requireMechanicAuth, async (req, res) => {
         }
 
         // 4. Save to Database
-        if (targetSecretKey !== undefined) {
-            if (targetSecretKey === '') {
-                await deleteSetting('stripe_secret_key');
-            } else {
-                await saveSetting('stripe_secret_key', targetSecretKey);
-            }
-        }
-
-        if (targetWebhookSecret !== undefined) {
-            if (targetWebhookSecret === '') {
-                await deleteSetting('stripe_webhook_secret');
-            } else {
-                await saveSetting('stripe_webhook_secret', targetWebhookSecret);
-            }
-        }
+        if (targetSecretKey !== undefined) upsertOrDeleteSetting('stripe_secret_key', targetSecretKey);
+        if (targetWebhookSecret !== undefined) upsertOrDeleteSetting('stripe_webhook_secret', targetWebhookSecret);
 
         res.json({ success: true, message: 'Stripe settings saved and verified successfully!' });
     } catch (err) {
@@ -1026,7 +1113,7 @@ app.post('/api/invoices/:id/send-stripe', requireMechanicAuth, async (req, res) 
         if (!customer.email) return res.status(400).json({ error: 'Customer must have an email address to send a Stripe invoice.' });
 
         const items = invoice.items ? JSON.parse(invoice.items) : [];
-        const { secretKey: stripeSecret } = await getStripeKeys();
+        const { secretKey: stripeSecret } = getStripeKeys();
 
         // Fallback to Simulator Mode if secret is not configured
         const isMockMode = !stripeSecret || stripeSecret.includes('placeholder') || stripeSecret === '';
@@ -1146,38 +1233,38 @@ app.post('/api/invoices/:id/send-stripe', requireMechanicAuth, async (req, res) 
                         auto_advance: true
                     });
 
-                    // 3. Create Stripe Line items
-                    for (const item of items) {
+                    // 3. Resolve KY tax rate once if any item is taxable
+                    let kyTaxRateId = null;
+                    if (items.some(i => i.taxable)) {
+                        const rates = await stripe.taxRates.list({ limit: 100 });
+                        let kyTaxRate = rates.data.find(r => r.percentage === 6 && r.active);
+                        if (!kyTaxRate) {
+                            kyTaxRate = await stripe.taxRates.create({
+                                display_name: 'KY Sales Tax',
+                                description: 'Kentucky Sales Tax',
+                                jurisdiction: 'US - KY',
+                                percentage: 6,
+                                inclusive: false,
+                            });
+                        }
+                        kyTaxRateId = kyTaxRate.id;
+                    }
+
+                    // 4. Create Stripe Line items in parallel
+                    await Promise.all(items.map(item => {
                         const qty = item.quantity || 1;
                         const priceCents = Math.round((item.price || 0) * 100);
-                        
-                        let taxRates = [];
-                        if (item.taxable) {
-                            const rates = await stripe.taxRates.list({ limit: 100 });
-                            let kyTaxRate = rates.data.find(r => r.percentage === 6 && r.active);
-                            if (!kyTaxRate) {
-                                kyTaxRate = await stripe.taxRates.create({
-                                    display_name: 'KY Sales Tax',
-                                    description: 'Kentucky Sales Tax',
-                                    jurisdiction: 'US - KY',
-                                    percentage: 6,
-                                    inclusive: false,
-                                });
-                            }
-                            taxRates = [kyTaxRate.id];
-                        }
-
-                        await stripe.invoiceItems.create({
+                        return stripe.invoiceItems.create({
                             customer: stripeCustomerId,
                             invoice: stripeInvoice.id,
                             amount: priceCents * qty,
                             currency: 'usd',
                             description: item.description,
-                            tax_rates: taxRates
+                            tax_rates: item.taxable && kyTaxRateId ? [kyTaxRateId] : []
                         });
-                    }
+                    }));
 
-                    // 4. Send the Stripe Invoice
+                    // 5. Send the Stripe Invoice
                     const finalizedInvoice = await stripe.invoices.sendInvoice(stripeInvoice.id);
 
                     const now = new Date().toISOString();
@@ -1212,7 +1299,7 @@ app.post('/api/public/mock-stripe-pay', async (req, res) => {
 // Real Stripe Webhook Handler
 app.post('/api/webhooks/stripe', async (req, res) => {
     const sig = req.headers['stripe-signature'];
-    const { secretKey: stripeSecret, webhookSecret } = await getStripeKeys();
+    const { secretKey: stripeSecret, webhookSecret } = getStripeKeys();
 
     if (!stripeSecret) {
         return res.status(400).send('Stripe not configured.');
