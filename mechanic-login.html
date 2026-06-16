@@ -146,7 +146,7 @@
 
                 const data = await res.json();
                 if (res.ok && data.success) {
-                    sessionStorage.setItem('mechanic_token', data.token);
+                    localStorage.setItem('mechanic_token', data.token);
                     btnText.textContent = 'Success! Redirecting...';
                     window.location.href = data.redirect;
                 } else {
