@@ -143,7 +143,7 @@
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
                     href="#handbook">Handbook</a>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
-                    href="blog.html">Blog</a>
+                    href="https://weeecycle.substack.com" target="_blank" rel="noopener noreferrer">Substack</a>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
                     href="customer-portal.html">Repair Status</a>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
@@ -179,7 +179,7 @@
                     href="#handbook"
                     onclick="this.closest('#mobile-menu').classList.add('hidden')">Handbook</a>
                 <a class="text-xl font-display uppercase tracking-wide text-gray-200"
-                    href="blog.html"
+                    href="https://weeecycle.substack.com" target="_blank" rel="noopener noreferrer"
                     onclick="this.closest('#mobile-menu').classList.add('hidden')">Blog</a>
                 <a class="text-xl font-display uppercase tracking-wide text-gray-200"
                     href="customer-portal.html"
@@ -354,38 +354,51 @@
         </div>
     </section>
 
-    <!-- From the Workshop -->
+    <!-- Substack + Reviews -->
     <section class="py-20 bg-brand-dark relative border-t border-gray-900" id="workshop-content">
         <div class="container mx-auto px-4 max-w-5xl">
             <div class="text-center mb-12">
-                <span class="text-brand-orange uppercase font-display font-bold tracking-widest text-lg">From the Workshop</span>
-                <h2 class="font-display font-bold text-5xl text-white uppercase tracking-wide mt-1">Blog &amp; Reviews</h2>
-                <p class="text-gray-400 text-lg font-light mt-2">Honest takes, build diaries, and shop-tested gear — all right here.</p>
+                <span class="text-brand-orange uppercase font-display font-bold tracking-widest text-lg">Read &amp; Ride</span>
+                <h2 class="font-display font-bold text-5xl text-white uppercase tracking-wide mt-1">Substack &amp; Reviews</h2>
+                <p class="text-gray-400 text-lg font-light mt-2">Cycling content, ride reports, gear reviews, and no-nonsense takes — delivered free.</p>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Blog -->
-                <a href="blog.html" class="group bg-[#0B0B2B] border border-gray-800 hover:border-brand-orange/50 rounded-2xl p-8 flex flex-col transition-all duration-300 shadow-xl">
-                    <div class="w-14 h-14 bg-brand-orange/10 border border-brand-orange/20 rounded-xl flex items-center justify-center mb-5 group-hover:bg-brand-orange/20 transition-colors">
-                        <i class="fa-solid fa-pen-nib text-brand-orange text-2xl"></i>
+
+            <!-- Prominent Substack CTA -->
+            <a href="https://weeecycle.substack.com" target="_blank" rel="noopener noreferrer"
+                class="group block bg-gradient-to-r from-[#0B0B2B] to-brand-dark border border-brand-orange/30 hover:border-brand-orange rounded-2xl p-8 md:p-10 mb-6 transition-all duration-300 shadow-xl hover:shadow-orange-900/20 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-orange to-orange-300"></div>
+                <div class="flex flex-col md:flex-row md:items-center gap-6">
+                    <div class="w-16 h-16 bg-brand-orange/20 border border-brand-orange/40 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:bg-brand-orange/30 transition-colors">
+                        <i class="fa-solid fa-newspaper text-brand-orange text-3xl"></i>
                     </div>
-                    <h3 class="font-display font-bold text-3xl text-white uppercase tracking-wide mb-2">The Blog</h3>
-                    <p class="text-gray-400 text-sm font-light leading-relaxed flex-grow mb-6">Workshop notes, ride reports, tech deep-dives, and everything that doesn't fit in a caption.</p>
-                    <span class="inline-flex items-center gap-2 text-brand-orange font-display font-bold uppercase tracking-wider text-sm group-hover:gap-3 transition-all">
-                        Read the Blog <i class="fa-solid fa-arrow-right text-xs"></i>
-                    </span>
-                </a>
-                <!-- Reviews -->
-                <a href="reviews.html" class="group bg-[#0B0B2B] border border-gray-800 hover:border-brand-orange/50 rounded-2xl p-8 flex flex-col transition-all duration-300 shadow-xl">
-                    <div class="w-14 h-14 bg-brand-orange/10 border border-brand-orange/20 rounded-xl flex items-center justify-center mb-5 group-hover:bg-brand-orange/20 transition-colors">
-                        <i class="fa-solid fa-star text-brand-orange text-2xl"></i>
+                    <div class="flex-grow">
+                        <div class="flex flex-wrap items-center gap-3 mb-2">
+                            <h3 class="font-display font-bold text-4xl text-white uppercase tracking-wide">The Weeecycle Blog</h3>
+                            <span class="bg-brand-orange/10 text-brand-orange font-display font-bold text-xs uppercase tracking-widest py-1 px-3 rounded-full border border-brand-orange/30">On Substack</span>
+                        </div>
+                        <p class="text-gray-400 font-light leading-relaxed max-w-2xl">Training tips, build diaries, ride reports, gear deep-dives, and real talk from behind the workstand — published free on Substack.</p>
                     </div>
-                    <h3 class="font-display font-bold text-3xl text-white uppercase tracking-wide mb-2">Reviews</h3>
-                    <p class="text-gray-400 text-sm font-light leading-relaxed flex-grow mb-6">Shop-tested, ride-proven gear reviews. No sponsored fluff — just honest takes on what actually works.</p>
-                    <span class="inline-flex items-center gap-2 text-brand-orange font-display font-bold uppercase tracking-wider text-sm group-hover:gap-3 transition-all">
-                        Read Reviews <i class="fa-solid fa-arrow-right text-xs"></i>
-                    </span>
-                </a>
-            </div>
+                    <div class="flex-shrink-0">
+                        <span class="inline-flex items-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase tracking-wider py-3 px-7 rounded-xl transition-all duration-200 text-sm shadow-lg shadow-orange-900/40 group-hover:gap-4">
+                            Read on Substack <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Reviews card -->
+            <a href="reviews.html" class="group bg-[#0B0B2B] border border-gray-800 hover:border-brand-orange/50 rounded-2xl p-8 flex flex-col md:flex-row md:items-center gap-6 transition-all duration-300 shadow-xl">
+                <div class="w-14 h-14 bg-brand-orange/10 border border-brand-orange/20 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-brand-orange/20 transition-colors">
+                    <i class="fa-solid fa-star text-brand-orange text-2xl"></i>
+                </div>
+                <div class="flex-grow">
+                    <h3 class="font-display font-bold text-3xl text-white uppercase tracking-wide mb-1">Customer Reviews</h3>
+                    <p class="text-gray-400 text-sm font-light leading-relaxed">Shop-tested, ride-proven. No sponsored fluff — just honest takes on what actually works.</p>
+                </div>
+                <span class="inline-flex items-center gap-2 text-brand-orange font-display font-bold uppercase tracking-wider text-sm group-hover:gap-3 transition-all flex-shrink-0">
+                    Read Reviews <i class="fa-solid fa-arrow-right text-xs"></i>
+                </span>
+            </a>
         </div>
     </section>
 
