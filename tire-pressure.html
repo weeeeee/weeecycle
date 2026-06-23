@@ -381,6 +381,68 @@
                 </div>
             </div>
 
+            <!-- Tire Category -->
+            <div class="mt-8">
+                <label class="block font-display uppercase tracking-widest text-sm text-gray-400 mb-3">
+                    Tire Category <span class="text-brand-orange normal-case font-body text-xs tracking-normal">(casing construction)</span>
+                </label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                    <label class="tube-card block border border-gray-700 rounded-xl p-4 hover:border-gray-500">
+                        <input type="radio" name="tire-category" value="race" class="mr-2 mt-0.5 float-left" />
+                        <div class="ml-6">
+                            <div class="font-display text-base uppercase tracking-wide text-white">Race / Pure Performance</div>
+                            <div class="text-xs text-gray-400 mt-0.5">120–320+ TPI, ultra-supple folding casing, minimal puncture protection. Deforms at lower pressure — that's the design intent.</div>
+                            <div class="text-xs text-gray-500 italic mt-1">e.g. Continental GP5000, Vittoria Corsa, Pirelli P Zero Race, Specialized S-Works Turbo</div>
+                            <div class="mt-1.5 flex items-center gap-2">
+                                <span class="text-xs bg-orange-900/40 text-brand-orange px-2 py-0.5 rounded-full">−7% PSI</span>
+                                <span class="text-xs text-gray-500">Most supple casing</span>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="tube-card block border border-gray-700 rounded-xl p-4 hover:border-gray-500">
+                        <input type="radio" name="tire-category" value="performance" class="mr-2 mt-0.5 float-left" />
+                        <div class="ml-6">
+                            <div class="font-display text-base uppercase tracking-wide text-white">Performance-Comfort</div>
+                            <div class="text-xs text-gray-400 mt-0.5">60–120 TPI, balanced casing with light puncture protection. Engineered for the speed-comfort sweet spot.</div>
+                            <div class="text-xs text-gray-500 italic mt-1">e.g. GP5000 All Season TR, Vittoria Rubino Pro, Pirelli Cinturato, Schwalbe Pro One</div>
+                            <div class="mt-1.5 flex items-center gap-2">
+                                <span class="text-xs bg-orange-900/40 text-brand-orange px-2 py-0.5 rounded-full">−3% PSI</span>
+                                <span class="text-xs text-gray-500">Best balance of feel &amp; durability</span>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="tube-card block border border-gray-700 rounded-xl p-4 hover:border-gray-500">
+                        <input type="radio" name="tire-category" value="training" checked class="mr-2 mt-0.5 float-left" />
+                        <div class="ml-6">
+                            <div class="font-display text-base uppercase tracking-wide text-white">Training / Endurance</div>
+                            <div class="text-xs text-gray-400 mt-0.5">30–60 TPI, durable casing with moderate puncture protection. Stiffer than race tires — needs baseline pressure to shape the contact patch correctly.</div>
+                            <div class="text-xs text-gray-500 italic mt-1">e.g. Continental GP4 Season, Vittoria Zaffiro Pro, Schwalbe Durano, Michelin Dynamic Classic</div>
+                            <div class="mt-1.5 flex items-center gap-2">
+                                <span class="text-xs bg-gray-800 text-gray-300 px-2 py-0.5 rounded-full">Baseline PSI</span>
+                                <span class="text-xs text-gray-500">Most common training setup</span>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="tube-card block border border-gray-700 rounded-xl p-4 hover:border-gray-500">
+                        <input type="radio" name="tire-category" value="budget" class="mr-2 mt-0.5 float-left" />
+                        <div class="ml-6">
+                            <div class="font-display text-base uppercase tracking-wide text-white">Budget / Heavy-Duty</div>
+                            <div class="text-xs text-gray-400 mt-0.5">&lt;30 TPI, stiff casing with thick puncture belt. Requires more air to achieve proper contact patch shape due to casing rigidity.</div>
+                            <div class="text-xs text-gray-500 italic mt-1">e.g. Continental Ultra Sport III, Vittoria Zaffiro, Kenda, CST commuter tires</div>
+                            <div class="mt-1.5 flex items-center gap-2">
+                                <span class="text-xs bg-blue-900/40 text-blue-400 px-2 py-0.5 rounded-full">+5% PSI</span>
+                                <span class="text-xs text-gray-500">Stiffer casing needs more air</span>
+                            </div>
+                        </div>
+                    </label>
+
+                </div>
+            </div>
+
             <!-- Calculate Button -->
             <div class="mt-10 text-center">
                 <button onclick="calculate()"
@@ -505,7 +567,7 @@
             </div>
             <div class="mt-8 bg-brand-dark/60 border border-gray-800 rounded-xl p-6 text-center">
                 <p class="text-xs text-gray-500 font-body leading-relaxed">
-                    <strong class="text-gray-400">Methodology:</strong> Pressures are calculated using contact-patch theory: front load = <span id="method-front-pct">40%</span> / rear load = <span id="method-rear-pct">60%</span> of total system weight, scaled by tire width using an empirical constant derived from published tire manufacturer data. Tube-type multipliers reflect the compliance characteristics of each material (butyl 1.0×, TPU 0.95×, latex 0.90×, tubeless 0.83×). Results are a starting point — fine-tune ±5 PSI based on feel, surface conditions, and tire manufacturer minimums.
+                    <strong class="text-gray-400">Methodology:</strong> Pressures are calculated using contact-patch theory: front load = <span id="method-front-pct">40%</span> / rear load = <span id="method-rear-pct">60%</span> of total system weight, scaled by tire width using an empirical constant derived from published tire manufacturer data. Tube-type multipliers reflect the compliance characteristics of each material (butyl 1.0×, TPU 0.95×, latex 0.90×, tubeless 0.83×). Tire category multipliers reflect casing stiffness (TPI): race 0.93×, performance-comfort 0.97×, training 1.0×, budget 1.05×. Results are a starting point — fine-tune ±5 PSI based on feel, surface conditions, and tire manufacturer minimums.
                 </p>
             </div>
         </div>
@@ -548,6 +610,13 @@
             tubeless: { factor: 0.83, label: 'Tubeless' },
         };
 
+        const tireConfig = {
+            race:        { factor: 0.93, label: 'Race / Pure Performance', tpi: '120–320+ TPI' },
+            performance: { factor: 0.97, label: 'Performance-Comfort',     tpi: '60–120 TPI' },
+            training:    { factor: 1.00, label: 'Training / Endurance',    tpi: '30–60 TPI' },
+            budget:      { factor: 1.05, label: 'Budget / Heavy-Duty',     tpi: '<30 TPI' },
+        };
+
         const K = 21.5;
 
         function setUnit(unit) {
@@ -583,8 +652,8 @@
             return currentUnit === 'kg' ? val * 2.20462 : val;
         }
 
-        function calcPSI(loadLbs, widthMm, tubeFactor, terrainFactor) {
-            const raw = (loadLbs * K) / widthMm * terrainFactor * tubeFactor;
+        function calcPSI(loadLbs, widthMm, tubeFactor, terrainFactor, tireFactor) {
+            const raw = (loadLbs * K) / widthMm * terrainFactor * tubeFactor * tireFactor;
             return Math.round(raw);
         }
 
@@ -602,8 +671,24 @@
             return `Suggested range: ${low}–${high} PSI`;
         }
 
-        function getTips(tubeType, terrain, frontPSI, rearPSI, frontMm, rearMm) {
+        function getTips(tubeType, terrain, frontPSI, rearPSI, frontMm, rearMm, tireCat) {
             const tips = [];
+
+            if (tireCat === 'race') {
+                tips.push('✔ Race tires are designed to run at these lower pressures — resist the urge to add more air just because it feels soft.');
+                tips.push('✔ The supple casing IS the suspension. Over-inflating a race tire kills the compliance you paid for.');
+            }
+            if (tireCat === 'performance') {
+                tips.push('✔ Performance-comfort tires hit their sweet spot in this pressure range — you\'re unlocking what the casing was engineered to do.');
+                tips.push('✔ If the ride feels harsh, drop 3 PSI front and rear before assuming it\'s the tire — you may still be above the casing\'s ideal zone.');
+            }
+            if (tireCat === 'training') {
+                tips.push('✔ Training tires have a stiffer casing — staying near the calculated pressure prevents the sidewall from folding under hard cornering.');
+            }
+            if (tireCat === 'budget') {
+                tips.push('✔ Budget tires with thick puncture belts need the extra pressure to deform the casing into a proper contact patch shape.');
+                tips.push('ℹ️ If comfort is a priority, upgrading the tire casing (not just going tubeless) will make the biggest single difference to ride quality.');
+            }
 
             if (tubeType === 'tubeless') {
                 tips.push('✔ Check sealant level every 2–3 months — dry sealant won\'t seal punctures.');
@@ -619,6 +704,13 @@
             }
             if (tubeType === 'butyl') {
                 tips.push('✔ Check pressure before every ride — butyl loses 1–3 PSI per day.');
+            }
+
+            if (tireCat === 'race' && tubeType === 'latex') {
+                tips.push('⭐ Race casing + latex tube is one of the fastest road setups possible — you\'re optimizing both casing compliance and tube compliance simultaneously.');
+            }
+            if (tireCat === 'performance' && tubeType === 'tubeless') {
+                tips.push('⭐ Performance-comfort casing + tubeless is the ideal all-around setup — great compliance, sealant protection, and you can run the lowest safe pressure.');
             }
 
             if (terrain === 'gravel') {
@@ -650,6 +742,7 @@
             const frontMm = parseInt(document.getElementById('front-width').value);
             const rearMm = parseInt(document.getElementById('rear-width').value);
             const tubeType = document.querySelector('input[name="tube-type"]:checked').value;
+            const tireCat  = document.querySelector('input[name="tire-category"]:checked').value;
             const errEl = document.getElementById('error-msg');
 
             if (!riderRaw || !bikeRaw || !frontMm || !rearMm) {
@@ -665,19 +758,20 @@
             const totalLbs = riderLbs + bikeLbs;
 
             const terrain = terrainConfig[currentTerrain];
-            const tube = tubeConfig[tubeType];
+            const tube    = tubeConfig[tubeType];
+            const tire    = tireConfig[tireCat];
 
             const frontLoadLbs = totalLbs * terrain.frontPct;
             const rearLoadLbs  = totalLbs * terrain.rearPct;
 
-            const frontPSI = clamp(calcPSI(frontLoadLbs, frontMm, tube.factor, terrain.pressureFactor), 15, 130);
-            const rearPSI  = clamp(calcPSI(rearLoadLbs,  rearMm,  tube.factor, terrain.pressureFactor), 15, 130);
+            const frontPSI = clamp(calcPSI(frontLoadLbs, frontMm, tube.factor, terrain.pressureFactor, tire.factor), 15, 130);
+            const rearPSI  = clamp(calcPSI(rearLoadLbs,  rearMm,  tube.factor, terrain.pressureFactor, tire.factor), 15, 130);
 
             document.getElementById('front-psi').textContent = frontPSI;
             document.getElementById('rear-psi').textContent  = rearPSI;
 
-            document.getElementById('front-width-display').textContent = `${frontMm}mm ${tube.label}`;
-            document.getElementById('rear-width-display').textContent  = `${rearMm}mm ${tube.label}`;
+            document.getElementById('front-width-display').textContent = `${frontMm}mm · ${tube.label} · ${tire.tpi}`;
+            document.getElementById('rear-width-display').textContent  = `${rearMm}mm · ${tube.label} · ${tire.tpi}`;
 
             document.getElementById('front-range').textContent = getRange(frontPSI);
             document.getElementById('rear-range').textContent  = getRange(rearPSI);
@@ -691,7 +785,7 @@
                 ? `${riderRaw} kg rider + ${bikeRaw} kg bike = ${(riderRaw + bikeRaw).toFixed(1)} kg system`
                 : `${riderRaw} lbs rider + ${bikeRaw} lbs bike = ${Math.round(totalLbs)} lbs system`;
             document.getElementById('result-summary').textContent =
-                `${unitStr} · ${terrain.label} · ${tube.label}`;
+                `${unitStr} · ${terrain.label} · ${tube.label} · ${tire.label}`;
 
             setTimeout(() => {
                 const frontPct = gaugePercent(frontPSI, frontMm);
@@ -704,6 +798,13 @@
 
             const tubeFactorPct = Math.round((1 - tube.factor) * 100);
             const terrainFactorPct = Math.round((1 - terrain.pressureFactor) * 100);
+            const tireDelta = tire.factor - 1;
+            const tirePctStr = tireDelta < 0
+                ? `<span class="text-brand-orange">−${Math.round(Math.abs(tireDelta) * 100)}%</span>`
+                : tireDelta > 0
+                    ? `<span class="text-blue-400">+${Math.round(tireDelta * 100)}%</span>`
+                    : `<span class="text-gray-400">0% (baseline)</span>`;
+
             document.getElementById('breakdown-content').innerHTML = `
                 <div class="flex justify-between border-b border-gray-800 pb-1"><span class="text-gray-400">Total system weight</span><span>${Math.round(totalLbs)} lbs (${(totalLbs / 2.20462).toFixed(1)} kg)</span></div>
                 <div class="flex justify-between border-b border-gray-800 pb-1"><span class="text-gray-400">Weight distribution</span><span>Front ${terrain.frontLabel} / Rear ${terrain.rearLabel}</span></div>
@@ -711,9 +812,10 @@
                 <div class="flex justify-between border-b border-gray-800 pb-1"><span class="text-gray-400">Rear load</span><span>${Math.round(rearLoadLbs)} lbs on ${rearMm}mm tire</span></div>
                 ${tubeFactorPct > 0 ? `<div class="flex justify-between border-b border-gray-800 pb-1"><span class="text-gray-400">${tube.label} tube adjustment</span><span class="text-brand-orange">−${tubeFactorPct}%</span></div>` : ''}
                 ${terrainFactorPct > 0 ? `<div class="flex justify-between border-b border-gray-800 pb-1"><span class="text-gray-400">${terrain.label} terrain adjustment</span><span class="text-brand-orange">−${terrainFactorPct}%</span></div>` : ''}
+                <div class="flex justify-between border-b border-gray-800 pb-1"><span class="text-gray-400">${tire.label} casing adjustment</span>${tirePctStr}</div>
             `;
 
-            const tipsHtml = getTips(tubeType, currentTerrain, frontPSI, rearPSI, frontMm, rearMm)
+            const tipsHtml = getTips(tubeType, currentTerrain, frontPSI, rearPSI, frontMm, rearMm, tireCat)
                 .map(t => `<li class="flex gap-2"><span>${t}</span></li>`).join('');
             document.getElementById('tips-list').innerHTML = tipsHtml;
 
