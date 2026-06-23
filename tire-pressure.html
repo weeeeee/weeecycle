@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PXE6HLHC80"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-PXE6HLHC80');
+    </script>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Tire Pressure Calculator | Weeecycle.net</title>
+    <meta name="description"
+        content="Free tire pressure calculator for road and gravel bikes. Enter your weight, bike weight, tire width, and tube type to get the perfect PSI for front and rear tires." />
+    <meta name="keywords"
+        content="tire pressure calculator, bike tire psi, road bike pressure, gravel tire pressure, butyl latex tubeless TPU tube pressure, bicycle tire inflation" />
+    <meta name="author" content="Weeecycle.net" />
+    <link rel="canonical" href="https://weeecycle.net/tire-pressure.html" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://weeecycle.net/tire-pressure.html" />
+    <meta property="og:title" content="Tire Pressure Calculator | Weeecycle.net" />
+    <meta property="og:description"
+        content="Get the perfect tire pressure for your road or gravel bike based on your weight, bike weight, tire width, and tube type." />
+    <meta property="og:image" content="https://weeecycle.net/images/hero_gravel_realistic.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://weeecycle.net/tire-pressure.html" />
+    <meta property="twitter:title" content="Tire Pressure Calculator | Weeecycle.net" />
+    <meta property="twitter:description"
+        content="Get the perfect tire pressure for your road or gravel bike based on your weight, bike weight, tire width, and tube type." />
+    <meta property="twitter:image" content="https://weeecycle.net/images/hero_gravel_realistic.png" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { dark: '#050511', blue: '#0B0B3B', orange: '#FF8000', slate: '#1e293b', light: '#f8fafc' }
+                    },
+                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Roboto Condensed', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050511; }
+        ::-webkit-scrollbar-thumb { background: #FF8000; border-radius: 4px; }
+
+        .tube-card { transition: all 0.2s ease; cursor: pointer; }
+        .tube-card:has(input:checked) {
+            border-color: #FF8000 !important;
+            background-color: rgba(255,128,0,0.08);
+        }
+        .tube-card input { accent-color: #FF8000; }
+
+        .gauge-track { background: linear-gradient(to right, #22c55e 0%, #84cc16 35%, #eab308 60%, #f97316 80%, #ef4444 100%); }
+
+        .result-card {
+            background: linear-gradient(135deg, rgba(11,11,59,0.8) 0%, rgba(5,5,17,0.9) 100%);
+            border: 1px solid rgba(255,128,0,0.3);
+        }
+
+        .input-field {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #f8fafc;
+            transition: border-color 0.2s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #FF8000;
+            background: rgba(255,128,0,0.05);
+        }
+        .input-field::placeholder { color: rgba(255,255,255,0.3); }
+
+        select.input-field option { background: #050511; color: #f8fafc; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up { animation: fadeInUp 0.4s ease forwards; }
+
+        .terrain-btn { transition: all 0.2s; }
+        .terrain-btn.active {
+            background: #FF8000;
+            color: white;
+            border-color: #FF8000;
+        }
+    </style>
+    <link rel="icon" type="image/png" href="images/logo/gradient-bike.png" />
+    <link rel="apple-touch-icon" href="images/logo/gradient-bike.png" />
+    <link rel="manifest" href="/manifest.json" />
+</head>
+
+<body class="bg-brand-dark text-gray-200 font-body antialiased selection:bg-brand-orange selection:text-white pb-20 md:pb-0">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-brand-dark/95 backdrop-blur border-b border-brand-orange/20 shadow-xl transition-all duration-300">
+        <div class="container mx-auto px-4 h-20 flex items-center justify-between">
+            <a class="flex items-center gap-3 group" href="/">
+                <div class="h-12 w-12 relative overflow-hidden flex items-center justify-center">
+                    <img src="images/logo/gradient-bike.png" alt="Weeecycle Icon"
+                        class="h-10 w-auto object-contain drop-shadow-[0_0_5px_rgba(255,128,0,0.5)]" />
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-display font-bold text-2xl tracking-widest text-white leading-none">WEEECYCLE<span
+                            class="text-brand-orange">.NET</span></span>
+                    <span class="font-body text-[10px] text-brand-orange uppercase tracking-[0.2em] leading-none">Recycle the Fun</span>
+                </div>
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="/#services">Services</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="/#handbook">Handbook</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="https://weeecycle.substack.com" target="_blank" rel="noopener noreferrer">Substack</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="customer-portal.html">Repair Status</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="shop.html">Shop</a>
+                <a class="font-display text-lg text-brand-orange font-bold uppercase tracking-wide" href="tire-pressure.html">Tire Calc</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="reviews.html">Reviews</a>
+                <a class="bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase tracking-wider py-2 px-6 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50"
+                    href="/#services">Book Service</a>
+                <div class="flex items-center gap-4 border-l border-gray-700 pl-6 ml-2">
+                    <a href="https://www.instagram.com/weeecycle/" target="_blank"
+                        class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-instagram text-xl"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61584485203543" target="_blank"
+                        class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-facebook text-xl"></i></a>
+                    <a href="https://www.youtube.com/@weeecycle" target="_blank"
+                        class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-youtube text-xl"></i></a>
+                    <a href="https://www.tiktok.com/@weeecycling" target="_blank"
+                        class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-tiktok text-xl"></i></a>
+                </div>
+            </div>
+            <button class="md:hidden text-white hover:text-brand-orange transition"
+                onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                <span class="material-symbols-outlined text-4xl">menu</span>
+            </button>
+        </div>
+        <!-- Mobile Menu -->
+        <div class="hidden md:hidden bg-brand-dark border-t border-brand-orange/20 absolute w-full left-0 shadow-2xl" id="mobile-menu">
+            <div class="flex flex-col p-4 space-y-4">
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition"
+                    href="/#services" onclick="this.closest('#mobile-menu').classList.add('hidden')">Services</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition"
+                    href="/#handbook" onclick="this.closest('#mobile-menu').classList.add('hidden')">Handbook</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200"
+                    href="https://weeecycle.substack.com" target="_blank" rel="noopener noreferrer"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Substack</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200"
+                    href="customer-portal.html" onclick="this.closest('#mobile-menu').classList.add('hidden')">Repair Status</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200"
+                    href="shop.html" onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop</a>
+                <a class="text-xl font-display uppercase tracking-wide text-brand-orange font-bold"
+                    href="tire-pressure.html" onclick="this.closest('#mobile-menu').classList.add('hidden')">Tire Pressure Calc</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200"
+                    href="reviews.html" onclick="this.closest('#mobile-menu').classList.add('hidden')">Reviews</a>
+                <a class="text-brand-orange text-xl font-display font-bold uppercase tracking-wide" href="/#services"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Book Now</a>
+                <div class="flex gap-6 pt-4 border-t border-gray-800">
+                    <a href="https://www.instagram.com/weeecycle/" target="_blank"
+                        class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-instagram text-2xl"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61584485203543" target="_blank"
+                        class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-facebook text-2xl"></i></a>
+                    <a href="https://www.youtube.com/@weeecycle" target="_blank"
+                        class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-youtube text-2xl"></i></a>
+                    <a href="https://www.tiktok.com/@weeecycling" target="_blank"
+                        class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-tiktok text-2xl"></i></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="relative pt-32 pb-12 bg-gradient-to-b from-brand-blue to-brand-dark overflow-hidden">
+        <div class="absolute inset-0 opacity-10" style="background-image: repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(255,128,0,0.4) 40px,rgba(255,128,0,0.4) 41px),repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(255,128,0,0.4) 40px,rgba(255,128,0,0.4) 41px);"></div>
+        <div class="container mx-auto px-4 text-center relative z-10">
+            <div class="inline-flex items-center gap-2 bg-brand-orange/10 border border-brand-orange/30 rounded-full px-5 py-2 mb-6">
+                <span class="material-symbols-outlined text-brand-orange text-sm">tire_repair</span>
+                <span class="font-display text-brand-orange uppercase tracking-widest text-sm">Free Tool</span>
+            </div>
+            <h1 class="font-display font-bold text-5xl md:text-7xl text-white uppercase tracking-wide leading-none mb-4">
+                Tire Pressure<br><span class="text-brand-orange">Calculator</span>
+            </h1>
+            <p class="font-body text-lg text-gray-400 max-w-2xl mx-auto">
+                Enter your rider weight, bike weight, tire widths, and tube type — we'll calculate the optimal PSI for your front and rear tires based on contact patch science.
+            </p>
+        </div>
+    </section>
+
+    <!-- Calculator -->
+    <section class="py-12">
+        <div class="container mx-auto px-4 max-w-4xl">
+
+            <!-- Unit Toggle -->
+            <div class="flex justify-center mb-8">
+                <div class="inline-flex bg-brand-slate/40 border border-gray-700 rounded-lg p-1 gap-1">
+                    <button id="btn-lbs" onclick="setUnit('lbs')"
+                        class="font-display uppercase tracking-widest text-sm px-6 py-2 rounded-md transition bg-brand-orange text-white">
+                        lbs
+                    </button>
+                    <button id="btn-kg" onclick="setUnit('kg')"
+                        class="font-display uppercase tracking-widest text-sm px-6 py-2 rounded-md transition text-gray-400 hover:text-white">
+                        kg
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+
+                <!-- Left Column: Inputs -->
+                <div class="space-y-6">
+
+                    <!-- Rider Weight -->
+                    <div>
+                        <label class="block font-display uppercase tracking-widest text-sm text-gray-400 mb-2">
+                            Rider Weight <span id="unit-label-rider" class="text-brand-orange">(lbs)</span>
+                        </label>
+                        <input id="rider-weight" type="number" min="50" max="400" placeholder="e.g. 165"
+                            class="input-field w-full rounded-lg px-4 py-3 font-body text-lg" />
+                    </div>
+
+                    <!-- Bike + Accessories Weight -->
+                    <div>
+                        <label class="block font-display uppercase tracking-widest text-sm text-gray-400 mb-2">
+                            Bike + Accessories Weight <span id="unit-label-bike" class="text-brand-orange">(lbs)</span>
+                        </label>
+                        <input id="bike-weight" type="number" min="5" max="100" placeholder="e.g. 20"
+                            class="input-field w-full rounded-lg px-4 py-3 font-body text-lg" />
+                        <p class="text-xs text-gray-500 mt-1">Include saddle bag, bottles, pedals, computer, etc.</p>
+                    </div>
+
+                    <!-- Tire Widths -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-display uppercase tracking-widest text-sm text-gray-400 mb-2">
+                                Front Tire Width
+                            </label>
+                            <select id="front-width" class="input-field w-full rounded-lg px-4 py-3 font-body text-base">
+                                <option value="">Select mm</option>
+                                <option value="23">23mm</option>
+                                <option value="25">25mm</option>
+                                <option value="26">26mm</option>
+                                <option value="28">28mm</option>
+                                <option value="30">30mm</option>
+                                <option value="32">32mm</option>
+                                <option value="35">35mm</option>
+                                <option value="38">38mm</option>
+                                <option value="40">40mm</option>
+                                <option value="42">42mm</option>
+                                <option value="45">45mm</option>
+                                <option value="47">47mm</option>
+                                <option value="50">50mm</option>
+                                <option value="54">54mm</option>
+                                <option value="57">57mm</option>
+                                <option value="60">60mm</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-display uppercase tracking-widest text-sm text-gray-400 mb-2">
+                                Rear Tire Width
+                            </label>
+                            <select id="rear-width" class="input-field w-full rounded-lg px-4 py-3 font-body text-base">
+                                <option value="">Select mm</option>
+                                <option value="23">23mm</option>
+                                <option value="25">25mm</option>
+                                <option value="26">26mm</option>
+                                <option value="28">28mm</option>
+                                <option value="30">30mm</option>
+                                <option value="32">32mm</option>
+                                <option value="35">35mm</option>
+                                <option value="38">38mm</option>
+                                <option value="40">40mm</option>
+                                <option value="42">42mm</option>
+                                <option value="45">45mm</option>
+                                <option value="47">47mm</option>
+                                <option value="50">50mm</option>
+                                <option value="54">54mm</option>
+                                <option value="57">57mm</option>
+                                <option value="60">60mm</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Terrain Type -->
+                    <div>
+                        <label class="block font-display uppercase tracking-widest text-sm text-gray-400 mb-3">
+                            Terrain / Riding Style
+                        </label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="setTerrain('road')" id="terrain-road"
+                                class="terrain-btn active border border-gray-700 rounded-lg py-3 px-2 text-center font-display uppercase tracking-wide text-sm">
+                                <span class="material-symbols-outlined block text-xl mb-1">speed</span>
+                                Road
+                            </button>
+                            <button onclick="setTerrain('gravel')" id="terrain-gravel"
+                                class="terrain-btn border border-gray-700 rounded-lg py-3 px-2 text-center font-display uppercase tracking-wide text-sm text-gray-400 hover:text-white">
+                                <span class="material-symbols-outlined block text-xl mb-1">landscape</span>
+                                Gravel
+                            </button>
+                            <button onclick="setTerrain('mixed')" id="terrain-mixed"
+                                class="terrain-btn border border-gray-700 rounded-lg py-3 px-2 text-center font-display uppercase tracking-wide text-sm text-gray-400 hover:text-white">
+                                <span class="material-symbols-outlined block text-xl mb-1">route</span>
+                                Mixed
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Tube Type -->
+                <div>
+                    <label class="block font-display uppercase tracking-widest text-sm text-gray-400 mb-3">
+                        Tube / Tire Setup
+                    </label>
+                    <div class="space-y-3">
+
+                        <label class="tube-card block border border-gray-700 rounded-xl p-4 hover:border-gray-500">
+                            <input type="radio" name="tube-type" value="butyl" checked class="mr-2 mt-0.5 float-left" />
+                            <div class="ml-6">
+                                <div class="font-display text-base uppercase tracking-wide text-white">Butyl Tube</div>
+                                <div class="text-xs text-gray-400 mt-0.5">Standard rubber inner tube. Most common, durable, and affordable. Baseline pressure recommendation.</div>
+                                <div class="mt-1.5 flex items-center gap-2">
+                                    <span class="text-xs bg-gray-800 text-gray-300 px-2 py-0.5 rounded-full">Baseline PSI</span>
+                                    <span class="text-xs text-gray-500">Requires more frequent inflation</span>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="tube-card block border border-gray-700 rounded-xl p-4 hover:border-gray-500">
+                            <input type="radio" name="tube-type" value="tpu" class="mr-2 mt-0.5 float-left" />
+                            <div class="ml-6">
+                                <div class="font-display text-base uppercase tracking-wide text-white">TPU Tube
+                                    <span class="text-xs text-brand-orange ml-2 normal-case font-body">(Tubolito, RideNow)</span>
+                                </div>
+                                <div class="text-xs text-gray-400 mt-0.5">Thermoplastic polyurethane. Ultra-light, puncture-resistant, and slightly more supple than butyl.</div>
+                                <div class="mt-1.5 flex items-center gap-2">
+                                    <span class="text-xs bg-orange-900/40 text-brand-orange px-2 py-0.5 rounded-full">−5% PSI</span>
+                                    <span class="text-xs text-gray-500">Very low air permeability</span>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="tube-card block border border-gray-700 rounded-xl p-4 hover:border-gray-500">
+                            <input type="radio" name="tube-type" value="latex" class="mr-2 mt-0.5 float-left" />
+                            <div class="ml-6">
+                                <div class="font-display text-base uppercase tracking-wide text-white">Latex Tube</div>
+                                <div class="text-xs text-gray-400 mt-0.5">Natural rubber. More supple and compliant than butyl, delivering lower rolling resistance and a smoother ride.</div>
+                                <div class="mt-1.5 flex items-center gap-2">
+                                    <span class="text-xs bg-orange-900/40 text-brand-orange px-2 py-0.5 rounded-full">−10% PSI</span>
+                                    <span class="text-xs text-gray-500">Needs daily inflation check</span>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="tube-card block border border-gray-700 rounded-xl p-4 hover:border-gray-500">
+                            <input type="radio" name="tube-type" value="tubeless" class="mr-2 mt-0.5 float-left" />
+                            <div class="ml-6">
+                                <div class="font-display text-base uppercase tracking-wide text-white">Tubeless</div>
+                                <div class="text-xs text-gray-400 mt-0.5">No inner tube. Sealant fills small punctures automatically. Run significantly lower pressures — no pinch flat risk.</div>
+                                <div class="mt-1.5 flex items-center gap-2">
+                                    <span class="text-xs bg-orange-900/40 text-brand-orange px-2 py-0.5 rounded-full">−17% PSI</span>
+                                    <span class="text-xs text-gray-500">Best compliance & flat protection</span>
+                                </div>
+                            </div>
+                        </label>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calculate Button -->
+            <div class="mt-10 text-center">
+                <button onclick="calculate()"
+                    class="bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase tracking-widest text-xl py-4 px-16 rounded-lg transition transform hover:-translate-y-1 shadow-xl shadow-orange-900/40">
+                    <span class="material-symbols-outlined align-middle mr-2 text-2xl">calculate</span>
+                    Calculate Pressure
+                </button>
+            </div>
+
+            <!-- Error message -->
+            <div id="error-msg" class="hidden mt-4 text-center text-brand-orange font-display uppercase tracking-wider"></div>
+
+            <!-- Results -->
+            <div id="results" class="hidden mt-12 animate-fade-in-up">
+
+                <div class="text-center mb-8">
+                    <h2 class="font-display font-bold text-4xl text-white uppercase tracking-wide">
+                        Your Optimal <span class="text-brand-orange">Pressures</span>
+                    </h2>
+                    <p id="result-summary" class="text-gray-400 mt-2 text-sm"></p>
+                </div>
+
+                <!-- PSI Cards -->
+                <div class="grid md:grid-cols-2 gap-6 mb-8">
+
+                    <!-- Front -->
+                    <div class="result-card rounded-2xl p-8 text-center">
+                        <div class="font-display uppercase tracking-widest text-gray-400 text-sm mb-1">Front Tire</div>
+                        <div id="front-width-display" class="text-xs text-gray-500 mb-4"></div>
+                        <div class="flex items-end justify-center gap-2 mb-2">
+                            <span id="front-psi" class="font-display font-bold text-7xl text-white leading-none"></span>
+                            <span class="font-display text-2xl text-brand-orange pb-2">PSI</span>
+                        </div>
+                        <div id="front-range" class="text-xs text-gray-500 mb-4"></div>
+                        <!-- Gauge -->
+                        <div class="relative h-3 rounded-full gauge-track overflow-hidden mb-1">
+                            <div id="front-marker" class="absolute top-0 h-full w-1 bg-white rounded-full shadow-lg" style="left: 50%;"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-600 mt-1">
+                            <span>Low</span><span>Optimal</span><span>High</span>
+                        </div>
+                        <div id="front-bar" class="w-full bg-gray-800 rounded-full h-2 mt-4">
+                            <div id="front-fill" class="bg-brand-orange h-2 rounded-full transition-all duration-700" style="width: 0%"></div>
+                        </div>
+                        <div id="front-load-label" class="text-xs text-gray-600 mt-2"></div>
+                    </div>
+
+                    <!-- Rear -->
+                    <div class="result-card rounded-2xl p-8 text-center">
+                        <div class="font-display uppercase tracking-widest text-gray-400 text-sm mb-1">Rear Tire</div>
+                        <div id="rear-width-display" class="text-xs text-gray-500 mb-4"></div>
+                        <div class="flex items-end justify-center gap-2 mb-2">
+                            <span id="rear-psi" class="font-display font-bold text-7xl text-white leading-none"></span>
+                            <span class="font-display text-2xl text-brand-orange pb-2">PSI</span>
+                        </div>
+                        <div id="rear-range" class="text-xs text-gray-500 mb-4"></div>
+                        <!-- Gauge -->
+                        <div class="relative h-3 rounded-full gauge-track overflow-hidden mb-1">
+                            <div id="rear-marker" class="absolute top-0 h-full w-1 bg-white rounded-full shadow-lg" style="left: 50%;"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-600 mt-1">
+                            <span>Low</span><span>Optimal</span><span>High</span>
+                        </div>
+                        <div id="rear-bar" class="w-full bg-gray-800 rounded-full h-2 mt-4">
+                            <div id="rear-fill" class="bg-brand-orange h-2 rounded-full transition-all duration-700" style="width: 0%"></div>
+                        </div>
+                        <div id="rear-load-label" class="text-xs text-gray-600 mt-2"></div>
+                    </div>
+                </div>
+
+                <!-- Breakdown -->
+                <div class="bg-brand-slate/30 border border-gray-800 rounded-xl p-6 mb-6">
+                    <h3 class="font-display uppercase tracking-widest text-sm text-gray-400 mb-4">How We Calculated This</h3>
+                    <div id="breakdown-content" class="space-y-2 text-sm text-gray-300 font-body"></div>
+                </div>
+
+                <!-- Tips -->
+                <div id="tips-section" class="bg-brand-blue/30 border border-brand-orange/20 rounded-xl p-6">
+                    <h3 class="font-display uppercase tracking-widest text-sm text-brand-orange mb-4">
+                        <span class="material-symbols-outlined align-middle text-sm mr-1">lightbulb</span>
+                        Tips for This Setup
+                    </h3>
+                    <ul id="tips-list" class="space-y-2 text-sm text-gray-300 font-body list-none"></ul>
+                </div>
+
+                <!-- CTA -->
+                <div class="mt-8 text-center">
+                    <p class="text-gray-400 text-sm mb-4">Need your tires installed, tubeless converted, or a full tune-up?</p>
+                    <a href="/#services"
+                        class="inline-block bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase tracking-widest py-3 px-10 rounded-lg transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/40">
+                        Book a Service
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Info Section -->
+    <section class="py-16 bg-brand-slate/20 border-t border-gray-900">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <h2 class="font-display font-bold text-3xl text-white uppercase tracking-wide text-center mb-10">
+                Why Tire Pressure <span class="text-brand-orange">Matters</span>
+            </h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="text-center p-6">
+                    <span class="material-symbols-outlined text-4xl text-brand-orange mb-4 block">speed</span>
+                    <h3 class="font-display text-xl uppercase tracking-wide text-white mb-2">Rolling Resistance</h3>
+                    <p class="text-sm text-gray-400">Over-inflated tires skip off surface imperfections, increasing vibration and actual rolling resistance. Optimal pressure maximizes the tire's ability to deform and conform to the road.</p>
+                </div>
+                <div class="text-center p-6">
+                    <span class="material-symbols-outlined text-4xl text-brand-orange mb-4 block">shield</span>
+                    <h3 class="font-display text-xl uppercase tracking-wide text-white mb-2">Pinch Flat Prevention</h3>
+                    <p class="text-sm text-gray-400">Too low and clincher tubes pinch between rim and obstacle — a "snakebite" flat. Tubeless setups eliminate this risk entirely, which is why they run notably lower pressures.</p>
+                </div>
+                <div class="text-center p-6">
+                    <span class="material-symbols-outlined text-4xl text-brand-orange mb-4 block">health_and_safety</span>
+                    <h3 class="font-display text-xl uppercase tracking-wide text-white mb-2">Rider Comfort</h3>
+                    <p class="text-sm text-gray-400">Weight-matched pressure ensures the contact patch is the right size — enough to absorb vibration without the tire squirming under hard cornering loads.</p>
+                </div>
+            </div>
+            <div class="mt-8 bg-brand-dark/60 border border-gray-800 rounded-xl p-6 text-center">
+                <p class="text-xs text-gray-500 font-body leading-relaxed">
+                    <strong class="text-gray-400">Methodology:</strong> Pressures are calculated using contact-patch theory: front load = <span id="method-front-pct">40%</span> / rear load = <span id="method-rear-pct">60%</span> of total system weight, scaled by tire width using an empirical constant derived from published tire manufacturer data. Tube-type multipliers reflect the compliance characteristics of each material (butyl 1.0×, TPU 0.95×, latex 0.90×, tubeless 0.83×). Results are a starting point — fine-tune ±5 PSI based on feel, surface conditions, and tire manufacturer minimums.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black border-t border-gray-900 py-12">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex flex-col items-center md:items-start">
+                <span class="font-display font-bold text-3xl tracking-widest text-white leading-none">WEEECYCLE<span class="text-brand-orange">.NET</span></span>
+                <span class="text-gray-500 text-xs uppercase tracking-[0.2em] mt-2">Building Speed. Fixing Fun.</span>
+            </div>
+            <div class="flex flex-col items-center md:items-end gap-2">
+                <a href="https://www.trustpilot.com/review/weeecycle.net" target="_blank" rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 text-[#00b67a] hover:text-white transition text-sm font-display uppercase tracking-wider">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+                    Review us on Trustpilot
+                </a>
+                <span class="text-gray-600 text-xs uppercase tracking-wider">&copy; 2026 Weeecycle | Lexington, KY. All rights reserved. &nbsp;&middot;&nbsp; <a href="/privacy.html" class="hover:text-brand-orange transition-colors">Privacy Policy</a></span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://chatonbo.com/widget/chatonbo-widget.js" data-bot-id="8c5103fa-8367-42d1-92a8-b60504758ccd"></script>
+
+    <script>
+        let currentUnit = 'lbs';
+        let currentTerrain = 'road';
+
+        const terrainConfig = {
+            road:   { frontPct: 0.40, rearPct: 0.60, pressureFactor: 1.00, label: 'Road / Race', frontLabel: '40%', rearLabel: '60%' },
+            gravel: { frontPct: 0.43, rearPct: 0.57, pressureFactor: 0.88, label: 'Gravel / Off-road', frontLabel: '43%', rearLabel: '57%' },
+            mixed:  { frontPct: 0.42, rearPct: 0.58, pressureFactor: 0.93, label: 'Mixed / All-road', frontLabel: '42%', rearLabel: '58%' },
+        };
+
+        const tubeConfig = {
+            butyl:    { factor: 1.00, label: 'Butyl' },
+            tpu:      { factor: 0.95, label: 'TPU' },
+            latex:    { factor: 0.90, label: 'Latex' },
+            tubeless: { factor: 0.83, label: 'Tubeless' },
+        };
+
+        const K = 21.5;
+
+        function setUnit(unit) {
+            currentUnit = unit;
+            document.getElementById('btn-lbs').className = unit === 'lbs'
+                ? 'font-display uppercase tracking-widest text-sm px-6 py-2 rounded-md transition bg-brand-orange text-white'
+                : 'font-display uppercase tracking-widest text-sm px-6 py-2 rounded-md transition text-gray-400 hover:text-white';
+            document.getElementById('btn-kg').className = unit === 'kg'
+                ? 'font-display uppercase tracking-widest text-sm px-6 py-2 rounded-md transition bg-brand-orange text-white'
+                : 'font-display uppercase tracking-widest text-sm px-6 py-2 rounded-md transition text-gray-400 hover:text-white';
+            document.getElementById('unit-label-rider').textContent = `(${unit})`;
+            document.getElementById('unit-label-bike').textContent = `(${unit})`;
+            document.getElementById('rider-weight').value = '';
+            document.getElementById('bike-weight').value = '';
+        }
+
+        function setTerrain(t) {
+            currentTerrain = t;
+            ['road', 'gravel', 'mixed'].forEach(id => {
+                const btn = document.getElementById('terrain-' + id);
+                if (id === t) {
+                    btn.className = 'terrain-btn active border border-brand-orange rounded-lg py-3 px-2 text-center font-display uppercase tracking-wide text-sm bg-brand-orange text-white';
+                } else {
+                    btn.className = 'terrain-btn border border-gray-700 rounded-lg py-3 px-2 text-center font-display uppercase tracking-wide text-sm text-gray-400 hover:text-white';
+                }
+            });
+            const cfg = terrainConfig[t];
+            document.getElementById('method-front-pct').textContent = cfg.frontLabel;
+            document.getElementById('method-rear-pct').textContent = cfg.rearLabel;
+        }
+
+        function toLbs(val) {
+            return currentUnit === 'kg' ? val * 2.20462 : val;
+        }
+
+        function calcPSI(loadLbs, widthMm, tubeFactor, terrainFactor) {
+            const raw = (loadLbs * K) / widthMm * terrainFactor * tubeFactor;
+            return Math.round(raw);
+        }
+
+        function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
+
+        function gaugePercent(psi, widthMm) {
+            const minPSI = Math.max(15, 300 / widthMm);
+            const maxPSI = Math.min(130, 2800 / widthMm);
+            return clamp((psi - minPSI) / (maxPSI - minPSI) * 100, 5, 95);
+        }
+
+        function getRange(psi) {
+            const low = Math.max(psi - 5, 10);
+            const high = psi + 5;
+            return `Suggested range: ${low}–${high} PSI`;
+        }
+
+        function getTips(tubeType, terrain, frontPSI, rearPSI, frontMm, rearMm) {
+            const tips = [];
+
+            if (tubeType === 'tubeless') {
+                tips.push('✔ Check sealant level every 2–3 months — dry sealant won\'t seal punctures.');
+                tips.push('✔ Run 5–10 PSI lower if riding in very rough conditions for extra compliance.');
+            }
+            if (tubeType === 'latex') {
+                tips.push('✔ Check pressure before every ride — latex loses 5–10 PSI overnight.');
+                tips.push('✔ Never use latex with tubeless-specific rims without a rim strip.');
+            }
+            if (tubeType === 'tpu') {
+                tips.push('✔ TPU holds pressure well — check weekly is sufficient.');
+                tips.push('✔ Use a slow, gentle pump stroke; TPU can be punctured by rapid valve seating.');
+            }
+            if (tubeType === 'butyl') {
+                tips.push('✔ Check pressure before every ride — butyl loses 1–3 PSI per day.');
+            }
+
+            if (terrain === 'gravel') {
+                tips.push('✔ Lower pressures give you more traction on loose surfaces — experiment down to −10 PSI from recommendation.');
+                tips.push('✔ Front pressure can go slightly lower than calculated to improve steering feel on rough terrain.');
+            }
+            if (terrain === 'road') {
+                tips.push('✔ Use a quality track pump with an accurate gauge — floor pump gauges can read ±10 PSI off.');
+            }
+
+            if (frontMm !== rearMm && frontMm > rearMm) {
+                tips.push('ℹ️ Running a wider front tire is a great modern setup — front gets more comfort, rear gets speed efficiency.');
+            }
+
+            if (frontPSI < 40 && tubeType !== 'tubeless') {
+                tips.push('⚠️ Front pressure is low for a tubed setup — confirm your tire\'s minimum marked PSI and consider tubeless.');
+            }
+            if (rearPSI > 110) {
+                tips.push('⚠️ High rear pressure can increase vibration. Consider a wider tire for better comfort and speed at lower pressure.');
+            }
+
+            tips.push('✔ Fine-tune ±5 PSI based on how the tire feels — slight squirm under hard pedaling means add 3–5 PSI rear.');
+            return tips;
+        }
+
+        function calculate() {
+            const riderRaw = parseFloat(document.getElementById('rider-weight').value);
+            const bikeRaw = parseFloat(document.getElementById('bike-weight').value);
+            const frontMm = parseInt(document.getElementById('front-width').value);
+            const rearMm = parseInt(document.getElementById('rear-width').value);
+            const tubeType = document.querySelector('input[name="tube-type"]:checked').value;
+            const errEl = document.getElementById('error-msg');
+
+            if (!riderRaw || !bikeRaw || !frontMm || !rearMm) {
+                errEl.textContent = 'Please fill in all fields before calculating.';
+                errEl.classList.remove('hidden');
+                document.getElementById('results').classList.add('hidden');
+                return;
+            }
+            errEl.classList.add('hidden');
+
+            const riderLbs = toLbs(riderRaw);
+            const bikeLbs = toLbs(bikeRaw);
+            const totalLbs = riderLbs + bikeLbs;
+
+            const terrain = terrainConfig[currentTerrain];
+            const tube = tubeConfig[tubeType];
+
+            const frontLoadLbs = totalLbs * terrain.frontPct;
+            const rearLoadLbs  = totalLbs * terrain.rearPct;
+
+            const frontPSI = clamp(calcPSI(frontLoadLbs, frontMm, tube.factor, terrain.pressureFactor), 15, 130);
+            const rearPSI  = clamp(calcPSI(rearLoadLbs,  rearMm,  tube.factor, terrain.pressureFactor), 15, 130);
+
+            document.getElementById('front-psi').textContent = frontPSI;
+            document.getElementById('rear-psi').textContent  = rearPSI;
+
+            document.getElementById('front-width-display').textContent = `${frontMm}mm ${tube.label}`;
+            document.getElementById('rear-width-display').textContent  = `${rearMm}mm ${tube.label}`;
+
+            document.getElementById('front-range').textContent = getRange(frontPSI);
+            document.getElementById('rear-range').textContent  = getRange(rearPSI);
+
+            document.getElementById('front-load-label').textContent =
+                `Load: ${Math.round(frontLoadLbs)} lbs (${terrain.frontLabel} of ${Math.round(totalLbs)} lbs)`;
+            document.getElementById('rear-load-label').textContent =
+                `Load: ${Math.round(rearLoadLbs)} lbs (${terrain.rearLabel} of ${Math.round(totalLbs)} lbs)`;
+
+            const unitStr = currentUnit === 'kg'
+                ? `${riderRaw} kg rider + ${bikeRaw} kg bike = ${(riderRaw + bikeRaw).toFixed(1)} kg system`
+                : `${riderRaw} lbs rider + ${bikeRaw} lbs bike = ${Math.round(totalLbs)} lbs system`;
+            document.getElementById('result-summary').textContent =
+                `${unitStr} · ${terrain.label} · ${tube.label}`;
+
+            setTimeout(() => {
+                const frontPct = gaugePercent(frontPSI, frontMm);
+                const rearPct  = gaugePercent(rearPSI,  rearMm);
+                document.getElementById('front-marker').style.left = frontPct + '%';
+                document.getElementById('rear-marker').style.left  = rearPct + '%';
+                document.getElementById('front-fill').style.width = Math.min(frontPSI / 1.3, 100) + '%';
+                document.getElementById('rear-fill').style.width  = Math.min(rearPSI  / 1.3, 100) + '%';
+            }, 100);
+
+            const tubeFactorPct = Math.round((1 - tube.factor) * 100);
+            const terrainFactorPct = Math.round((1 - terrain.pressureFactor) * 100);
+            document.getElementById('breakdown-content').innerHTML = `
+                <div class="flex justify-between border-b border-gray-800 pb-1"><span class="text-gray-400">Total system weight</span><span>${Math.round(totalLbs)} lbs (${(totalLbs / 2.20462).toFixed(1)} kg)</span></div>
+                <div class="flex justify-between border-b border-gray-800 pb-1"><span class="text-gray-400">Weight distribution</span><span>Front ${terrain.frontLabel} / Rear ${terrain.rearLabel}</span></div>
+                <div class="flex justify-between border-b border-gray-800 pb-1"><span class="text-gray-400">Front load</span><span>${Math.round(frontLoadLbs)} lbs on ${frontMm}mm tire</span></div>
+                <div class="flex justify-between border-b border-gray-800 pb-1"><span class="text-gray-400">Rear load</span><span>${Math.round(rearLoadLbs)} lbs on ${rearMm}mm tire</span></div>
+                ${tubeFactorPct > 0 ? `<div class="flex justify-between border-b border-gray-800 pb-1"><span class="text-gray-400">${tube.label} tube adjustment</span><span class="text-brand-orange">−${tubeFactorPct}%</span></div>` : ''}
+                ${terrainFactorPct > 0 ? `<div class="flex justify-between border-b border-gray-800 pb-1"><span class="text-gray-400">${terrain.label} terrain adjustment</span><span class="text-brand-orange">−${terrainFactorPct}%</span></div>` : ''}
+            `;
+
+            const tipsHtml = getTips(tubeType, currentTerrain, frontPSI, rearPSI, frontMm, rearMm)
+                .map(t => `<li class="flex gap-2"><span>${t}</span></li>`).join('');
+            document.getElementById('tips-list').innerHTML = tipsHtml;
+
+            const resultsEl = document.getElementById('results');
+            resultsEl.classList.remove('hidden');
+            setTimeout(() => resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Enter') calculate();
+        });
+    </script>
+
+</body>
+</html>
