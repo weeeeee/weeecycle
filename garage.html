@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PXE6HLHC80"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-PXE6HLHC80');
+    </script>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Your Garage | Bike Mechanic Tool | Weeecycle.net</title>
+    <meta name="description" content="Describe any bike problem and get instant tips with hand-picked YouTube repair searches. No signup, saved locally." />
+    <meta name="author" content="Weeecycle.net" />
+    <link rel="canonical" href="https://weeecycle.net/garage.html" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://weeecycle.net/garage.html" />
+    <meta property="og:title" content="Your Garage | Bike Mechanic Tool | Weeecycle.net" />
+    <meta property="og:description" content="Describe any bike problem and get instant tips with YouTube repair searches." />
+    <meta property="og:image" content="https://weeecycle.net/images/hero_gravel_realistic.png" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { dark: '#050511', blue: '#0B0B2B', orange: '#FF8000', slate: '#1e293b', light: '#f8fafc' }
+                    },
+                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Roboto Condensed', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050511; }
+        ::-webkit-scrollbar-thumb { background: #FF8000; border-radius: 4px; }
+
+        .garage-input {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,128,0,0.2);
+            color: #f8fafc;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .garage-input:focus {
+            border-color: rgba(255,128,0,0.6);
+            box-shadow: 0 0 0 3px rgba(255,128,0,0.1);
+            outline: none;
+        }
+        .garage-input::placeholder { color: rgba(255,255,255,0.25); }
+
+        .drop-zone {
+            border: 2px dashed rgba(255,128,0,0.25);
+            transition: all 0.25s;
+            cursor: pointer;
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: #FF8000;
+            background: rgba(255,128,0,0.05);
+        }
+
+        .yt-btn {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,128,0,0.2);
+            transition: all 0.2s;
+        }
+        .yt-btn:hover {
+            background: rgba(255,128,0,0.1);
+            border-color: rgba(255,128,0,0.5);
+            transform: translateY(-1px);
+        }
+
+        .tip-tag {
+            background: rgba(255,128,0,0.08);
+            border: 1px solid rgba(255,128,0,0.2);
+        }
+
+        .history-chevron { transition: transform 0.2s; }
+        .history-chevron.open { transform: rotate(180deg); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        .fade-in { animation: fadeIn 0.35s ease forwards; }
+    </style>
+</head>
+
+<body class="bg-brand-dark text-gray-200 font-body antialiased selection:bg-brand-orange selection:text-white pb-20 md:pb-0">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-brand-dark/95 backdrop-blur border-b border-brand-orange/20 shadow-xl">
+        <div class="container mx-auto px-4 h-20 flex items-center justify-between">
+            <a class="flex items-center gap-3 group" href="/">
+                <div class="h-12 w-12 relative overflow-hidden flex items-center justify-center">
+                    <img src="images/logo/gradient-bike.png" alt="Weeecycle Icon"
+                        class="h-10 w-auto object-contain drop-shadow-[0_0_5px_rgba(255,128,0,0.5)]" />
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-display font-bold text-2xl tracking-widest text-white leading-none">WEEECYCLE<span class="text-brand-orange">.NET</span></span>
+                    <span class="font-body text-[10px] text-brand-orange uppercase tracking-[0.2em] leading-none">Recycle the Fun</span>
+                </div>
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="/#services">Services</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="/#handbook">Handbook</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="https://weeecycle.substack.com" target="_blank" rel="noopener noreferrer">Substack</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="customer-portal.html">Repair Status</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="shop.html">Shop</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="tire-pressure.html">Tire Calc</a>
+                <a class="font-display text-lg text-brand-orange font-bold uppercase tracking-wide" href="garage.html">Garage</a>
+                <a class="bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase tracking-wider py-2 px-6 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50"
+                    href="/#services">Book Service</a>
+                <div class="flex items-center gap-4 border-l border-gray-700 pl-6 ml-2">
+                    <a href="https://www.instagram.com/weeecycle/" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-instagram text-xl"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61584485203543" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-facebook text-xl"></i></a>
+                    <a href="https://www.youtube.com/@weeecycle" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-youtube text-xl"></i></a>
+                    <a href="https://www.tiktok.com/@weeecycling" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-tiktok text-xl"></i></a>
+                </div>
+            </div>
+            <button class="md:hidden text-white hover:text-brand-orange transition" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                <span class="material-symbols-outlined text-4xl">menu</span>
+            </button>
+        </div>
+        <!-- Mobile Menu -->
+        <div class="hidden md:hidden bg-brand-dark border-t border-brand-orange/20 absolute w-full left-0 shadow-2xl" id="mobile-menu">
+            <div class="flex flex-col p-4 space-y-4">
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition" href="/#services" onclick="this.closest('#mobile-menu').classList.add('hidden')">Services</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition" href="/#handbook" onclick="this.closest('#mobile-menu').classList.add('hidden')">Handbook</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="https://weeecycle.substack.com" target="_blank" rel="noopener noreferrer" onclick="this.closest('#mobile-menu').classList.add('hidden')">Substack</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="customer-portal.html" onclick="this.closest('#mobile-menu').classList.add('hidden')">Repair Status</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="shop.html" onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="tire-pressure.html" onclick="this.closest('#mobile-menu').classList.add('hidden')">Tire Calc</a>
+                <a class="text-xl font-display uppercase tracking-wide text-brand-orange font-bold" href="garage.html" onclick="this.closest('#mobile-menu').classList.add('hidden')">Garage</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="mechanic-login.html" onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop Mechanic</a>
+                <a class="text-brand-orange text-xl font-display font-bold uppercase tracking-wide" href="/#services" onclick="this.closest('#mobile-menu').classList.add('hidden')">Book Now</a>
+                <div class="flex gap-6 pt-4 border-t border-gray-800">
+                    <a href="https://www.instagram.com/weeecycle/" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-instagram text-2xl"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61584485203543" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-facebook text-2xl"></i></a>
+                    <a href="https://www.youtube.com/@weeecycle" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-youtube text-2xl"></i></a>
+                    <a href="https://www.tiktok.com/@weeecycling" target="_blank" class="text-gray-400 hover:text-brand-orange transition-colors"><i class="fab fa-tiktok text-2xl"></i></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="pt-32 pb-10 relative overflow-hidden">
+        <div class="pointer-events-none absolute inset-0 overflow-hidden">
+            <div class="absolute top-10 right-0 w-[500px] h-[500px] bg-brand-orange/5 rounded-full blur-[140px]"></div>
+            <div class="absolute bottom-0 left-10 w-80 h-80 bg-brand-orange/4 rounded-full blur-[100px]"></div>
+        </div>
+        <div class="container mx-auto px-4 max-w-5xl relative z-10 text-center">
+            <span class="text-brand-orange uppercase font-display font-bold tracking-widest text-lg">Weeecycle Workshop</span>
+            <h1 class="font-display font-bold text-7xl md:text-9xl text-white uppercase tracking-tight leading-none mt-1 mb-4">
+                Your <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-orange-300">Garage</span>
+            </h1>
+            <p class="text-gray-300 text-xl font-light max-w-2xl mx-auto mb-8 leading-relaxed">
+                Describe any bike problem — get instant mechanic tips and targeted YouTube repair searches.
+            </p>
+            <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
+                <span class="flex items-center gap-2 text-gray-500 text-sm font-display uppercase tracking-wider">
+                    <i class="fa-solid fa-wrench text-brand-orange/70"></i> Instant Diagnosis Tips
+                </span>
+                <span class="text-gray-700 hidden md:block">·</span>
+                <span class="flex items-center gap-2 text-gray-500 text-sm font-display uppercase tracking-wider">
+                    <i class="fa-brands fa-youtube text-brand-orange/70"></i> YouTube Repair Searches
+                </span>
+                <span class="text-gray-700 hidden md:block">·</span>
+                <span class="flex items-center gap-2 text-gray-500 text-sm font-display uppercase tracking-wider">
+                    <i class="fa-solid fa-clock-rotate-left text-brand-orange/70"></i> History Saved Locally
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <main class="container mx-auto px-4 max-w-5xl pb-16">
+
+        <!-- ── Input Card ─────────────────────────────────────────────────── -->
+        <div class="bg-[#0B0B2B] border border-brand-orange/20 rounded-2xl p-6 md:p-8 shadow-2xl mb-8">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 bg-brand-orange/10 border border-brand-orange/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-wrench text-brand-orange text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="font-display font-bold text-2xl text-white uppercase tracking-wide leading-none">What's Wrong?</h2>
+                    <p class="text-gray-500 text-xs uppercase tracking-wider">Describe your bike problem in as much detail as you like</p>
+                </div>
+            </div>
+
+            <textarea id="problem-input" rows="5"
+                class="garage-input w-full rounded-xl p-4 font-body text-base resize-none mb-5"
+                placeholder="e.g. My rear derailleur is skipping on the smallest cog when pedalling hard. Started after a crash last week. Shimano 105, 2022 Trek Domane..."></textarea>
+
+            <!-- Image Upload (stored in history only) -->
+            <div class="mb-6">
+                <p class="text-gray-500 text-xs uppercase tracking-wider font-display mb-2">
+                    <i class="fa-solid fa-camera mr-1 text-brand-orange/60"></i> Attach a photo for your notes (optional)
+                </p>
+                <div id="drop-zone" class="drop-zone rounded-xl p-5 text-center" onclick="document.getElementById('file-input').click()">
+                    <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+                    <div id="drop-placeholder">
+                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-brand-orange/30 mb-2 block"></i>
+                        <p class="text-gray-500 text-sm font-display uppercase tracking-wider">Click to upload or drag & drop</p>
+                        <p class="text-gray-700 text-xs mt-1">Saved with your history on this device</p>
+                    </div>
+                    <div id="image-preview" class="hidden">
+                        <img id="preview-img" class="max-h-48 mx-auto rounded-lg object-contain mb-3" alt="Preview" />
+                        <button onclick="clearImage(event)"
+                            class="text-xs text-gray-600 hover:text-red-400 font-display uppercase tracking-wider transition">
+                            <i class="fa-solid fa-xmark mr-1"></i> Remove photo
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <button onclick="diagnose()"
+                    class="flex-1 sm:flex-none inline-flex items-center justify-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-xl uppercase tracking-wider py-4 px-10 rounded-xl transition duration-200 shadow-lg shadow-orange-900/30">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    Find the Fix
+                </button>
+                <a href="tire-pressure.html"
+                    class="inline-flex items-center justify-center gap-2 border border-gray-700 hover:border-brand-orange/50 text-gray-400 hover:text-white font-display uppercase tracking-wider text-sm py-4 px-6 rounded-xl transition duration-200">
+                    <i class="fa-solid fa-gauge-high text-brand-orange/70"></i> Tire Pressure Calc
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Results ────────────────────────────────────────────────────── -->
+        <div id="results" class="hidden mb-10 fade-in">
+
+            <!-- Tips Card -->
+            <div class="bg-[#0B0B2B] border border-brand-orange/30 rounded-2xl p-6 md:p-8 shadow-2xl mb-6">
+                <div class="flex flex-wrap items-center gap-3 mb-5">
+                    <div class="w-10 h-10 bg-brand-orange/10 border border-brand-orange/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-screwdriver-wrench text-brand-orange"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-display font-bold text-2xl text-white uppercase tracking-wide leading-none">Quick Diagnosis</h2>
+                        <p class="text-gray-500 text-xs uppercase tracking-wider">Common causes &amp; first checks</p>
+                    </div>
+                    <div id="detected-tags" class="ml-auto flex flex-wrap gap-2"></div>
+                </div>
+                <ul id="tips-list" class="space-y-3"></ul>
+                <p id="generic-tip" class="hidden text-gray-400 font-body text-sm leading-relaxed"></p>
+            </div>
+
+            <!-- YouTube Searches -->
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <i class="fa-brands fa-youtube text-red-500 text-2xl"></i>
+                    <h2 class="font-display font-bold text-2xl text-white uppercase tracking-wide">Search on YouTube</h2>
+                </div>
+                <div id="yt-buttons" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+            </div>
+        </div>
+
+        <!-- ── History ─────────────────────────────────────────────────────── -->
+        <div id="history-section" class="hidden">
+            <div class="flex items-center gap-3 mb-4">
+                <i class="fa-solid fa-clock-rotate-left text-brand-orange"></i>
+                <h2 class="font-display font-bold text-2xl text-white uppercase tracking-wide">Consultation History</h2>
+                <span id="history-count" class="bg-brand-orange/10 border border-brand-orange/20 text-brand-orange font-display font-bold text-sm px-2 py-0.5 rounded-full leading-none"></span>
+                <button onclick="clearHistory()" class="ml-auto text-xs text-gray-700 hover:text-red-400 font-display uppercase tracking-wider transition flex items-center gap-1">
+                    <i class="fa-solid fa-trash text-[10px]"></i> Clear All
+                </button>
+            </div>
+            <div id="history-list" class="space-y-3"></div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black border-t border-gray-900 py-12">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex flex-col items-center md:items-start">
+                <span class="font-display font-bold text-3xl tracking-widest text-white leading-none">WEEECYCLE<span class="text-brand-orange">.NET</span></span>
+                <span class="text-gray-500 text-xs uppercase tracking-[0.2em] mt-2">Building Speed. Fixing Fun.</span>
+            </div>
+            <span class="text-gray-600 text-xs uppercase tracking-wider">&copy; 2026 Weeecycle | Lexington, KY. All rights reserved. &nbsp;&middot;&nbsp; <a href="/privacy.html" class="hover:text-brand-orange transition-colors">Privacy Policy</a></span>
+        </div>
+    </footer>
+
+    <script>
+    // ─── Knowledge base ───────────────────────────────────────────────────────
+    const KB = [
+        {
+            id: 'chain',
+            label: 'Chain / Drivetrain',
+            icon: 'fa-link',
+            keywords: ['chain','skip','skipping','slip','slipping','jump','jumping','drop','dropped','drivetrain','cassette','cog','sprocket','crank'],
+            tips: [
+                'Check chain wear — replace at 0.75% stretch (use a chain checker tool).',
+                'Worn chain + worn cassette together cause skipping under load. They often need replacing as a pair.',
+                'Adjust cable tension with the barrel adjuster: turn <strong>counter-clockwise</strong> (out) to shift into larger cogs.',
+                'Check limit screws on the derailleur — they stop the chain over-shifting at each end.',
+                'Inspect chainring teeth for "shark fin" wear, especially the inner and outer rings.'
+            ],
+            searches: [
+                { label: 'Chain skip / skipping fix', q: 'bike chain skipping fix tutorial' },
+                { label: 'Chain wear & replacement', q: 'how to check and replace bike chain' },
+                { label: 'Drivetrain adjustment guide', q: 'bicycle drivetrain adjustment indexing tutorial' }
+            ]
+        },
+        {
+            id: 'derailleur',
+            label: 'Shifting / Derailleur',
+            icon: 'fa-shuffle',
+            keywords: ['shift','shifting','derailleur','derailer','gear','gears','index','indexing','mech','front derailleur','rear derailleur','slow shift','won\'t shift','not shifting','cable'],
+            tips: [
+                'Most shifting problems are cable tension. Turn the barrel adjuster <strong>out</strong> (CCW) if struggling to go to larger cogs.',
+                'Check the cable for fraying at the pinch bolt — replace cable and housing if worn.',
+                'Bent derailleur hanger is common after a crash. A bent hanger cannot be tuned out — replace it first.',
+                'B-screw (the one nearest the derailleur pivots) controls gap between guide pulley and cassette. Should be 5–6 mm.',
+                'Limit screws control the end stops. H screw = smallest cog, L screw = largest cog.'
+            ],
+            searches: [
+                { label: 'Rear derailleur adjustment', q: 'how to adjust rear derailleur bike tutorial' },
+                { label: 'Front derailleur tune', q: 'how to adjust front derailleur bicycle' },
+                { label: 'Bent derailleur hanger fix', q: 'bent derailleur hanger replace align bike' }
+            ]
+        },
+        {
+            id: 'brakes',
+            label: 'Brakes',
+            icon: 'fa-circle-stop',
+            keywords: ['brake','braking','stop','stopping','squeal','squealing','rub','rubbing','pad','pads','rotor','disc','bleed','bleeding','spongy','lever','hydraulic','cable brake','rim brake','caliper','modulation'],
+            tips: [
+                'Disc brake squeal: clean the rotor with <strong>isopropyl alcohol</strong>. Never use WD-40 near brakes.',
+                'Contaminated pads cannot be cleaned — replace them and clean the rotor thoroughly.',
+                'Spongy hydraulic lever feel means air in the system — bleed the brakes.',
+                'Rotor rub: squeeze lever and check caliper centring. Loosen caliper bolts, re-centre, retighten.',
+                'Check pad thickness. Most pads have a wear groove — replace before you reach it.'
+            ],
+            searches: [
+                { label: 'Disc brake squeal fix', q: 'bike disc brake squeal fix contaminated pads' },
+                { label: 'How to bleed Shimano brakes', q: 'how to bleed shimano hydraulic disc brakes tutorial' },
+                { label: 'Brake caliper alignment', q: 'bike disc brake caliper alignment adjustment tutorial' }
+            ]
+        },
+        {
+            id: 'flat',
+            label: 'Flat / Tyre',
+            icon: 'fa-circle-exclamation',
+            keywords: ['flat','puncture','tyre','tire','tube','tubeless','sealant','pinch','burst','blowout','leak','slow leak','deflate','deflating'],
+            tips: [
+                'Pinch flats (two small holes) = tyre pressure too low for your weight. Inflate more before riding.',
+                'Find the puncture by inflating slightly and submerging the tube in water — bubbles show the hole.',
+                'Tubeless flat: shake the wheel and rotate it while spinning to spread sealant. Top up sealant if more than 6 months old.',
+                'Always check the inside of the tyre for sharp debris before fitting a new tube or plugging tubeless.',
+                'Check rim tape integrity and valve base area — common source of slow tubeless leaks.'
+            ],
+            searches: [
+                { label: 'How to fix a flat tyre', q: 'how to fix flat bike tire inner tube repair' },
+                { label: 'Tubeless tyre repair', q: 'tubeless bike tire plug repair sealant tutorial' },
+                { label: 'Pinch flat prevention', q: 'bike pinch flat prevention correct tyre pressure' }
+            ]
+        },
+        {
+            id: 'creak',
+            label: 'Creak / Noise',
+            icon: 'fa-volume-high',
+            keywords: ['creak','creaking','click','clicking','noise','sound','squeak','tick','ticking','knock','knocking','groan','crunch','rattle'],
+            tips: [
+                'Creak from pedalling = <strong>bottom bracket</strong> in 80% of cases. Remove, degrease threads, apply fresh grease, reinstall to torque.',
+                'Pedal threads are another culprit. Left pedal is left-hand thread — remove them, grease the threads, reinstall.',
+                'Saddle and seat post area: clean and grease the post clamp and saddle rails.',
+                'Front end creak: check stem bolts, headset, and bar clamp are all at correct torque.',
+                'Try to isolate by riding: creak only when pedalling = BB / pedals / cranks. Creak on bumps = frame/headset/fork.'
+            ],
+            searches: [
+                { label: 'Bike creak diagnosis guide', q: 'how to diagnose and fix bike creak noise' },
+                { label: 'Bottom bracket service', q: 'bottom bracket creak service replace bike' },
+                { label: 'Pedal creak fix', q: 'bike pedal creak fix regrease install' }
+            ]
+        },
+        {
+            id: 'wheel',
+            label: 'Wheels / Spokes',
+            icon: 'fa-circle',
+            keywords: ['wheel','rim','spoke','spokes','true','truing','wobble','wobbling','buckled','bent','hub','bearing','axle','lateral','radial','hop'],
+            tips: [
+                'Minor wobbles can be corrected with a spoke key. Tighten spokes on the <strong>high side</strong> of the wobble.',
+                'Work in small increments — quarter turns — to avoid overtightening and creating a new problem.',
+                'Hub bearings: grab the rim and try to rock it side to side. Any play = loose or worn bearings.',
+                'After replacing a broken spoke, the wheel needs full re-truing — the tension will have shifted.',
+                'Check spoke tension is even around the wheel by plucking them. They should all have a similar "ping".'
+            ],
+            searches: [
+                { label: 'How to true a bike wheel', q: 'how to true bike wheel spokes tutorial beginner' },
+                { label: 'Spoke replacement', q: 'how to replace a broken bike spoke wheel' },
+                { label: 'Hub bearing service', q: 'bicycle hub bearing service overhaul tutorial' }
+            ]
+        },
+        {
+            id: 'headset',
+            label: 'Steering / Headset',
+            icon: 'fa-diamond',
+            keywords: ['headset','stem','fork','steer','steering','handlebar','handlebars','clunk','loose','play','front end','front','wobble front'],
+            tips: [
+                'Test for headset play: hold front brake and rock the bike. Any clunk = loose headset.',
+                'To adjust: loosen the two stem side bolts, tighten the top cap bolt (small one on top), then re-tighten stem bolts evenly.',
+                'Do <strong>not</strong> overtighten the top cap — it compresses the bearings but does not carry load. Just remove play.',
+                'Grinding or crunching when turning = worn headset bearings. Replace the bearing cartridges.',
+                'On carbon bars and steerer, use a torque wrench. Over-torquing stem bolts can crack the steerer.'
+            ],
+            searches: [
+                { label: 'Headset adjustment tutorial', q: 'how to adjust threadless headset bicycle tutorial' },
+                { label: 'Headset bearing replacement', q: 'bike headset bearing replacement install tutorial' },
+                { label: 'Stem installation & torque', q: 'bicycle stem installation torque carbon safe' }
+            ]
+        },
+        {
+            id: 'bb',
+            label: 'Bottom Bracket',
+            icon: 'fa-gear',
+            keywords: ['bottom bracket','bb','bb30','press fit','threaded bb','crank','crankset','spindle','chainline'],
+            tips: [
+                'Press-fit BBs (PF30, BB86, BB92) are notorious for creaking. Clean shell, apply fresh grease or anti-seize, press back in.',
+                'Threaded BBs: use a proper BB tool and a torque wrench. Left-hand thread on the drive side (English standard).',
+                'Check crank arm bolt torque first — loose crank bolts mimic BB noise and cause crank damage.',
+                'Bad chainline can cause chain rub and early wear. Chainline is the lateral distance from the centerline of the bike to the chainring.'
+            ],
+            searches: [
+                { label: 'Press-fit BB installation', q: 'press fit bottom bracket install creak fix bicycle' },
+                { label: 'Threaded BB service', q: 'threaded bottom bracket service remove install bike' },
+                { label: 'Crank removal & install', q: 'bike crank removal installation torque tutorial' }
+            ]
+        },
+        {
+            id: 'cables',
+            label: 'Cables & Housing',
+            icon: 'fa-minus',
+            keywords: ['cable','cables','housing','wire','inner wire','fray','frayed','stretch','stretched','outer cable'],
+            tips: [
+                'Replace cables and housing every 1–2 years or at first sign of fraying.',
+                'Cut housing square with cable cutters — diagonal cuts close up and block the inner wire.',
+                'Use ferrules on all housing ends. They prevent the housing from splitting under tension.',
+                'New cables always stretch — plan for a free re-tension visit after your first 2–3 rides.',
+                'Lubricate inner cables lightly with a dry or Teflon lube before threading through housing.'
+            ],
+            searches: [
+                { label: 'Brake cable replacement', q: 'how to replace bike brake cable and housing tutorial' },
+                { label: 'Shift cable replacement', q: 'how to replace bike shift cable housing tutorial' },
+                { label: 'Cable housing cut & prep', q: 'bike cable housing cut fit ferrule tutorial' }
+            ]
+        },
+        {
+            id: 'suspension',
+            label: 'Suspension',
+            icon: 'fa-wave-square',
+            keywords: ['fork','suspension','sag','rebound','damper','shock','air spring','coil','stanchion','seal','service suspension','fork service','rear shock'],
+            tips: [
+                'Set sag first: rider on bike in riding position, fork should compress ~25% of travel (trail/enduro), ~15–20% (XC).',
+                'Stanchion scratches or pitting will damage seals — replace stanchions or the whole fork.',
+                'Fork service interval: 50–100 hours (lower legs oil) or 200 hours (full service with new seals).',
+                'Rebound too fast = bike bucks; too slow = bike sits low after hits. Start in the middle and tune from there.',
+                'Air spring pressure: most manufacturers publish a chart by rider weight — start there.'
+            ],
+            searches: [
+                { label: 'Fork suspension setup', q: 'mountain bike fork suspension setup sag rebound tutorial' },
+                { label: 'Fork lower leg service', q: 'mountain bike fork lower leg oil service tutorial' },
+                { label: 'Rear shock setup', q: 'mountain bike rear shock sag setup tutorial' }
+            ]
+        }
+    ];
+
+    const GENERIC_TIPS = [
+        'Try to replicate the problem on a stand — isolate which movement causes it (pedalling, steering, bumps, braking).',
+        'A clean bike is easier to diagnose. Wash it first and look for cracks, loose bolts, or obvious damage.',
+        'Check all quick releases and thru-axles are properly torqued before every ride.',
+        'When in doubt, bring it in — a problem caught early is cheaper to fix than one that causes component damage.'
+    ];
+
+    // ─── Constants ────────────────────────────────────────────────────────────
+    const STORAGE_KEY = 'weeecycle_garage_history';
+    const MAX_HISTORY = 30;
+
+    // ─── Image handling ───────────────────────────────────────────────────────
+    let currentFileBase64 = null;
+    let currentFileMime = null;
+
+    function handleFileSelect(e) {
+        const file = e.target.files[0];
+        if (file) loadFile(file);
+    }
+
+    function loadFile(file) {
+        if (!file.type.startsWith('image/')) return;
+        currentFileMime = file.type;
+        const reader = new FileReader();
+        reader.onload = ev => {
+            const dataURL = ev.target.result;
+            currentFileBase64 = dataURL.split(',')[1];
+            document.getElementById('preview-img').src = dataURL;
+            document.getElementById('drop-placeholder').classList.add('hidden');
+            document.getElementById('image-preview').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function clearImage(e) {
+        e.stopPropagation();
+        currentFileBase64 = null;
+        currentFileMime = null;
+        document.getElementById('file-input').value = '';
+        document.getElementById('image-preview').classList.add('hidden');
+        document.getElementById('drop-placeholder').classList.remove('hidden');
+    }
+
+    const dropZone = document.getElementById('drop-zone');
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        const f = e.dataTransfer.files[0];
+        if (f) loadFile(f);
+    });
+
+    // Thumbnail for history
+    function compressToThumb(dataURL) {
+        return new Promise(resolve => {
+            const img = new Image();
+            img.onload = () => {
+                const MAX = 120;
+                const scale = Math.min(MAX / img.width, MAX / img.height, 1);
+                const c = document.createElement('canvas');
+                c.width = Math.round(img.width * scale);
+                c.height = Math.round(img.height * scale);
+                c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                resolve(c.toDataURL('image/jpeg', 0.4));
+            };
+            img.onerror = () => resolve(null);
+            img.src = dataURL;
+        });
+    }
+
+    // ─── Keyword detection ────────────────────────────────────────────────────
+    function detectCategories(text) {
+        const lower = text.toLowerCase();
+        return KB.filter(cat =>
+            cat.keywords.some(kw => lower.includes(kw))
+        );
+    }
+
+    function ytURL(q) {
+        return 'https://www.youtube.com/results?search_query=' + encodeURIComponent('bicycle ' + q);
+    }
+
+    function esc(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ─── Main diagnose ────────────────────────────────────────────────────────
+    async function diagnose() {
+        const problem = document.getElementById('problem-input').value.trim();
+        if (!problem) {
+            const ta = document.getElementById('problem-input');
+            ta.classList.add('ring-2', 'ring-red-500/60');
+            ta.focus();
+            setTimeout(() => ta.classList.remove('ring-2', 'ring-red-500/60'), 2000);
+            return;
+        }
+
+        const matched = detectCategories(problem);
+        renderResults(problem, matched);
+
+        const thumb = currentFileBase64
+            ? await compressToThumb(`data:${currentFileMime};base64,${currentFileBase64}`)
+            : null;
+        saveToHistory({ problem, matched: matched.map(c => c.id), thumbnail: thumb });
+    }
+
+    function renderResults(problem, matched) {
+        // Tags
+        const tagsEl = document.getElementById('detected-tags');
+        tagsEl.innerHTML = matched.map(c =>
+            `<span class="tip-tag text-brand-orange text-xs font-display uppercase tracking-wider px-2 py-0.5 rounded-full">
+                <i class="fa-solid ${c.icon} mr-1 text-[10px]"></i>${c.label}
+            </span>`
+        ).join('');
+
+        // Tips
+        const tipsList = document.getElementById('tips-list');
+        const genericTip = document.getElementById('generic-tip');
+
+        if (matched.length > 0) {
+            genericTip.classList.add('hidden');
+            tipsList.classList.remove('hidden');
+            // Collect tips from all matched categories (up to 3 per category)
+            const allTips = matched.flatMap(c => c.tips.slice(0, 3));
+            tipsList.innerHTML = allTips.map(tip =>
+                `<li class="flex items-start gap-3 text-gray-300 font-body text-sm leading-relaxed">
+                    <i class="fa-solid fa-circle-check text-brand-orange mt-0.5 flex-shrink-0"></i>
+                    <span>${tip}</span>
+                </li>`
+            ).join('');
+        } else {
+            tipsList.classList.add('hidden');
+            genericTip.classList.remove('hidden');
+            const tip = GENERIC_TIPS[Math.floor(Math.random() * GENERIC_TIPS.length)];
+            genericTip.innerHTML = `<i class="fa-solid fa-circle-info text-brand-orange mr-2"></i>${tip}<br><span class="text-gray-500 text-xs mt-2 block">No specific component detected. Try the YouTube searches below or bring the bike to us.</span>`;
+        }
+
+        // YouTube buttons
+        const ytEl = document.getElementById('yt-buttons');
+        const buttons = [];
+
+        // Always include a direct search for the user's exact problem
+        buttons.push({
+            label: 'Search: "' + problem.slice(0, 50) + (problem.length > 50 ? '…' : '') + '"',
+            q: problem + ' bike repair',
+            primary: true
+        });
+
+        // Add category-specific searches
+        matched.forEach(c => c.searches.forEach(s => buttons.push(s)));
+
+        ytEl.innerHTML = buttons.map((btn, i) => {
+            const isPrimary = btn.primary;
+            return `<a href="${ytURL(btn.q)}" target="_blank" rel="noopener noreferrer"
+                class="yt-btn rounded-xl p-4 flex items-center gap-3 ${isPrimary ? 'sm:col-span-2 border-brand-orange/30' : ''}">
+                <div class="w-9 h-9 bg-red-600/15 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <i class="fa-brands fa-youtube text-red-500 text-lg"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-white text-sm font-body font-semibold truncate">${esc(btn.label)}</p>
+                    <p class="text-gray-600 text-xs font-display uppercase tracking-wider">Opens YouTube search</p>
+                </div>
+                <i class="fa-solid fa-arrow-up-right-from-square text-gray-700 ml-auto flex-shrink-0 text-xs"></i>
+            </a>`;
+        }).join('');
+
+        const results = document.getElementById('results');
+        results.classList.remove('hidden');
+        results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ─── History ──────────────────────────────────────────────────────────────
+    function getHistory() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+        catch (_) { return []; }
+    }
+
+    function saveToHistory({ problem, matched, thumbnail }) {
+        const item = {
+            id: Date.now().toString(),
+            timestamp: new Date().toISOString(),
+            problem,
+            matched,
+            thumbnail
+        };
+
+        let history = [item, ...getHistory()].slice(0, MAX_HISTORY);
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+        } catch (_) {
+            const slim = history.map(h => ({ ...h, thumbnail: null }));
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(slim)); } catch (__) {}
+        }
+
+        renderHistory();
+    }
+
+    function clearHistory() {
+        if (!confirm('Clear all consultation history from this device?')) return;
+        localStorage.removeItem(STORAGE_KEY);
+        renderHistory();
+    }
+
+    function deleteItem(id) {
+        const history = getHistory().filter(h => h.id !== id);
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(history)); } catch (_) {}
+        renderHistory();
+    }
+
+    function renderHistory() {
+        const history = getHistory();
+        const section = document.getElementById('history-section');
+        if (history.length === 0) { section.classList.add('hidden'); return; }
+
+        section.classList.remove('hidden');
+        document.getElementById('history-count').textContent = history.length;
+
+        document.getElementById('history-list').innerHTML = history.map(item => {
+            const d = new Date(item.timestamp);
+            const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const snippet = item.problem.length > 140 ? item.problem.slice(0, 140) + '…' : item.problem;
+            const cats = (item.matched || []).map(id => KB.find(c => c.id === id)).filter(Boolean);
+
+            return `
+            <div class="bg-[#0B0B2B] border border-gray-800 hover:border-gray-700 rounded-xl overflow-hidden transition">
+                <button class="w-full text-left p-4 flex items-start gap-4 group" onclick="toggleItem('${item.id}')">
+                    ${item.thumbnail
+                        ? `<img src="${esc(item.thumbnail)}" class="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-gray-700" alt="">`
+                        : `<div class="w-16 h-16 rounded-lg bg-brand-orange/5 border border-gray-800 flex items-center justify-center flex-shrink-0">
+                               <i class="fa-solid fa-wrench text-brand-orange/30 text-xl"></i>
+                           </div>`}
+                    <div class="flex-1 min-w-0">
+                        <p class="text-gray-500 text-xs font-display uppercase tracking-wider mb-1">${dateStr} · ${timeStr}</p>
+                        <p class="text-gray-200 text-sm leading-snug mb-2">${esc(snippet)}</p>
+                        <div class="flex flex-wrap gap-1">
+                            ${cats.map(c => `<span class="text-brand-orange/60 text-xs font-display uppercase tracking-wide bg-brand-orange/5 px-2 py-0.5 rounded-full"><i class="fa-solid ${c.icon} mr-1 text-[10px]"></i>${c.label}</span>`).join('')}
+                        </div>
+                    </div>
+                    <i id="chev-${item.id}" class="history-chevron fa-solid fa-chevron-down text-gray-700 flex-shrink-0 mt-1 group-hover:text-gray-500 transition-colors"></i>
+                </button>
+                <div id="detail-${item.id}" class="hidden border-t border-gray-800/70">
+                    <div class="p-4 md:p-5">
+                        <p class="text-gray-400 text-sm font-body mb-4 leading-relaxed">${esc(item.problem)}</p>
+                        ${cats.length > 0 ? `
+                        <div class="space-y-2 mb-4">
+                            ${cats.flatMap(c => c.searches).map(s =>
+                                `<a href="${ytURL(s.q)}" target="_blank" rel="noopener noreferrer"
+                                    class="yt-btn rounded-lg px-3 py-2 flex items-center gap-2 text-sm">
+                                    <i class="fa-brands fa-youtube text-red-500"></i>
+                                    <span class="text-gray-300 truncate">${esc(s.label)}</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-gray-700 ml-auto text-xs flex-shrink-0"></i>
+                                </a>`
+                            ).join('')}
+                        </div>` : ''}
+                        <div class="flex items-center gap-4">
+                            <button onclick="rerun('${item.id}')"
+                                class="text-xs text-brand-orange hover:text-orange-300 font-display uppercase tracking-wider transition flex items-center gap-1">
+                                <i class="fa-solid fa-rotate-right"></i> Re-run
+                            </button>
+                            <button onclick="deleteItem('${item.id}')"
+                                class="text-xs text-gray-700 hover:text-red-400 font-display uppercase tracking-wider transition flex items-center gap-1">
+                                <i class="fa-solid fa-trash text-[10px]"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function toggleItem(id) {
+        const detail = document.getElementById('detail-' + id);
+        const chev = document.getElementById('chev-' + id);
+        const hidden = detail.classList.contains('hidden');
+        detail.classList.toggle('hidden', !hidden);
+        chev.classList.toggle('open', hidden);
+    }
+
+    function rerun(id) {
+        const item = getHistory().find(h => h.id === id);
+        if (!item) return;
+        document.getElementById('problem-input').value = item.problem;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => document.getElementById('problem-input').focus(), 400);
+    }
+
+    // Allow Enter+Ctrl or Enter+Cmd to submit
+    document.getElementById('problem-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) diagnose();
+    });
+
+    // ─── Init ─────────────────────────────────────────────────────────────────
+    renderHistory();
+    </script>
+</body>
+</html>
