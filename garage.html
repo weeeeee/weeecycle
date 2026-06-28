@@ -277,6 +277,10 @@
                         <i class="fa-solid fa-toolbox text-brand-orange/70 mr-1.5"></i> Tools You'll Need
                     </p>
                     <div id="tools-list" class="flex flex-wrap gap-2"></div>
+                    <p class="mt-4 text-gray-600 text-xs leading-relaxed">
+                        <i class="fa-brands fa-amazon mr-1"></i>
+                        As an Amazon Associate, Weeecycle earns from qualifying purchases. Links open Amazon search results — prices and availability may vary.
+                    </p>
                 </div>
             </div>
 
@@ -520,6 +524,7 @@
     // ─── Constants ────────────────────────────────────────────────────────────
     const STORAGE_KEY = 'weeecycle_garage_history';
     const MAX_HISTORY = 30;
+    const AMAZON_TAG = 'weeecycle07-20';
 
     // ─── Image handling ───────────────────────────────────────────────────────
     let currentFileBase64 = null;
@@ -653,11 +658,14 @@
         const toolsList = document.getElementById('tools-list');
         const allTools = [...new Set(matched.flatMap(c => c.tools || []))];
         if (allTools.length > 0) {
-            toolsList.innerHTML = allTools.map(tool =>
-                `<span class="inline-flex items-center gap-1.5 bg-gray-900 border border-gray-700 text-gray-300 text-xs font-display uppercase tracking-wide px-3 py-1.5 rounded-lg">
-                    <i class="fa-solid fa-screwdriver-wrench text-brand-orange/60 text-[10px]"></i>${esc(tool)}
-                </span>`
-            ).join('');
+            toolsList.innerHTML = allTools.map(tool => {
+                const q = encodeURIComponent('bicycle ' + tool);
+                const url = `https://www.amazon.com/s?k=${q}&tag=${AMAZON_TAG}`;
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer sponsored"
+                    class="inline-flex items-center gap-1.5 bg-gray-900 border border-gray-700 hover:border-brand-orange/50 hover:bg-brand-orange/5 text-gray-300 hover:text-white text-xs font-display uppercase tracking-wide px-3 py-1.5 rounded-lg transition duration-150 group">
+                    <i class="fa-solid fa-screwdriver-wrench text-brand-orange/60 group-hover:text-brand-orange text-[10px] transition"></i>${esc(tool)}<i class="fa-brands fa-amazon text-gray-700 group-hover:text-brand-orange/60 text-[10px] ml-0.5 transition"></i>
+                </a>`;
+            }).join('');
             toolsSection.classList.remove('hidden');
         } else {
             toolsSection.classList.add('hidden');
