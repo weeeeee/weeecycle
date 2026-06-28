@@ -270,6 +270,14 @@
                 </div>
                 <ul id="tips-list" class="space-y-3"></ul>
                 <p id="generic-tip" class="hidden text-gray-400 font-body text-sm leading-relaxed"></p>
+
+                <!-- Tools Needed -->
+                <div id="tools-section" class="hidden mt-6 pt-5 border-t border-gray-800/70">
+                    <p class="text-xs text-gray-500 font-display uppercase tracking-widest mb-3">
+                        <i class="fa-solid fa-toolbox text-brand-orange/70 mr-1.5"></i> Tools You'll Need
+                    </p>
+                    <div id="tools-list" class="flex flex-wrap gap-2"></div>
+                </div>
             </div>
 
             <!-- YouTube Searches -->
@@ -316,6 +324,7 @@
             label: 'Chain / Drivetrain',
             icon: 'fa-link',
             keywords: ['chain','skip','skipping','slip','slipping','jump','jumping','drop','dropped','drivetrain','cassette','cog','sprocket','crank'],
+            tools: ['Chain checker tool','Chain breaker / master link pliers','Cassette lockring tool','Chain whip','4 & 5 mm hex keys','Torque wrench'],
             tips: [
                 'Check chain wear — replace at 0.75% stretch (use a chain checker tool).',
                 'Worn chain + worn cassette together cause skipping under load. They often need replacing as a pair.',
@@ -334,6 +343,7 @@
             label: 'Shifting / Derailleur',
             icon: 'fa-shuffle',
             keywords: ['shift','shifting','derailleur','derailer','gear','gears','index','indexing','mech','front derailleur','rear derailleur','slow shift','won\'t shift','not shifting','cable'],
+            tools: ['Phillips #2 screwdriver','2 & 2.5 mm hex keys','5 mm hex key','Cable / housing cutters','Needle-nose pliers','Derailleur hanger alignment tool (if crashed)'],
             tips: [
                 'Most shifting problems are cable tension. Turn the barrel adjuster <strong>out</strong> (CCW) if struggling to go to larger cogs.',
                 'Check the cable for fraying at the pinch bolt — replace cable and housing if worn.',
@@ -352,6 +362,7 @@
             label: 'Brakes',
             icon: 'fa-circle-stop',
             keywords: ['brake','braking','stop','stopping','squeal','squealing','rub','rubbing','pad','pads','rotor','disc','bleed','bleeding','spongy','lever','hydraulic','cable brake','rim brake','caliper','modulation'],
+            tools: ['Isopropyl alcohol (90%+)','T25 Torx key','5 mm hex key','Hydraulic bleed kit (if bleeding)','Cable / housing cutters (cable brakes)','Torque wrench','Lint-free cloths / shop rags'],
             tips: [
                 'Disc brake squeal: clean the rotor with <strong>isopropyl alcohol</strong>. Never use WD-40 near brakes.',
                 'Contaminated pads cannot be cleaned — replace them and clean the rotor thoroughly.',
@@ -370,6 +381,7 @@
             label: 'Flat / Tyre',
             icon: 'fa-circle-exclamation',
             keywords: ['flat','puncture','tyre','tire','tube','tubeless','sealant','pinch','burst','blowout','leak','slow leak','deflate','deflating'],
+            tools: ['Tyre levers (x2–3)','Floor pump with pressure gauge','Patch kit or spare inner tube','CO2 inflator (roadside)','Bucket of water (to find puncture)','Tyre plug kit (tubeless)','Nitrile gloves'],
             tips: [
                 'Pinch flats (two small holes) = tyre pressure too low for your weight. Inflate more before riding.',
                 'Find the puncture by inflating slightly and submerging the tube in water — bubbles show the hole.',
@@ -388,6 +400,7 @@
             label: 'Creak / Noise',
             icon: 'fa-volume-high',
             keywords: ['creak','creaking','click','clicking','noise','sound','squeak','tick','ticking','knock','knocking','groan','crunch','rattle'],
+            tools: ['4 & 5 mm hex keys','Pedal wrench (15 mm)','Bottom bracket tool (BB-specific)','Torque wrench','Grease & anti-seize compound','Carbon assembly paste (carbon components)','Degreaser'],
             tips: [
                 'Creak from pedalling = <strong>bottom bracket</strong> in 80% of cases. Remove, degrease threads, apply fresh grease, reinstall to torque.',
                 'Pedal threads are another culprit. Left pedal is left-hand thread — remove them, grease the threads, reinstall.',
@@ -406,6 +419,7 @@
             label: 'Wheels / Spokes',
             icon: 'fa-circle',
             keywords: ['wheel','rim','spoke','spokes','true','truing','wobble','wobbling','buckled','bent','hub','bearing','axle','lateral','radial','hop'],
+            tools: ['Spoke wrench (correct size for your nipples)','Truing stand (or bike stand + zip tie)','Nipple driver','Spoke tension meter (optional)','Replacement spokes (correct length)'],
             tips: [
                 'Minor wobbles can be corrected with a spoke key. Tighten spokes on the <strong>high side</strong> of the wobble.',
                 'Work in small increments — quarter turns — to avoid overtightening and creating a new problem.',
@@ -424,6 +438,7 @@
             label: 'Steering / Headset',
             icon: 'fa-diamond',
             keywords: ['headset','stem','fork','steer','steering','handlebar','handlebars','clunk','loose','play','front end','front','wobble front'],
+            tools: ['4 & 5 mm hex keys','Torque wrench','Grease','Headset press (bearing replacement only)','Headset cup remover (bearing replacement only)'],
             tips: [
                 'Test for headset play: hold front brake and rock the bike. Any clunk = loose headset.',
                 'To adjust: loosen the two stem side bolts, tighten the top cap bolt (small one on top), then re-tighten stem bolts evenly.',
@@ -442,6 +457,7 @@
             label: 'Bottom Bracket',
             icon: 'fa-gear',
             keywords: ['bottom bracket','bb','bb30','press fit','threaded bb','crank','crankset','spindle','chainline'],
+            tools: ['Bottom bracket tool (BB-specific: HT2, BSA, PF30, etc.)','8 mm hex key or crank bolt tool','Crank extractor (square taper / older cranks)','Torque wrench','Grease or anti-seize (threaded BB)','Rubber mallet & BB press (press-fit)','Degreaser'],
             tips: [
                 'Press-fit BBs (PF30, BB86, BB92) are notorious for creaking. Clean shell, apply fresh grease or anti-seize, press back in.',
                 'Threaded BBs: use a proper BB tool and a torque wrench. Left-hand thread on the drive side (English standard).',
@@ -459,6 +475,7 @@
             label: 'Cables & Housing',
             icon: 'fa-minus',
             keywords: ['cable','cables','housing','wire','inner wire','fray','frayed','stretch','stretched','outer cable'],
+            tools: ['Cable / housing cutters','4 & 5 mm hex keys','Needle-nose pliers','Housing ferrules & end caps','Cable puller / 3rd hand tool (optional)','Dry or Teflon lube'],
             tips: [
                 'Replace cables and housing every 1–2 years or at first sign of fraying.',
                 'Cut housing square with cable cutters — diagonal cuts close up and block the inner wire.',
@@ -477,6 +494,7 @@
             label: 'Suspension',
             icon: 'fa-wave-square',
             keywords: ['fork','suspension','sag','rebound','damper','shock','air spring','coil','stanchion','seal','service suspension','fork service','rear shock'],
+            tools: ['Suspension / shock pump','Ruler or sag indicator zip tie','Hex keys (4, 5, 6 mm)','Torque wrench','Fork oil (correct weight for your fork)','Seal kit & foam rings','Rubber mallet','Nitrile gloves'],
             tips: [
                 'Set sag first: rider on bike in riding position, fork should compress ~25% of travel (trail/enduro), ~15–20% (XC).',
                 'Stanchion scratches or pitting will damage seals — replace stanchions or the whole fork.',
@@ -628,6 +646,21 @@
             genericTip.classList.remove('hidden');
             const tip = GENERIC_TIPS[Math.floor(Math.random() * GENERIC_TIPS.length)];
             genericTip.innerHTML = `<i class="fa-solid fa-circle-info text-brand-orange mr-2"></i>${tip}<br><span class="text-gray-500 text-xs mt-2 block">No specific component detected. Try the YouTube searches below or bring the bike to us.</span>`;
+        }
+
+        // Tools
+        const toolsSection = document.getElementById('tools-section');
+        const toolsList = document.getElementById('tools-list');
+        const allTools = [...new Set(matched.flatMap(c => c.tools || []))];
+        if (allTools.length > 0) {
+            toolsList.innerHTML = allTools.map(tool =>
+                `<span class="inline-flex items-center gap-1.5 bg-gray-900 border border-gray-700 text-gray-300 text-xs font-display uppercase tracking-wide px-3 py-1.5 rounded-lg">
+                    <i class="fa-solid fa-screwdriver-wrench text-brand-orange/60 text-[10px]"></i>${esc(tool)}
+                </span>`
+            ).join('');
+            toolsSection.classList.remove('hidden');
+        } else {
+            toolsSection.classList.add('hidden');
         }
 
         // YouTube buttons
