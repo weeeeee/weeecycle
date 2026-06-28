@@ -148,10 +148,21 @@
                     href="customer-portal.html">Repair Status</a>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
                     href="shop.html">Shop</a>
-                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
-                    href="tire-pressure.html">Tire Calc</a>
-                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
-                    href="garage.html">Garage</a>
+                <div class="relative group">
+                    <button class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide flex items-center gap-1.5">
+                        Your Garage <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200 group-hover:rotate-180"></i>
+                    </button>
+                    <div class="hidden group-hover:block absolute top-full left-1/2 -translate-x-1/2 pt-3 z-50">
+                        <div class="bg-[#0B0B2B] border border-brand-orange/20 rounded-xl shadow-2xl overflow-hidden min-w-[210px]">
+                            <a href="tire-pressure.html" class="flex items-center gap-3 px-5 py-3 text-gray-300 hover:bg-brand-orange/10 hover:text-brand-orange transition font-display uppercase tracking-wide text-sm border-b border-gray-800/60">
+                                <i class="fa-solid fa-gauge-high text-brand-orange/50 text-xs"></i> Tire Pressure Calc
+                            </a>
+                            <a href="garage.html" class="flex items-center gap-3 px-5 py-3 text-gray-300 hover:bg-brand-orange/10 hover:text-brand-orange transition font-display uppercase tracking-wide text-sm">
+                                <i class="fa-solid fa-wrench text-brand-orange/50 text-xs"></i> Bike Mechanic
+                            </a>
+                        </div>
+                    </div>
+                </div>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
                     href="mechanic-login.html">Shop Mechanic</a>
                 <a class="bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase tracking-wider py-2 px-6 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50"
@@ -189,12 +200,17 @@
                 <a class="text-xl font-display uppercase tracking-wide text-gray-200"
                     href="shop.html"
                     onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop</a>
-                <a class="text-xl font-display uppercase tracking-wide text-gray-200"
-                    href="tire-pressure.html"
-                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Tire Calc</a>
-                <a class="text-xl font-display uppercase tracking-wide text-gray-200"
-                    href="garage.html"
-                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Garage</a>
+                <div>
+                    <p class="text-xs text-brand-orange font-display uppercase tracking-widest mb-2">Your Garage</p>
+                    <div class="pl-3 border-l border-brand-orange/20 space-y-2">
+                        <a class="block text-lg font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition"
+                            href="tire-pressure.html"
+                            onclick="this.closest('#mobile-menu').classList.add('hidden')">Tire Calc</a>
+                        <a class="block text-lg font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition"
+                            href="garage.html"
+                            onclick="this.closest('#mobile-menu').classList.add('hidden')">Bike Mechanic</a>
+                    </div>
+                </div>
                 <a class="text-xl font-display uppercase tracking-wide text-gray-200"
                     href="mechanic-login.html"
                     onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop Mechanic</a>
