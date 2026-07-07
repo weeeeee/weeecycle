@@ -109,7 +109,9 @@
       "Bash(git -C /home/swhitelex/weeecycle add mechanic-login.html tracker/index.html tracker/assets/index-B7Zxc7dN.js)",
       "Bash(git -C /home/swhitelex/weeecycle rm tracker/assets/index-BZwlJpXv.js)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://weeecycle-production.up.railway.app/api/mechanic-login -X POST -H \"Content-Type: application/json\" -d '{\"username\":\"test\",\"password\":\"test\"}')",
-      "Bash(curl -s -i https://weeecycle-production.up.railway.app/api/mechanic-login -X POST -H \"Content-Type: application/json\" -d '{\"username\":\"test\",\"password\":\"test\"}')"
+      "Bash(curl -s -i https://weeecycle-production.up.railway.app/api/mechanic-login -X POST -H \"Content-Type: application/json\" -d '{\"username\":\"test\",\"password\":\"test\"}')",
+      "Bash(git -C /home/swhitelex/weeecycle remote -v)",
+      "Bash(git -C /home/swhitelex/weeecycle diff tire-pressure.html)"
     ],
     "additionalDirectories": [
       "/home/swhitelex/weeecycle/images"
