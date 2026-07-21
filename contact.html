@@ -397,7 +397,7 @@
                 for (let i = 0; i < select.options.length; i++) {
                     if (select.options[i].value === service) {
                         select.selectedIndex = i;
-                        toggleCustomerAlaCarte(); // fires notice/sub-menus for pre-selected service
+                        toggleCustomerAlaCarte();
                         break;
                     }
                 }
@@ -409,7 +409,6 @@
             const custom = document.getElementById('contact-custom-service');
             const other = document.getElementById('contact-custom-other');
 
-            // Show/hide A La Carte sub-selection
             if (notify.value === 'A La Carte') {
                 custom.classList.remove('hidden');
                 custom.focus();
@@ -433,26 +432,97 @@
             }
         }
 
-        // Form validation before Netlify submission
-        document.getElementById('contactForm').addEventListener('submit', function (e) {
-            let service = document.getElementById('service-menu') ? document.getElementById('service-menu').value : '';
-            if (service === 'A La Carte') {
+        document.getElementById('contactForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // --- A La Carte validation ---
+            let serviceValue = document.getElementById('service-menu').value;
+            if (serviceValue === 'A La Carte') {
                 const custom = document.getElementById('contact-custom-service').value.trim();
                 if (custom === 'Other') {
                     const customOther = document.getElementById('contact-custom-other').value.trim();
                     if (!customOther) {
-                        e.preventDefault();
                         alert("Please enter a custom service description.");
                         document.getElementById('contact-custom-other').focus();
                         return;
                     }
+                    serviceValue = `A La Carte — ${customOther}`;
                 } else if (!custom) {
-                     e.preventDefault();
-                     alert("Please select an Ala Carte service.");
-                     document.getElementById('contact-custom-service').focus();
-                     return;
+                    alert("Please select an A La Carte service.");
+                    document.getElementById('contact-custom-service').focus();
+                    return;
+                } else {
+                    serviceValue = `A La Carte — ${custom}`;
                 }
             }
+
+            const submitBtn = document.querySelector('#contactForm button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting…';
+
+            // --- Build payload from form fields ---
+            const fullname = document.getElementById('fullname').value.trim();
+            const nameParts = fullname.split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+
+            const payload = {
+                firstName,
+                lastName,
+                phone: document.getElementById('phone').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                address: document.getElementById('address').value.trim(),
+                city: document.getElementById('city').value.trim(),
+                state: document.getElementById('state').value.trim(),
+                zipCode: document.getElementById('zip').value.trim(),
+                requestedService: serviceValue,
+                bikeModel: document.getElementById('bike-model').value.trim(),
+                description: document.getElementById('description').value.trim(),
+            };
+
+            // --- Step 1: POST to server to populate Customer CMS ---
+            let cmsSuccess = false;
+            try {
+                const res = await fetch('/api/public/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                if (res.ok) cmsSuccess = true;
+            } catch (err) {
+                // Server unreachable — don't block the user, still send Netlify form
+                console.warn('CMS sync skipped (server unreachable):', err.message);
+            }
+
+            // --- Step 2: Submit Netlify form in the background ---
+            try {
+                const formData = new FormData(document.getElementById('contactForm'));
+                // Ensure Netlify gets the resolved service value
+                formData.set('service-menu', serviceValue);
+                await fetch('/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams(formData).toString(),
+                });
+            } catch (err) {
+                console.warn('Netlify form submission failed:', err.message);
+            }
+
+            // --- Step 3: Show confirmation UI ---
+            const formContainer = document.getElementById('contactForm');
+            formContainer.innerHTML = `
+                <div class="text-center py-12 px-4">
+                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-brand-orange/10 border-2 border-brand-orange mb-6">
+                        <span class="material-symbols-outlined text-brand-orange text-5xl">check_circle</span>
+                    </div>
+                    <h3 class="font-display font-bold text-4xl text-white uppercase mb-3">Request Received!</h3>
+                    <p class="text-gray-400 text-lg mb-2">Thanks, <span class="text-brand-orange font-semibold">${fullname}</span>. We'll be in touch soon to confirm your appointment.</p>
+                    <p class="text-gray-600 text-sm mb-8">Service: <span class="text-gray-400">${serviceValue}</span></p>
+                    <a href="index.html" class="inline-block bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-lg uppercase tracking-wider py-3 px-8 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50">
+                        Back to Home
+                    </a>
+                </div>
+            `;
         });
     </script>
 </body>

@@ -568,7 +568,7 @@ app.post('/api/builds/migrate', requireMechanicAuth, (req, res) => {
 
 
 app.post('/api/public/signup', (req, res) => {
-    const { firstName, lastName, phone, address, city, state, zipCode, requestedService, bikeModel } = req.body;
+    const { firstName, lastName, phone, email, address, city, state, zipCode, requestedService, bikeModel, description } = req.body;
     if (!firstName || !lastName || !phone) {
         return res.status(400).json({ error: 'First Name, Last Name, and Phone Number are required.' });
     }
@@ -576,22 +576,55 @@ app.post('/api/public/signup', (req, res) => {
     try {
         const existing = workshopDb.prepare('SELECT * FROM customers WHERE phone=?').get(phone.trim());
         let customerId;
+        const isNewCustomer = !existing;
         if (existing) {
-            workshopDb.prepare(`UPDATE customers SET firstName=?,lastName=?,address=?,city=?,state=?,zipCode=?,updatedAt=? WHERE id=?`)
-                .run(firstName.trim(), lastName.trim(), address?.trim(), city?.trim(), state, zipCode?.trim(), now, existing.id);
+            workshopDb.prepare(`UPDATE customers SET firstName=?,lastName=?,email=?,address=?,city=?,state=?,zipCode=?,updatedAt=? WHERE id=?`)
+                .run(firstName.trim(), lastName.trim(), email?.trim() || existing.email, address?.trim(), city?.trim(), state, zipCode?.trim(), now, existing.id);
             customerId = existing.id;
         } else {
-            const info = workshopDb.prepare(`INSERT INTO customers (firstName,lastName,phone,address,city,state,zipCode,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?)`)
-                .run(firstName.trim(), lastName.trim(), phone.trim(), address?.trim(), city?.trim(), state, zipCode?.trim(), now, now);
+            const info = workshopDb.prepare(`INSERT INTO customers (firstName,lastName,phone,email,address,city,state,zipCode,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?)`)
+                .run(firstName.trim(), lastName.trim(), phone.trim(), email?.trim() || null, address?.trim(), city?.trim(), state, zipCode?.trim(), now, now);
             customerId = info.lastInsertRowid;
         }
+        let jobId = null;
+        const serviceNotes = ['Customer self-service intake request.', description ? `Issue described: ${description.trim()}` : ''].filter(Boolean).join(' ');
         if (requestedService && requestedService.trim() !== '') {
             const jobInfo = workshopDb.prepare(`INSERT INTO jobs (customerId,title,stage,bikeModel,estimatedCost,notes,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?)`)
-                .run(customerId, requestedService.trim(), 'In the shop', bikeModel || 'Customer Bike', '', 'Customer self-service intake request.', now, now);
-            res.json({ success: true, customerId, jobId: jobInfo.lastInsertRowid });
-        } else {
-            res.json({ success: true, customerId });
+                .run(customerId, requestedService.trim(), 'Intake', bikeModel || 'Customer Bike', '', serviceNotes, now, now);
+            jobId = jobInfo.lastInsertRowid;
         }
+        // Send shop notification email
+        if (transporter) {
+            transporter.sendMail({
+                from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
+                to: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
+                subject: `🚲 New Booking: ${firstName.trim()} ${lastName.trim()} — ${requestedService || 'Contact Request'}`,
+                html: `
+                    <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+                        <div style="background:#FF8000;padding:20px;border-radius:8px 8px 0 0;">
+                            <h2 style="color:#fff;margin:0;font-size:20px;">🚲 New Service Booking</h2>
+                            <p style="color:#fff;margin:6px 0 0;font-size:13px;opacity:0.85;">Auto-added to Customer CMS</p>
+                        </div>
+                        <div style="background:#fff;padding:24px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px;">
+                            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                                <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;width:40%;">Customer</td><td style="padding:8px 4px;font-weight:bold;">${firstName.trim()} ${lastName.trim()}</td></tr>
+                                <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Phone</td><td style="padding:8px 4px;">${phone.trim()}</td></tr>
+                                <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Email</td><td style="padding:8px 4px;">${email?.trim() || '—'}</td></tr>
+                                <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Address</td><td style="padding:8px 4px;">${[address, city, state, zipCode].filter(Boolean).join(', ') || '—'}</td></tr>
+                                <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Service</td><td style="padding:8px 4px;font-weight:bold;color:#FF8000;">${requestedService || '—'}</td></tr>
+                                <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Bike</td><td style="padding:8px 4px;">${bikeModel || '—'}</td></tr>
+                                <tr><td style="padding:8px 4px;color:#64748b;">Issue Description</td><td style="padding:8px 4px;">${description?.trim() || '—'}</td></tr>
+                            </table>
+                            <div style="margin-top:20px;padding:12px;background:#f8fafc;border-radius:6px;font-size:12px;color:#64748b;">
+                                ${isNewCustomer ? '🆕 <strong>New customer</strong> — added to CMS.' : '🔄 <strong>Returning customer</strong> — CMS record updated.'}
+                                ${jobId ? ` Job #${jobId} created.` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `
+            }, (err) => { if (err) console.error('Booking notification email failed:', err); });
+        }
+        res.json({ success: true, customerId, jobId, isNewCustomer });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
