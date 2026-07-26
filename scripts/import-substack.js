@@ -445,7 +445,6 @@ ${bodyHtml}
         </div>
     </footer>
 
-    <script src="https://chatonbo.com/widget/chatonbo-widget.js" data-bot-id="8c5103fa-8367-42d1-92a8-b60504758ccd"></script>
 
     <script>
         const POST_SLUG = '${postSlug}';
