@@ -1,1 +1,3 @@
-/api/*  https://weeecycle-production.up.railway.app/api/:splat  200
+/shop       https://weeecycle.myshopify.com/  302
+/shop.html  https://weeecycle.myshopify.com/  302
+/api/*      https://weeecycle-production.up.railway.app/api/:splat  200
