@@ -628,16 +628,7 @@ app.post('/api/public/signup', (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.get('/api/public/status', (req, res) => {
-    const { phone } = req.query;
-    if (!phone) return res.status(400).json({ error: 'Phone number is required to look up repair status.' });
-    try {
-        const customer = workshopDb.prepare('SELECT * FROM customers WHERE phone=?').get(phone.trim());
-        if (!customer) return res.status(404).json({ error: 'No customer found matching that phone number.' });
-        const jobs = workshopDb.prepare(`SELECT id,title,stage,bikeModel,estimatedCost,notes,updatedAt FROM jobs WHERE customerId=? ORDER BY id DESC`).all(customer.id);
-        res.json({ customer: { firstName: customer.firstName, lastName: customer.lastName, phone: customer.phone }, jobs });
-    } catch (err) { res.status(500).json({ error: err.message }); }
-});
+
 
 // ─── Blog Comments ─────────────────────────────────────────────────────────────
 

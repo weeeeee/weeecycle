@@ -265,7 +265,6 @@ function buildPostPage({ title, subtitle, dateRaw, bodyHtml, bodyText, slug, cat
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="../index.html#services">Services</a>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="../index.html#handbook">Handbook</a>
                 <a class="font-display text-lg text-brand-orange font-bold uppercase tracking-wide" href="../blog.html">Blog</a>
-                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="../customer-portal.html">Repair Status</a>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="https://weeecycle.myshopify.com/" target="_blank" rel="noopener noreferrer">Shop</a>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="../reviews.html">Reviews</a>
                 <a class="bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase tracking-wider py-2 px-6 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50" href="../index.html#services">Book Service</a>
@@ -285,7 +284,6 @@ function buildPostPage({ title, subtitle, dateRaw, bodyHtml, bodyText, slug, cat
                 <a class="text-xl font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition" href="../index.html#services" onclick="this.closest('#mobile-menu').classList.add('hidden')">Services</a>
                 <a class="text-xl font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition" href="../index.html#handbook" onclick="this.closest('#mobile-menu').classList.add('hidden')">Handbook</a>
                 <a class="text-brand-orange text-xl font-display font-bold uppercase tracking-wide" href="../blog.html">Blog</a>
-                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="../customer-portal.html" onclick="this.closest('#mobile-menu').classList.add('hidden')">Repair Status</a>
                 <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="https://weeecycle.myshopify.com/" target="_blank" rel="noopener noreferrer" onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop</a>
                 <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="../reviews.html" onclick="this.closest('#mobile-menu').classList.add('hidden')">Reviews</a>
                 <a class="text-brand-orange text-xl font-display font-bold uppercase tracking-wide" href="../index.html#services" onclick="this.closest('#mobile-menu').classList.add('hidden')">Book Now</a>
