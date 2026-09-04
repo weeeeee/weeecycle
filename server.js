@@ -628,6 +628,39 @@ app.post('/api/public/signup', (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+app.post('/api/public/donate', (req, res) => {
+    const { fullname, address, phone, email, bikeType } = req.body;
+    if (!fullname || !phone || !address || !bikeType) {
+        return res.status(400).json({ error: 'Required fields missing.' });
+    }
+    
+    try {
+        if (transporter) {
+            transporter.sendMail({
+                from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
+                to: 'steve@weeecycle.net',
+                subject: `🚲 New Bike Donation: ${fullname}`,
+                html: `
+                    <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+                        <div style="background:#00b67a;padding:20px;border-radius:8px 8px 0 0;">
+                            <h2 style="color:#fff;margin:0;font-size:20px;">🚲 New Bike Donation (Jubilee Jobs)</h2>
+                        </div>
+                        <div style="background:#fff;padding:24px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px;">
+                            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                                <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;width:40%;">Name</td><td style="padding:8px 4px;font-weight:bold;">${fullname}</td></tr>
+                                <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Phone</td><td style="padding:8px 4px;">${phone}</td></tr>
+                                <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Email</td><td style="padding:8px 4px;">${email || '—'}</td></tr>
+                                <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Pickup Address</td><td style="padding:8px 4px;">${address}</td></tr>
+                                <tr><td style="padding:8px 4px;color:#64748b;">Bike Type</td><td style="padding:8px 4px;font-weight:bold;color:#00b67a;">${bikeType}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                `
+            }, (err) => { if (err) console.error('Donation notification email failed:', err); });
+        }
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
 
 
 // ─── Blog Comments ─────────────────────────────────────────────────────────────

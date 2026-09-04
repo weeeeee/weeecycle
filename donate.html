@@ -214,6 +214,24 @@
             submitBtn.textContent = 'Submitting…';
 
             try {
+                const payload = {
+                    fullname: document.getElementById('fullname').value.trim(),
+                    address: document.getElementById('address').value.trim(),
+                    phone: document.getElementById('phone').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    bikeType: document.getElementById('bike-type').value.trim(),
+                };
+                
+                await fetch('/api/public/donate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+            } catch (err) {
+                console.warn('Backend email notification skipped (server unreachable):', err.message);
+            }
+
+            try {
                 const formData = new FormData(document.getElementById('donateForm'));
                 await fetch('/', {
                     method: 'POST',
