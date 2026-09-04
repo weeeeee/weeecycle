@@ -214,15 +214,24 @@
             submitBtn.textContent = 'Submitting…';
 
             try {
+                const fullName = document.getElementById('fullname').value.trim();
+                const nameParts = fullName.split(' ');
+                const firstName = nameParts[0] || 'Donation';
+                const lastName = nameParts.slice(1).join(' ') || 'Request';
+                const bikeType = document.getElementById('bike-type').value.trim();
+
                 const payload = {
-                    fullname: document.getElementById('fullname').value.trim(),
+                    firstName: firstName,
+                    lastName: lastName,
                     address: document.getElementById('address').value.trim(),
                     phone: document.getElementById('phone').value.trim(),
                     email: document.getElementById('email').value.trim(),
-                    bikeType: document.getElementById('bike-type').value.trim(),
+                    requestedService: 'Bike Donation',
+                    bikeModel: bikeType,
+                    description: 'Bike donation for Jubilee Jobs.'
                 };
                 
-                await fetch('/api/public/donate', {
+                await fetch('/api/public/signup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
