@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PXE6HLHC80"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-PXE6HLHC80');
+    </script>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Donate a Bike | Weeecycle.net</title>
+    <meta name="description"
+        content="Donate your gently used bike to Jubilee Jobs of Lexington. We accept road and gravel bikes, helping those facing barriers to employment." />
+    <meta name="keywords"
+        content="donate a bike, jubilee jobs lexington, bicycle donation, weeecycle" />
+    <meta name="author" content="Weeecycle.net" />
+    <link rel="canonical" href="https://weeecycle.net/donate.html" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { dark: '#050511', blue: '#0B0B3B', orange: '#FF8000', slate: '#1e293b', light: '#f8fafc' }
+                    },
+                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Roboto Condensed', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #050511;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #FF8000;
+            border-radius: 4px;
+        }
+        /* Custom styles for details/summary */
+        details > summary {
+            list-style: none;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+    </style>
+    <link rel="icon" type="image/png" href="images/logo/gradient-bike.png" />
+    <link rel="apple-touch-icon" href="images/logo/gradient-bike.png" />
+    <link rel="manifest" href="/manifest.json" />
+</head>
+
+<body
+    class="bg-brand-dark text-gray-200 font-body antialiased selection:bg-brand-orange selection:text-white pb-20 md:pb-0">
+
+    <nav
+        class="fixed top-0 w-full z-50 bg-brand-dark/95 backdrop-blur border-b border-brand-orange/20 shadow-xl transition-all duration-300">
+        <div class="container mx-auto px-4 h-20 flex items-center justify-between">
+            <a class="flex items-center group" href="index.html">
+                <img src="images/logo/logo-landscape.png" alt="Weeecycle.net" class="h-10 md:h-12 w-auto object-contain drop-shadow-[0_0_8px_rgba(255,128,0,0.3)] transition transform group-hover:scale-105" />
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="index.html#services">Services</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="index.html#handbook">Handbook</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="https://weeecycle.substack.com" target="_blank" rel="noopener noreferrer">Substack</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="https://weeecycle.myshopify.com/" target="_blank" rel="noopener noreferrer">Shop</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="donate.html">Donate</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="mechanic-login.html">Shop Mechanic</a>
+                <a class="bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase tracking-wider py-2 px-6 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50"
+                    href="contact.html">Book Service</a>
+            </div>
+            <button class="md:hidden text-white hover:text-brand-orange transition"
+                onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"><span
+                    class="material-symbols-outlined text-4xl">menu</span></button>
+        </div>
+        <div class="hidden md:hidden bg-brand-dark border-t border-brand-orange/20 absolute w-full left-0 shadow-2xl"
+            id="mobile-menu">
+            <div class="flex flex-col p-4 space-y-4">
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="index.html#services"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Services</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition"
+                    href="index.html#handbook"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Handbook</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200"
+                    href="https://weeecycle.substack.com" target="_blank" rel="noopener noreferrer"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Blog</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="https://weeecycle.myshopify.com/" target="_blank" rel="noopener noreferrer"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition"
+                    href="donate.html"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Donate</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200"
+                    href="mechanic-login.html"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop Mechanic</a>
+                <a class="text-brand-orange text-xl font-display font-bold uppercase tracking-wide" href="contact.html"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Book Now</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="pt-32 pb-20 container mx-auto px-4 min-h-screen">
+        <div class="max-w-4xl mx-auto">
+            <div class="mb-12 text-center bg-[#0B0B2B] p-8 md:p-12 rounded-xl border border-gray-800 shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00b67a] to-brand-orange"></div>
+                
+                <h2 class="font-display font-bold text-5xl md:text-6xl text-white uppercase mb-6 tracking-tight">Partnering with <span class="text-[#00b67a]">Jubilee Jobs</span></h2>
+                
+                <div class="text-gray-300 text-lg md:text-xl font-light space-y-6 max-w-3xl mx-auto">
+                    <p>
+                        We accept donation of gently used or used with minor repair. We do not accept children's bikes or eBikes. We reserve the right to refuse a bike that isn't fixable or too costly to fix.
+                    </p>
+                    <p>
+                        The donation will be made to <a href="https://jubileejobsoflexington.org" target="_blank" rel="noopener noreferrer" class="text-brand-orange hover:text-orange-400 font-medium transition-colors border-b border-brand-orange/50 hover:border-brand-orange">Jubilee Jobs of Lexington</a>. 
+                    </p>
+                    <p>
+                        Jubilee Jobs of Lexington works to offer hope to all in Central Kentucky who desire to work but face barriers to securing stable, dignified employment.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Toolbar / Accordion -->
+            <details class="group bg-[#0B0B2B] border border-[#00b67a]/30 rounded-xl overflow-hidden shadow-2xl transition-all duration-300">
+                <summary class="bg-[#00b67a] hover:bg-[#00a067] text-white font-display font-bold text-3xl md:text-4xl uppercase tracking-wider py-5 px-8 cursor-pointer flex justify-between items-center transition-colors shadow-lg">
+                    <span class="flex items-center gap-3"><i class="fa-solid fa-bicycle"></i> Donate a Bike</span>
+                    <span class="material-symbols-outlined transform group-open:rotate-180 transition-transform duration-300 text-3xl">expand_more</span>
+                </summary>
+                
+                <div class="p-8 md:p-10 border-t border-gray-800 bg-brand-dark/50">
+                    <form id="donateForm" name="donate" method="POST" data-netlify="true" class="space-y-6">
+                        <input type="hidden" name="form-name" value="donate" />
+                        
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <!-- Name -->
+                            <div class="md:col-span-2">
+                                <label for="fullname" class="block text-[#00b67a] font-display font-bold text-lg uppercase tracking-wide mb-2">Full Name <span class="text-brand-orange">*</span></label>
+                                <input type="text" id="fullname" name="fullname" required class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-[#00b67a] transition" placeholder="Your Name">
+                            </div>
+
+                            <!-- Address -->
+                            <div class="md:col-span-2">
+                                <label for="address" class="block text-[#00b67a] font-display font-bold text-lg uppercase tracking-wide mb-2">Home Address to pick up bike <span class="text-brand-orange">*</span></label>
+                                <input type="text" id="address" name="address" required class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-[#00b67a] transition" placeholder="Street Address, City, State, Zip Code">
+                            </div>
+                            
+                            <!-- Phone -->
+                            <div>
+                                <label for="phone" class="block text-[#00b67a] font-display font-bold text-lg uppercase tracking-wide mb-2">Phone Number <span class="text-brand-orange">*</span></label>
+                                <input type="tel" id="phone" name="phone" required class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-[#00b67a] transition" placeholder="Your Phone Number">
+                            </div>
+                            
+                            <!-- Email -->
+                            <div>
+                                <label for="email" class="block text-[#00b67a] font-display font-bold text-lg uppercase tracking-wide mb-2">Email Address <span class="text-brand-orange">*</span></label>
+                                <input type="email" id="email" name="email" required class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-[#00b67a] transition" placeholder="your@email.com">
+                            </div>
+
+                            <!-- Type of bike -->
+                            <div class="md:col-span-2">
+                                <label for="bike-type" class="block text-[#00b67a] font-display font-bold text-lg uppercase tracking-wide mb-2">Type of Bike <span class="text-brand-orange">*</span></label>
+                                <input type="text" id="bike-type" name="bike-type" required class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-[#00b67a] transition" placeholder="e.g. Road, Mountain, Hybrid (No kids bikes or eBikes)">
+                            </div>
+                        </div>
+
+                        <div class="pt-4">
+                            <button type="submit" class="w-full bg-[#00b67a] hover:bg-[#00a067] text-white font-display font-bold text-2xl uppercase tracking-wider py-4 rounded transition transform hover:-translate-y-1 shadow-lg flex justify-center items-center gap-3">
+                                Donate Bike <i class="fa-solid fa-arrow-right text-lg"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <footer class="bg-black border-t border-gray-900 py-12">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex flex-col items-center md:items-start">
+                <a href="index.html" class="inline-block group">
+                    <img src="images/logo/logo-landscape.png" alt="Weeecycle.net" class="h-10 md:h-12 w-auto object-contain drop-shadow-[0_0_8px_rgba(255,128,0,0.3)] transition transform group-hover:scale-105" />
+                </a>
+                <span class="text-gray-500 text-xs uppercase tracking-[0.2em] mt-2">Building Speed. Fixing Fun.</span>
+            </div>
+            <div class="text-gray-600 text-xs uppercase tracking-wider">
+                <span>&copy; 2026 Weeecycle | Lexington, KY. All rights reserved. &nbsp;&middot;&nbsp; <a href="/privacy.html" class="hover:text-brand-orange transition-colors">Privacy Policy</a></span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('donateForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const submitBtn = document.querySelector('#donateForm button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting…';
+
+            try {
+                const formData = new FormData(document.getElementById('donateForm'));
+                await fetch('/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams(formData).toString(),
+                });
+                
+                // Show confirmation UI
+                const formContainer = document.getElementById('donateForm');
+                formContainer.innerHTML = `
+                    <div class="text-center py-8 px-4">
+                        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#00b67a]/10 border-2 border-[#00b67a] mb-6">
+                            <span class="material-symbols-outlined text-[#00b67a] text-5xl">check_circle</span>
+                        </div>
+                        <h3 class="font-display font-bold text-4xl text-white uppercase mb-3">Donation Request Received!</h3>
+                        <p class="text-gray-400 text-lg mb-8">Thank you for your generosity. We'll be in touch soon regarding your bike donation to Jubilee Jobs.</p>
+                        <a href="index.html" class="inline-block bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-lg uppercase tracking-wider py-3 px-8 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50">
+                            Back to Home
+                        </a>
+                    </div>
+                `;
+            } catch (err) {
+                console.warn('Form submission failed:', err.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                alert('There was an error submitting your request. Please try again.');
+            }
+        });
+    </script>
+</body>
+
+</html>
