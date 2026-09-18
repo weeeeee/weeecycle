@@ -130,6 +130,12 @@ try {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             customerId INTEGER, name TEXT, price REAL, createdAt TEXT
         );
+        CREATE TABLE IF NOT EXISTS receipts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            customerId INTEGER, date TEXT, vendor TEXT, category TEXT,
+            description TEXT, amount REAL, fileName TEXT, fileType TEXT,
+            thumb TEXT, fileData TEXT, createdAt TEXT, updatedAt TEXT
+        );
         CREATE TABLE IF NOT EXISTS builds (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT, description TEXT, customerId INTEGER,
@@ -316,6 +322,73 @@ app.post('/api/manual-parts-costs', requireMechanicAuth, (req, res) => {
 
 app.delete('/api/manual-parts-costs/:id', requireMechanicAuth, (req, res) => {
     try { workshopDb.prepare('DELETE FROM manual_parts_costs WHERE id=?').run(req.params.id); res.json({ success: true }); }
+    catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// REST API Endpoints for Receipts (Protected by requireMechanicAuth)
+// The list endpoint returns metadata + a small thumbnail only; the full file is fetched per receipt.
+const RECEIPT_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+const RECEIPT_MAX_FILE_BYTES = 8 * 1024 * 1024;
+const RECEIPT_COLUMNS = 'id,customerId,date,vendor,category,description,amount,fileName,fileType,thumb,createdAt,updatedAt';
+
+function parseReceiptDataUrl(dataUrl) {
+    const m = /^data:([a-z]+\/[a-z0-9.+-]+);base64,([A-Za-z0-9+/=]+)$/i.exec(dataUrl || '');
+    if (!m) return null;
+    const type = m[1].toLowerCase();
+    if (!RECEIPT_FILE_TYPES.includes(type)) return null;
+    if (Math.floor(m[2].length * 3 / 4) > RECEIPT_MAX_FILE_BYTES) return null;
+    return { type, buffer: Buffer.from(m[2], 'base64') };
+}
+
+app.get('/api/receipts', requireMechanicAuth, (_req, res) => {
+    try { res.json(workshopDb.prepare(`SELECT ${RECEIPT_COLUMNS} FROM receipts ORDER BY date DESC, id DESC`).all()); }
+    catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/receipts', requireMechanicAuth, (req, res) => {
+    const { customerId, date, vendor, category, description, amount, fileName, fileData, thumb } = req.body;
+    const file = parseReceiptDataUrl(fileData);
+    if (!file) return res.status(400).json({ error: 'Receipt must be a JPEG, PNG, WebP or PDF file under 8 MB.' });
+    if (thumb && !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(thumb)) return res.status(400).json({ error: 'Invalid thumbnail.' });
+    const now = new Date().toISOString();
+    try {
+        const info = workshopDb.prepare(
+            `INSERT INTO receipts (customerId,date,vendor,category,description,amount,fileName,fileType,thumb,fileData,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`
+        ).run(customerId ? parseInt(customerId) : null, date || now.slice(0, 10), vendor || '', category || 'Other', description || '',
+              parseFloat(amount) || 0, String(fileName || 'receipt').slice(0, 200), file.type, thumb || null, fileData, now, now);
+        res.json(workshopDb.prepare(`SELECT ${RECEIPT_COLUMNS} FROM receipts WHERE id=?`).get(info.lastInsertRowid));
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.put('/api/receipts/:id', requireMechanicAuth, (req, res) => {
+    const { customerId, date, vendor, category, description, amount } = req.body;
+    const now = new Date().toISOString();
+    try {
+        const info = workshopDb.prepare(
+            `UPDATE receipts SET customerId=?,date=?,vendor=?,category=?,description=?,amount=?,updatedAt=? WHERE id=?`
+        ).run(customerId ? parseInt(customerId) : null, date, vendor || '', category || 'Other', description || '', parseFloat(amount) || 0, now, req.params.id);
+        if (!info.changes) return res.status(404).json({ error: 'Receipt not found' });
+        res.json(workshopDb.prepare(`SELECT ${RECEIPT_COLUMNS} FROM receipts WHERE id=?`).get(req.params.id));
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/receipts/:id/file', requireMechanicAuth, (req, res) => {
+    try {
+        const row = workshopDb.prepare('SELECT fileName,fileData FROM receipts WHERE id=?').get(req.params.id);
+        const file = row && parseReceiptDataUrl(row.fileData);
+        if (!file) return res.status(404).json({ error: 'Receipt file not found' });
+        res.set({
+            'Content-Type': file.type,
+            'Content-Disposition': `inline; filename="${String(row.fileName).replace(/[^\w.\- ]/g, '_')}"`,
+            'X-Content-Type-Options': 'nosniff',
+            'Cache-Control': 'private, max-age=3600'
+        });
+        res.send(file.buffer);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/receipts/:id', requireMechanicAuth, (req, res) => {
+    try { workshopDb.prepare('DELETE FROM receipts WHERE id=?').run(req.params.id); res.json({ success: true }); }
     catch (err) { res.status(500).json({ error: err.message }); }
 });
 
