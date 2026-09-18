@@ -190,6 +190,7 @@ try {
         "ALTER TABLE invoices ADD COLUMN stripeInvoiceId TEXT",
         "ALTER TABLE invoices ADD COLUMN hostedInvoiceUrl TEXT",
         "ALTER TABLE invoices ADD COLUMN discount REAL DEFAULT 0",
+        "ALTER TABLE invoices ADD COLUMN bikeImage TEXT",
     ]) { try { workshopDb.exec(sql); } catch (_) {} }
     console.log('SQLite workshop database connected.');
 } catch (err) {
@@ -273,33 +274,62 @@ app.delete('/api/jobs/:id', requireMechanicAuth, (req, res) => {
 // REST API Endpoints for Invoices (Protected by requireMechanicAuth)
 app.get('/api/invoices', requireMechanicAuth, (req, res) => {
     try {
-        const rows = workshopDb.prepare('SELECT * FROM invoices ORDER BY id DESC').all();
-        res.json(rows.map(row => ({ ...row, items: row.items ? JSON.parse(row.items) : [] })));
+        const rows = workshopDb.prepare(
+            `SELECT id,customerId,type,status,issueDate,dueDate,items,subtotal,tax,discount,total,stripeInvoiceId,hostedInvoiceUrl,notes,createdAt,updatedAt,
+                    (bikeImage IS NOT NULL AND bikeImage != '') AS hasBikeImage
+             FROM invoices ORDER BY id DESC`
+        ).all();
+        res.json(rows.map(row => ({ ...row, hasBikeImage: !!row.hasBikeImage, items: row.items ? JSON.parse(row.items) : [] })));
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Optional bike photo on a quote/invoice. Stored on the invoice row but only served by the /image endpoint.
+const BIKE_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
+function parseBikeImage(dataUrl) {
+    const m = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/i.exec(dataUrl || '');
+    if (!m || Math.floor(m[2].length * 3 / 4) > BIKE_IMAGE_MAX_BYTES) return null;
+    return { type: m[1].toLowerCase(), buffer: Buffer.from(m[2], 'base64') };
+}
+const BIKE_IMAGE_ERROR = 'Bike photo must be a JPEG, PNG or WebP image under 4 MB.';
+
+app.get('/api/invoices/:id/image', requireMechanicAuth, (req, res) => {
+    try {
+        const row = workshopDb.prepare('SELECT bikeImage FROM invoices WHERE id=?').get(req.params.id);
+        const img = row && parseBikeImage(row.bikeImage);
+        if (!img) return res.status(404).json({ error: 'No bike photo on this document' });
+        res.set({ 'Content-Type': img.type, 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'private, no-cache' });
+        res.send(img.buffer);
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.post('/api/invoices', requireMechanicAuth, (req, res) => {
     const { customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, stripeInvoiceId, hostedInvoiceUrl, notes } = req.body;
     const discount = Math.max(0, parseFloat(req.body.discount) || 0);
+    const bikeImage = req.body.bikeImage || null;
+    if (bikeImage && !parseBikeImage(bikeImage)) return res.status(400).json({ error: BIKE_IMAGE_ERROR });
     const now = new Date().toISOString();
     const itemsStr = JSON.stringify(items || []);
     try {
         const info = workshopDb.prepare(
-            `INSERT INTO invoices (customerId,type,status,issueDate,dueDate,items,subtotal,tax,discount,total,stripeInvoiceId,hostedInvoiceUrl,notes,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-        ).run(customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, discount, total, stripeInvoiceId || null, hostedInvoiceUrl || null, notes, now, now);
-        res.json({ id: info.lastInsertRowid, customerId, type, status, issueDate, dueDate, items, subtotal, tax, discount, total, stripeInvoiceId, hostedInvoiceUrl, notes, createdAt: now, updatedAt: now });
+            `INSERT INTO invoices (customerId,type,status,issueDate,dueDate,items,subtotal,tax,discount,total,stripeInvoiceId,hostedInvoiceUrl,notes,bikeImage,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+        ).run(customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, discount, total, stripeInvoiceId || null, hostedInvoiceUrl || null, notes, bikeImage, now, now);
+        res.json({ id: info.lastInsertRowid, customerId, type, status, issueDate, dueDate, items, subtotal, tax, discount, total, stripeInvoiceId, hostedInvoiceUrl, notes, hasBikeImage: !!bikeImage, createdAt: now, updatedAt: now });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.put('/api/invoices/:id', requireMechanicAuth, (req, res) => {
     const { customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, stripeInvoiceId, hostedInvoiceUrl, notes } = req.body;
     const discount = Math.max(0, parseFloat(req.body.discount) || 0);
+    const changesPhoto = 'bikeImage' in req.body;
+    const bikeImage = req.body.bikeImage || null;
+    if (bikeImage && !parseBikeImage(bikeImage)) return res.status(400).json({ error: BIKE_IMAGE_ERROR });
     const now = new Date().toISOString();
     const itemsStr = JSON.stringify(items || []);
     try {
         workshopDb.prepare(
             `UPDATE invoices SET customerId=?,type=?,status=?,issueDate=?,dueDate=?,items=?,subtotal=?,tax=?,discount=?,total=?,stripeInvoiceId=?,hostedInvoiceUrl=?,notes=?,updatedAt=? WHERE id=?`
         ).run(customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, discount, total, stripeInvoiceId || null, hostedInvoiceUrl || null, notes, now, req.params.id);
+        if (changesPhoto) workshopDb.prepare('UPDATE invoices SET bikeImage=? WHERE id=?').run(bikeImage, req.params.id);
         res.json({ success: true, id: req.params.id });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
