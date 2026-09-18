@@ -188,6 +188,7 @@ try {
         "ALTER TABLE customers ADD COLUMN stripeCustomerId TEXT",
         "ALTER TABLE invoices ADD COLUMN stripeInvoiceId TEXT",
         "ALTER TABLE invoices ADD COLUMN hostedInvoiceUrl TEXT",
+        "ALTER TABLE invoices ADD COLUMN discount REAL DEFAULT 0",
     ]) { try { workshopDb.exec(sql); } catch (_) {} }
     console.log('SQLite workshop database connected.');
 } catch (err) {
@@ -276,24 +277,26 @@ app.get('/api/invoices', requireMechanicAuth, (req, res) => {
 
 app.post('/api/invoices', requireMechanicAuth, (req, res) => {
     const { customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, stripeInvoiceId, hostedInvoiceUrl, notes } = req.body;
+    const discount = Math.max(0, parseFloat(req.body.discount) || 0);
     const now = new Date().toISOString();
     const itemsStr = JSON.stringify(items || []);
     try {
         const info = workshopDb.prepare(
-            `INSERT INTO invoices (customerId,type,status,issueDate,dueDate,items,subtotal,tax,total,stripeInvoiceId,hostedInvoiceUrl,notes,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-        ).run(customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, total, stripeInvoiceId || null, hostedInvoiceUrl || null, notes, now, now);
-        res.json({ id: info.lastInsertRowid, customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, stripeInvoiceId, hostedInvoiceUrl, notes, createdAt: now, updatedAt: now });
+            `INSERT INTO invoices (customerId,type,status,issueDate,dueDate,items,subtotal,tax,discount,total,stripeInvoiceId,hostedInvoiceUrl,notes,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+        ).run(customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, discount, total, stripeInvoiceId || null, hostedInvoiceUrl || null, notes, now, now);
+        res.json({ id: info.lastInsertRowid, customerId, type, status, issueDate, dueDate, items, subtotal, tax, discount, total, stripeInvoiceId, hostedInvoiceUrl, notes, createdAt: now, updatedAt: now });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.put('/api/invoices/:id', requireMechanicAuth, (req, res) => {
     const { customerId, type, status, issueDate, dueDate, items, subtotal, tax, total, stripeInvoiceId, hostedInvoiceUrl, notes } = req.body;
+    const discount = Math.max(0, parseFloat(req.body.discount) || 0);
     const now = new Date().toISOString();
     const itemsStr = JSON.stringify(items || []);
     try {
         workshopDb.prepare(
-            `UPDATE invoices SET customerId=?,type=?,status=?,issueDate=?,dueDate=?,items=?,subtotal=?,tax=?,total=?,stripeInvoiceId=?,hostedInvoiceUrl=?,notes=?,updatedAt=? WHERE id=?`
-        ).run(customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, total, stripeInvoiceId || null, hostedInvoiceUrl || null, notes, now, req.params.id);
+            `UPDATE invoices SET customerId=?,type=?,status=?,issueDate=?,dueDate=?,items=?,subtotal=?,tax=?,discount=?,total=?,stripeInvoiceId=?,hostedInvoiceUrl=?,notes=?,updatedAt=? WHERE id=?`
+        ).run(customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, discount, total, stripeInvoiceId || null, hostedInvoiceUrl || null, notes, now, req.params.id);
         res.json({ success: true, id: req.params.id });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
