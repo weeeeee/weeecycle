@@ -186,6 +186,7 @@ try {
     for (const sql of [
         "ALTER TABLE customers ADD COLUMN email TEXT",
         "ALTER TABLE customers ADD COLUMN stripeCustomerId TEXT",
+        "ALTER TABLE customers ADD COLUMN company TEXT",
         "ALTER TABLE invoices ADD COLUMN stripeInvoiceId TEXT",
         "ALTER TABLE invoices ADD COLUMN hostedInvoiceUrl TEXT",
         "ALTER TABLE invoices ADD COLUMN discount REAL DEFAULT 0",
@@ -204,22 +205,24 @@ app.get('/api/customers', requireMechanicAuth, (req, res) => {
 
 app.post('/api/customers', requireMechanicAuth, (req, res) => {
     const { firstName, lastName, phone, email, stripeCustomerId, address, city, state, zipCode } = req.body;
+    const company = String(req.body.company || '').trim();
     const now = new Date().toISOString();
     try {
         const info = workshopDb.prepare(
-            `INSERT INTO customers (firstName,lastName,phone,email,stripeCustomerId,address,city,state,zipCode,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?)`
-        ).run(firstName, lastName, phone, email, stripeCustomerId || null, address, city, state, zipCode, now, now);
-        res.json({ id: info.lastInsertRowid, firstName, lastName, phone, email, stripeCustomerId, address, city, state, zipCode, createdAt: now, updatedAt: now });
+            `INSERT INTO customers (firstName,lastName,company,phone,email,stripeCustomerId,address,city,state,zipCode,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`
+        ).run(firstName, lastName, company, phone, email, stripeCustomerId || null, address, city, state, zipCode, now, now);
+        res.json({ id: info.lastInsertRowid, firstName, lastName, company, phone, email, stripeCustomerId, address, city, state, zipCode, createdAt: now, updatedAt: now });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.put('/api/customers/:id', requireMechanicAuth, (req, res) => {
     const { firstName, lastName, phone, email, stripeCustomerId, address, city, state, zipCode } = req.body;
+    const company = String(req.body.company || '').trim();
     const now = new Date().toISOString();
     try {
         workshopDb.prepare(
-            `UPDATE customers SET firstName=?,lastName=?,phone=?,email=?,stripeCustomerId=?,address=?,city=?,state=?,zipCode=?,updatedAt=? WHERE id=?`
-        ).run(firstName, lastName, phone, email, stripeCustomerId || null, address, city, state, zipCode, now, req.params.id);
+            `UPDATE customers SET firstName=?,lastName=?,company=?,phone=?,email=?,stripeCustomerId=?,address=?,city=?,state=?,zipCode=?,updatedAt=? WHERE id=?`
+        ).run(firstName, lastName, company, phone, email, stripeCustomerId || null, address, city, state, zipCode, now, req.params.id);
         res.json({ success: true, id: req.params.id });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
