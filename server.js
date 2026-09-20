@@ -8,6 +8,7 @@ process.on('unhandledRejection', (reason) => {
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
+const { TEMPLATES: WORK_ORDER_TEMPLATES, cleanWorkOrderData, renderWorkOrderPdf } = require('./workOrderPdf');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
@@ -129,6 +130,11 @@ try {
         CREATE TABLE IF NOT EXISTS manual_parts_costs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             customerId INTEGER, name TEXT, price REAL, createdAt TEXT
+        );
+        CREATE TABLE IF NOT EXISTS work_orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            edition TEXT, customerId INTEGER, data TEXT,
+            lastEmailedTo TEXT, lastEmailedAt TEXT, createdAt TEXT, updatedAt TEXT
         );
         CREATE TABLE IF NOT EXISTS receipts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -426,6 +432,94 @@ app.get('/api/receipts/:id/file', requireMechanicAuth, (req, res) => {
 app.delete('/api/receipts/:id', requireMechanicAuth, (req, res) => {
     try { workshopDb.prepare('DELETE FROM receipts WHERE id=?').run(req.params.id); res.json({ success: true }); }
     catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// REST API Endpoints for Work Orders / Inspection Checklists (Protected by requireMechanicAuth)
+function hydrateWorkOrder(row) {
+    let data = {};
+    try { data = JSON.parse(row.data || '{}'); } catch (e) { /* damaged row: treated as empty */ }
+    return { ...row, data: cleanWorkOrderData(row.edition, data) };
+}
+const escapeHtml = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+app.get('/api/work-order-templates', requireMechanicAuth, (_req, res) => res.json(WORK_ORDER_TEMPLATES));
+
+app.get('/api/work-orders', requireMechanicAuth, (_req, res) => {
+    try { res.json(workshopDb.prepare('SELECT * FROM work_orders ORDER BY updatedAt DESC, id DESC').all().map(hydrateWorkOrder)); }
+    catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/work-orders', requireMechanicAuth, (req, res) => {
+    const { edition, customerId } = req.body;
+    if (!WORK_ORDER_TEMPLATES[edition]) return res.status(400).json({ error: 'Edition must be "rim" or "disc".' });
+    const now = new Date().toISOString();
+    try {
+        const info = workshopDb.prepare('INSERT INTO work_orders (edition,customerId,data,createdAt,updatedAt) VALUES (?,?,?,?,?)')
+            .run(edition, customerId ? parseInt(customerId) : null, JSON.stringify(cleanWorkOrderData(edition, req.body.data)), now, now);
+        res.json(hydrateWorkOrder(workshopDb.prepare('SELECT * FROM work_orders WHERE id=?').get(info.lastInsertRowid)));
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.put('/api/work-orders/:id', requireMechanicAuth, (req, res) => {
+    try {
+        const row = workshopDb.prepare('SELECT * FROM work_orders WHERE id=?').get(req.params.id);
+        if (!row) return res.status(404).json({ error: 'Work order not found' });
+        workshopDb.prepare('UPDATE work_orders SET customerId=?,data=?,updatedAt=? WHERE id=?')
+            .run(req.body.customerId ? parseInt(req.body.customerId) : null, JSON.stringify(cleanWorkOrderData(row.edition, req.body.data)), new Date().toISOString(), req.params.id);
+        res.json(hydrateWorkOrder(workshopDb.prepare('SELECT * FROM work_orders WHERE id=?').get(req.params.id)));
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/work-orders/:id', requireMechanicAuth, (req, res) => {
+    try { workshopDb.prepare('DELETE FROM work_orders WHERE id=?').run(req.params.id); res.json({ success: true }); }
+    catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+const workOrderPdfName = (order) => `work-order-${String(order.data.header.woTag || order.id).replace(/[^\w.-]+/g, '_').slice(0, 40)}.pdf`;
+
+app.get('/api/work-orders/:id/pdf', requireMechanicAuth, async (req, res) => {
+    try {
+        const row = workshopDb.prepare('SELECT * FROM work_orders WHERE id=?').get(req.params.id);
+        if (!row) return res.status(404).json({ error: 'Work order not found' });
+        const order = hydrateWorkOrder(row);
+        const pdf = await renderWorkOrderPdf(order);
+        res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': `inline; filename="${workOrderPdfName(order)}"`, 'Cache-Control': 'no-store' });
+        res.send(pdf);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/work-orders/:id/email', requireMechanicAuth, async (req, res) => {
+    const to = String(req.body.to || '').trim();
+    if (to.length > 200 || !/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(to)) return res.status(400).json({ error: 'Please enter a valid email address.' });
+    if (!transporter) return res.status(503).json({ error: 'Email is not set up on the server (SMTP settings are missing).' });
+    try {
+        const row = workshopDb.prepare('SELECT * FROM work_orders WHERE id=?').get(req.params.id);
+        if (!row) return res.status(404).json({ error: 'Work order not found' });
+        const order = hydrateWorkOrder(row);
+        const h = order.data.header;
+        const editionLabel = WORK_ORDER_TEMPLATES[order.edition].editionLabel;
+        const note = String(req.body.message || '').trim().slice(0, 1000);
+        const subject = `Work Order & Inspection Checklist${h.bike ? ' — ' + h.bike : ''}`.replace(/[\r\n]+/g, ' ').slice(0, 150);
+        const mail = {
+            from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
+            to,
+            subject,
+            text: `${note ? note + '\n\n' : ''}Attached is the ${editionLabel} work order & inspection checklist${h.bike ? ' for ' + h.bike : ''}.\n\nWeeecycle.net - Road & Gravel Specialists\nLexington, KY`,
+            html: `<div style="font-family:Arial,sans-serif;max-width:560px;color:#1e293b;">
+                ${note ? `<p style="white-space:pre-wrap;">${escapeHtml(note)}</p>` : ''}
+                <p>Attached is the <strong>${escapeHtml(editionLabel)}</strong> work order &amp; inspection checklist${h.bike ? ' for <strong>' + escapeHtml(h.bike) + '</strong>' : ''}.</p>
+                <p style="color:#64748b;font-size:13px;">Weeecycle.net &middot; Road &amp; Gravel Specialists &middot; Lexington, KY</p>
+            </div>`,
+            attachments: [{ filename: workOrderPdfName(order), content: await renderWorkOrderPdf(order), contentType: 'application/pdf' }],
+        };
+        if (req.body.copyMe) mail.bcc = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
+        await transporter.sendMail(mail);
+        workshopDb.prepare('UPDATE work_orders SET lastEmailedTo=?,lastEmailedAt=? WHERE id=?').run(to, new Date().toISOString(), req.params.id);
+        res.json({ success: true, to });
+    } catch (err) {
+        console.error('Work order email failed:', err.message);
+        res.status(502).json({ error: err.code === 'EAUTH' ? "The email server rejected the shop's login, so the password in the server settings needs to be updated." : `Could not send the email: ${err.message}` });
+    }
 });
 
 // ─── Builds, Components, Orders, Extras, Geometry ─────────────────────────────
