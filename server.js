@@ -578,6 +578,23 @@ app.delete('/api/builds/:id', requireMechanicAuth, (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// POST /api/components — adds a single missing component stub to an existing build
+// (used to self-heal builds created before a component type like "tire" existed)
+app.post('/api/components', requireMechanicAuth, (req, res) => {
+    const { buildId, type } = req.body;
+    if (!buildId || !BUILD_COMPONENT_TYPES.includes(type)) return res.status(400).json({ error: 'Invalid buildId or component type.' });
+    try {
+        const build = workshopDb.prepare('SELECT id FROM builds WHERE id=?').get(buildId);
+        if (!build) return res.status(404).json({ error: 'Build not found on the server.' });
+        const existing = workshopDb.prepare('SELECT * FROM components WHERE buildId=? AND type=?').get(buildId, type);
+        if (existing) return res.json({ ...existing, imageUrls: parseImageUrls(existing) });
+        const info = workshopDb.prepare(
+            `INSERT INTO components (buildId,type,name,imageUrls,price,description,notes,sourceUrl,status) VALUES (?,?,'','[]','','','','','planned')`
+        ).run(buildId, type);
+        res.json({ id: info.lastInsertRowid, buildId: parseInt(buildId), type, name: '', imageUrls: [], price: '', description: '', notes: '', sourceUrl: '', status: 'planned' });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // PUT /api/components/:id — update a single component
 app.put('/api/components/:id', requireMechanicAuth, (req, res) => {
     const { name, price, description, notes, sourceUrl, status, imageUrls } = req.body;
