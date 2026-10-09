@@ -198,6 +198,21 @@ try {
         "ALTER TABLE invoices ADD COLUMN discount REAL DEFAULT 0",
         "ALTER TABLE invoices ADD COLUMN bikeImage TEXT",
     ]) { try { workshopDb.exec(sql); } catch (_) {} }
+
+    // Backfill: give every existing build a Tire component panel (new builds get one from BUILD_COMPONENT_TYPES already)
+    try {
+        const missingTire = workshopDb.prepare(
+            `SELECT id FROM builds WHERE id NOT IN (SELECT buildId FROM components WHERE type='tire')`
+        ).all();
+        if (missingTire.length) {
+            const insertTire = workshopDb.prepare(
+                `INSERT INTO components (buildId,type,name,imageUrls,price,description,notes,sourceUrl,status) VALUES (?,'tire','','[]','','','','','planned')`
+            );
+            workshopDb.transaction(() => { for (const b of missingTire) insertTire.run(b.id); })();
+            console.log(`Added Tire component to ${missingTire.length} existing build(s).`);
+        }
+    } catch (err) { console.error('Tire backfill failed:', err.message); }
+
     console.log('SQLite workshop database connected.');
 } catch (err) {
     console.error('Error opening SQLite database:', err);
@@ -260,13 +275,15 @@ app.post('/api/jobs', requireMechanicAuth, (req, res) => {
 });
 
 app.put('/api/jobs/:id', requireMechanicAuth, (req, res) => {
-    const { stage, notes, estimatedCost } = req.body;
+    const { stage, notes, estimatedCost, bikeModel } = req.body;
     const now = new Date().toISOString();
     try {
         if (stage && !notes && !estimatedCost) {
             workshopDb.prepare(`UPDATE jobs SET stage=?,updatedAt=? WHERE id=?`).run(stage, now, req.params.id);
         } else {
-            workshopDb.prepare(`UPDATE jobs SET notes=?,estimatedCost=?,updatedAt=? WHERE id=?`).run(notes, estimatedCost, now, req.params.id);
+            // bikeModel is optional here: when a request doesn't send it, the saved bike is left alone (an empty string clears it)
+            workshopDb.prepare(`UPDATE jobs SET bikeModel=COALESCE(?,bikeModel),notes=?,estimatedCost=?,updatedAt=? WHERE id=?`)
+                .run(bikeModel === undefined ? null : String(bikeModel).slice(0, 200), notes, estimatedCost, now, req.params.id);
         }
         res.json({ success: true, id: req.params.id });
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -489,7 +506,7 @@ app.get('/api/work-orders/:id/pdf', requireMechanicAuth, async (req, res) => {
 
 // ─── Builds, Components, Orders, Extras, Geometry ─────────────────────────────
 
-const BUILD_COMPONENT_TYPES = ['frame','wheelset','bottomBracket','crank','frontDerailleur','rearDerailleur','levers','cassette','chain','seat','seatPost','headset','stem','fork','handlebars'];
+const BUILD_COMPONENT_TYPES = ['frame','wheelset','bottomBracket','crank','frontDerailleur','rearDerailleur','levers','cassette','chain','seat','seatPost','headset','stem','fork','handlebars','tire'];
 
 // Helper: parse imageUrls JSON from SQLite row
 function parseImageUrls(row) {
