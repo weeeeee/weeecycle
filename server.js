@@ -968,7 +968,26 @@ app.use(express.static(path.join(__dirname, '/')));
 
 // Email Transporter Setup
 let transporter;
-if (process.env.SMTP_HOST) {
+if (process.env.RESEND_API_KEY) {
+    // Resend sends over HTTPS, which works on hosts that block outbound SMTP ports (e.g. Railway)
+    transporter = {
+        sendMail: async ({ from, to, subject, html, text, replyTo, attachments = [] }) => {
+            const response = await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    from, to, subject, html, text, reply_to: replyTo,
+                    attachments: attachments.map(a => ({ filename: a.filename, content: Buffer.from(a.content).toString('base64') }))
+                }),
+                signal: AbortSignal.timeout(20000)
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.message || `Resend responded with status ${response.status}`);
+            return data;
+        }
+    };
+    console.log('Resend email transporter configured.');
+} else if (process.env.SMTP_HOST) {
     transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: process.env.SMTP_PORT || 465,
@@ -976,11 +995,15 @@ if (process.env.SMTP_HOST) {
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS
-        }
+        },
+        // Fail fast instead of hanging when the host blocks outbound SMTP
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 20000
     });
     console.log('Nodemailer SMTP transporter configured for:', process.env.SMTP_USER);
 } else {
-    console.warn('SMTP credentials missing in .env. Email delivery will be disabled.');
+    console.warn('Email credentials missing in .env. Email delivery will be disabled.');
 }
 
 // Helper to fetch/convert image URL to Buffer for PDFKit
@@ -1016,7 +1039,7 @@ app.post('/api/send-build-pdf', requireMechanicAuth, async (req, res) => {
     }
 
     if (!transporter) {
-        return res.status(500).json({ error: 'SMTP email transporter is not configured on the server.' });
+        return res.status(500).json({ error: 'Email is not configured on the server.' });
     }
 
     try {
@@ -1064,9 +1087,17 @@ app.post('/api/send-build-pdf', requireMechanicAuth, async (req, res) => {
             };
 
             console.log('Sending email with PDF attachment...');
-            await transporter.sendMail(mailOptions);
-            console.log('Email sent successfully to:', customerEmail);
-            res.json({ success: true, message: 'PDF generated and sent successfully!' });
+            try {
+                await transporter.sendMail(mailOptions);
+                console.log('Email sent successfully to:', customerEmail);
+                res.json({ success: true, message: 'PDF generated and sent successfully!' });
+            } catch (err) {
+                console.error('Email send failed:', err.message);
+                const blocked = ['ETIMEDOUT', 'ESOCKET', 'ECONNECTION', 'ECONNREFUSED'].includes(err.code);
+                res.status(502).json({ error: blocked
+                    ? 'Could not reach the email server — the host is blocking outbound email.'
+                    : `Email could not be sent: ${err.message}` });
+            }
         });
 
         // --- PDF STYLING & CONTENT ---
