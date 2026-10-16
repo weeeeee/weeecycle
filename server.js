@@ -24,7 +24,12 @@ app.use(cors({
     origin: ['https://weeecycle.net', 'https://chili-cultural-disrupt.ngrok-free.dev', 'http://localhost:3000', 'http://localhost:5173'],
     credentials: true
 }));
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({
+    limit: '50mb',
+    verify: (req, res, buf) => {
+        req.rawBody = buf;
+    }
+}));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 
@@ -360,6 +365,479 @@ app.put('/api/invoices/:id', requireMechanicAuth, (req, res) => {
 app.delete('/api/invoices/:id', requireMechanicAuth, (req, res) => {
     try { workshopDb.prepare('DELETE FROM invoices WHERE id=?').run(req.params.id); res.json({ success: true }); }
     catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Stripe & Twilio API Helpers & Endpoints
+function getStripeConfig() {
+    const secretKey = (process.env.STRIPE_SECRET_KEY || '').trim();
+    const webhookSecret = (process.env.STRIPE_WEBHOOK_SECRET || '').trim();
+    const isMock = !secretKey || secretKey.startsWith('sk_live_...') || secretKey.startsWith('sk_test_...') || secretKey.includes('placeholder');
+    return { secretKey, webhookSecret, isMock };
+}
+
+function getTwilioConfig() {
+    const accountSid = (process.env.TWILIO_ACCOUNT_SID || '').trim();
+    const authToken = (process.env.TWILIO_AUTH_TOKEN || '').trim();
+    const fromNumber = (process.env.TWILIO_PHONE_NUMBER || '').trim();
+    const isMock = !accountSid || !authToken || !fromNumber || accountSid.startsWith('AC_placeholder') || accountSid.includes('...');
+    return { accountSid, authToken, fromNumber, isMock };
+}
+
+function formatPhoneE164(phone) {
+    if (!phone) return null;
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length === 10) return `+1${digits}`;
+    if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
+    if (phone.trim().startsWith('+')) return phone.trim();
+    return null;
+}
+
+async function sendTwilioSms({ to, message }) {
+    const { accountSid, authToken, fromNumber, isMock } = getTwilioConfig();
+    const formattedTo = formatPhoneE164(to);
+    if (!formattedTo) {
+        throw new Error(`Invalid phone number: "${to}". Must be a valid 10-digit US phone number.`);
+    }
+
+    if (isMock) {
+        console.log(`[Twilio SMS Simulator] To: ${formattedTo} | From: ${fromNumber || 'Mock'} | Message: ${message}`);
+        return { success: true, isMock: true, sid: 'SM_mock_' + Math.random().toString(36).substring(2, 11), to: formattedTo };
+    }
+
+    const twilio = require('twilio')(accountSid, authToken);
+    const result = await twilio.messages.create({
+        body: message,
+        from: fromNumber,
+        to: formattedTo
+    });
+    console.log(`[Twilio SMS] Sent to ${formattedTo}, SID: ${result.sid}`);
+    return { success: true, isMock: false, sid: result.sid, to: formattedTo };
+}
+
+async function sendInvoiceEmail({ customer, invoice, hostedUrl, customMessage }) {
+    if (!customer.email || !customer.email.trim()) {
+        throw new Error('Customer has no email address.');
+    }
+    if (!transporter) {
+        throw new Error('Email delivery is not configured on the server (check SMTP/Resend in .env).');
+    }
+
+    const items = invoice.items ? (typeof invoice.items === 'string' ? JSON.parse(invoice.items) : invoice.items) : [];
+    const isQuote = invoice.type === 'quote';
+    const docTitle = isQuote ? 'Quote' : 'Invoice';
+    const totalFormatted = (parseFloat(invoice.total) || 0).toFixed(2);
+    const subtotalFormatted = (parseFloat(invoice.subtotal) || 0).toFixed(2);
+    const taxFormatted = (parseFloat(invoice.tax) || 0).toFixed(2);
+    const discount = parseFloat(invoice.discount) || 0;
+
+    const itemsHtml = items.map(item => `
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 10px 8px; color: #1e293b; font-size: 14px;">${item.description}</td>
+            <td style="padding: 10px 8px; text-align: center; color: #64748b; font-size: 14px;">${item.quantity || 1}</td>
+            <td style="padding: 10px 8px; text-align: right; color: #1e293b; font-size: 14px;">$${(parseFloat(item.price) || 0).toFixed(2)}</td>
+            <td style="padding: 10px 8px; text-align: right; font-weight: 600; color: #0f172a; font-size: 14px;">$${((item.quantity || 1) * (parseFloat(item.price) || 0)).toFixed(2)}</td>
+        </tr>
+    `).join('');
+
+    const payButtonHtml = hostedUrl ? `
+        <div style="margin: 28px 0; text-align: center;">
+            <a href="${hostedUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: #635bff; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(99, 91, 255, 0.3);">
+                💳 Pay Online ($${totalFormatted})
+            </a>
+            <p style="margin: 10px 0 0; font-size: 12px; color: #64748b;">Accepts Card, Apple Pay, & Google Pay</p>
+        </div>
+    ` : '';
+
+    const mailHtml = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #1e293b; line-height: 1.6; background: #f8fafc; padding: 24px;">
+            <div style="background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                <div style="background: #FF8000; padding: 24px; text-align: center;">
+                    <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: -0.5px;">Weeecycle Workshop</h1>
+                    <p style="color: #fff; margin: 4px 0 0; font-size: 13px; opacity: 0.9;">Road & Gravel Specialists • Lexington, KY</p>
+                </div>
+                <div style="padding: 32px 28px;">
+                    <h2 style="color: #0f172a; margin-top: 0; font-size: 20px;">Hello ${customer.firstName},</h2>
+                    <p style="color: #475569; font-size: 15px; margin-top: 4px;">
+                        Here is your ${docTitle.toLowerCase()} <strong>#${invoice.id}</strong> from Weeecycle Workshop.
+                    </p>
+                    ${customMessage ? `<div style="background: #f1f5f9; border-left: 4px solid #FF8000; padding: 12px 16px; margin: 20px 0; border-radius: 4px; font-style: italic; color: #334155;">"${customMessage}"</div>` : ''}
+                    
+                    ${payButtonHtml}
+
+                    <div style="margin-top: 24px;">
+                        <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 8px;">Line Items</h3>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                            <thead>
+                                <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                                    <th style="padding: 8px; text-align: left; font-size: 12px; color: #64748b; text-transform: uppercase;">Description</th>
+                                    <th style="padding: 8px; text-align: center; font-size: 12px; color: #64748b; text-transform: uppercase; width: 50px;">Qty</th>
+                                    <th style="padding: 8px; text-align: right; font-size: 12px; color: #64748b; text-transform: uppercase; width: 80px;">Price</th>
+                                    <th style="padding: 8px; text-align: right; font-size: 12px; color: #64748b; text-transform: uppercase; width: 80px;">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHtml}
+                            </tbody>
+                        </table>
+
+                        <div style="width: 240px; margin-left: auto; margin-top: 12px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b; padding: 4px 0;">
+                                <span>Subtotal:</span><span>$${subtotalFormatted}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b; padding: 4px 0;">
+                                <span>KY Tax (6%):</span><span>$${taxFormatted}</span>
+                            </div>
+                            ${discount > 0 ? `
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #059669; padding: 4px 0;">
+                                <span>Discount:</span><span>-$${discount.toFixed(2)}</span>
+                            </div>` : ''}
+                            <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: bold; color: #0f172a; border-top: 2px solid #0f172a; padding-top: 8px; margin-top: 4px;">
+                                <span>Total:</span><span>$${totalFormatted}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${invoice.notes ? `
+                        <div style="margin-top: 28px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+                            <h4 style="margin: 0 0 4px; font-size: 12px; text-transform: uppercase; color: #64748b;">Terms & Notes</h4>
+                            <p style="margin: 0; font-size: 13px; color: #64748b; white-space: pre-wrap;">${invoice.notes}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <div style="margin-top: 36px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 12px; color: #94a3b8;">
+                        <p style="margin: 0;">Weeecycle Workshop • steve@weeecycle.net</p>
+                        <p style="margin: 4px 0 0;">Thank you for your business!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    return transporter.sendMail({
+        from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
+        to: customer.email.trim(),
+        subject: `Weeecycle Workshop ${docTitle} #${invoice.id} ($${totalFormatted})`,
+        html: mailHtml
+    });
+}
+
+async function ensureStripeInvoice(invoice, customer) {
+    const { secretKey, isMock } = getStripeConfig();
+
+    // Reuse an existing hosted invoice, unless it's a simulator one and a real key is now configured.
+    const cachedIsMock = !!invoice.hostedInvoiceUrl && invoice.hostedInvoiceUrl.includes('/mock/');
+    if (invoice.hostedInvoiceUrl && (isMock || !cachedIsMock)) {
+        return {
+            stripeInvoiceId: invoice.stripeInvoiceId,
+            hostedInvoiceUrl: invoice.hostedInvoiceUrl,
+            isMock: cachedIsMock
+        };
+    }
+    const items = invoice.items ? (typeof invoice.items === 'string' ? JSON.parse(invoice.items) : invoice.items) : [];
+
+    if (isMock) {
+        console.log(`[Stripe Simulator] Generating mock Stripe hosted invoice for invoice #${invoice.id}`);
+        const mockInvoiceId = 'in_mock_' + Math.random().toString(36).substring(2, 11);
+        const mockHostedUrl = `https://invoice.stripe.com/mock/${mockInvoiceId}`;
+        const stripeCustomerId = customer.stripeCustomerId || ('cus_mock_' + Math.random().toString(36).substring(2, 11));
+        try { workshopDb.prepare('UPDATE customers SET stripeCustomerId=? WHERE id=?').run(stripeCustomerId, customer.id); } catch (_) {}
+        const now = new Date().toISOString();
+        workshopDb.prepare('UPDATE invoices SET stripeInvoiceId=?,hostedInvoiceUrl=?,status=?,updatedAt=? WHERE id=?')
+            .run(mockInvoiceId, mockHostedUrl, 'Sent', now, invoice.id);
+        return { stripeInvoiceId: mockInvoiceId, hostedInvoiceUrl: mockHostedUrl, isMock: true };
+    }
+
+    const stripe = require('stripe')(secretKey);
+    let stripeCustomerId = customer.stripeCustomerId;
+
+    if (stripeCustomerId && !stripeCustomerId.startsWith('cus_mock_')) {
+        try {
+            await stripe.customers.retrieve(stripeCustomerId);
+        } catch (_) {
+            stripeCustomerId = null;
+        }
+    }
+
+    if (!stripeCustomerId || stripeCustomerId.startsWith('cus_mock_')) {
+        const stripeCust = await stripe.customers.create({
+            name: `${customer.firstName} ${customer.lastName}`.trim(),
+            email: customer.email?.trim() || undefined,
+            phone: customer.phone || undefined,
+            address: customer.address ? {
+                line1: customer.address,
+                city: customer.city || undefined,
+                state: customer.state || undefined,
+                postal_code: customer.zipCode || undefined,
+                country: 'US'
+            } : undefined,
+            metadata: { workshopCustomerId: String(customer.id) }
+        });
+        stripeCustomerId = stripeCust.id;
+        try { workshopDb.prepare('UPDATE customers SET stripeCustomerId=? WHERE id=?').run(stripeCustomerId, customer.id); } catch (_) {}
+    }
+
+    let kyTaxRateId = null;
+    if (items.some(i => i.taxable)) {
+        const rates = await stripe.taxRates.list({ limit: 100 });
+        let kyTaxRate = rates.data.find(r => r.percentage === 6 && r.active);
+        if (!kyTaxRate) {
+            kyTaxRate = await stripe.taxRates.create({
+                display_name: 'KY Sales Tax',
+                description: 'Kentucky Sales Tax (6%)',
+                jurisdiction: 'US - KY',
+                percentage: 6,
+                inclusive: false,
+            });
+        }
+        kyTaxRateId = kyTaxRate.id;
+    }
+
+    const stripeInvoice = await stripe.invoices.create({
+        customer: stripeCustomerId,
+        collection_method: 'send_invoice',
+        days_until_due: 30,
+        auto_advance: true,
+        description: `Weeecycle Workshop Invoice #${invoice.id}`,
+        metadata: { workshopInvoiceId: String(invoice.id), customerId: String(customer.id) }
+    });
+
+    for (const item of items) {
+        const qty = parseInt(item.quantity) || 1;
+        const priceCents = Math.round((parseFloat(item.price) || 0) * 100);
+        await stripe.invoiceItems.create({
+            customer: stripeCustomerId,
+            invoice: stripeInvoice.id,
+            amount: priceCents * qty,
+            currency: 'usd',
+            description: `${item.description}${qty > 1 ? ` (${qty} @ $${parseFloat(item.price).toFixed(2)})` : ''}`,
+            tax_rates: item.taxable && kyTaxRateId ? [kyTaxRateId] : []
+        });
+    }
+
+    const discountAmount = Math.max(0, parseFloat(invoice.discount) || 0);
+    if (discountAmount > 0) {
+        const discountCents = Math.round(discountAmount * 100);
+        const coupon = await stripe.coupons.create({
+            amount_off: discountCents,
+            currency: 'usd',
+            duration: 'once',
+            name: `Discount ($${discountAmount.toFixed(2)})`
+        });
+        await stripe.invoices.update(stripeInvoice.id, {
+            discounts: [{ coupon: coupon.id }]
+        });
+    }
+
+    const finalizedInvoice = await stripe.invoices.sendInvoice(stripeInvoice.id);
+    const now = new Date().toISOString();
+    workshopDb.prepare('UPDATE invoices SET stripeInvoiceId=?,hostedInvoiceUrl=?,status=?,updatedAt=? WHERE id=?')
+        .run(finalizedInvoice.id, finalizedInvoice.hosted_invoice_url, 'Sent', now, invoice.id);
+
+    return {
+        stripeInvoiceId: finalizedInvoice.id,
+        hostedInvoiceUrl: finalizedInvoice.hosted_invoice_url,
+        isMock: false
+    };
+}
+
+// POST /api/invoices/:id/send-stripe - Create & send official Stripe Invoice
+app.post('/api/invoices/:id/send-stripe', requireMechanicAuth, async (req, res) => {
+    try {
+        const invoiceId = req.params.id;
+        const invoice = workshopDb.prepare('SELECT * FROM invoices WHERE id = ?').get(invoiceId);
+        if (!invoice) return res.status(404).json({ error: 'Invoice not found.' });
+
+        if (invoice.status === 'Paid') {
+            return res.status(400).json({ error: 'This invoice has already been marked as Paid.' });
+        }
+
+        const customer = workshopDb.prepare('SELECT * FROM customers WHERE id = ?').get(invoice.customerId);
+        if (!customer) return res.status(404).json({ error: 'Customer not found.' });
+        if (!customer.email || !customer.email.trim()) {
+            return res.status(400).json({ error: 'Customer must have a valid email address to send via Stripe.' });
+        }
+
+        const items = invoice.items ? JSON.parse(invoice.items) : [];
+        if (!items || items.length === 0) {
+            return res.status(400).json({ error: 'Invoice has no line items.' });
+        }
+
+        const stripeInfo = await ensureStripeInvoice(invoice, customer);
+        const now = new Date().toISOString();
+
+        res.json({
+            success: true,
+            isMock: stripeInfo.isMock,
+            invoice: {
+                ...invoice,
+                items,
+                stripeInvoiceId: stripeInfo.stripeInvoiceId,
+                hostedInvoiceUrl: stripeInfo.hostedInvoiceUrl,
+                status: 'Sent',
+                updatedAt: now
+            }
+        });
+    } catch (err) {
+        console.error('Stripe invoice error:', err);
+        res.status(500).json({ error: `Stripe Error: ${err.message}` });
+    }
+});
+
+// POST /api/invoices/:id/send - Unified dispatch to Email, SMS (Twilio), or Both
+app.post('/api/invoices/:id/send', requireMechanicAuth, async (req, res) => {
+    try {
+        const invoiceId = req.params.id;
+        const { sendEmail, sendSms, customMessage } = req.body;
+
+        if (!sendEmail && !sendSms) {
+            return res.status(400).json({ error: 'Please select at least one delivery channel (Email or SMS).' });
+        }
+
+        const invoice = workshopDb.prepare('SELECT * FROM invoices WHERE id = ?').get(invoiceId);
+        if (!invoice) return res.status(404).json({ error: 'Invoice not found.' });
+
+        const customer = workshopDb.prepare('SELECT * FROM customers WHERE id = ?').get(invoice.customerId);
+        if (!customer) return res.status(404).json({ error: 'Customer not found.' });
+
+        if (sendEmail && (!customer.email || !customer.email.trim())) {
+            return res.status(400).json({ error: `Cannot send email: ${customer.firstName} ${customer.lastName} has no email address on file.` });
+        }
+
+        if (sendSms && (!customer.phone || !customer.phone.trim())) {
+            return res.status(400).json({ error: `Cannot send SMS: ${customer.firstName} ${customer.lastName} has no phone number on file.` });
+        }
+
+        let stripeInfo = null;
+        if (invoice.type === 'invoice') {
+            stripeInfo = await ensureStripeInvoice(invoice, customer);
+        }
+
+        const hostedUrl = stripeInfo?.hostedInvoiceUrl || invoice.hostedInvoiceUrl || null;
+        let emailResult = null;
+        let smsResult = null;
+        const errors = [];
+
+        // 1. Send Weeecycle Branded Email
+        if (sendEmail) {
+            try {
+                await sendInvoiceEmail({ customer, invoice, hostedUrl, customMessage });
+                emailResult = { sent: true, to: customer.email.trim() };
+            } catch (err) {
+                console.error('Email dispatch error:', err);
+                errors.push(`Email error: ${err.message}`);
+            }
+        }
+
+        // 2. Send Twilio SMS
+        if (sendSms) {
+            try {
+                const totalFormatted = (parseFloat(invoice.total) || 0).toFixed(2);
+                let smsBody = `Weeecycle Workshop: Hi ${customer.firstName}, your invoice #${invoice.id} for $${totalFormatted} is ready.`;
+                if (hostedUrl) {
+                    smsBody += ` Pay online here: ${hostedUrl}`;
+                } else {
+                    smsBody += ` Contact us at steve@weeecycle.net for any questions.`;
+                }
+                if (customMessage && customMessage.trim()) {
+                    smsBody += ` Note: ${customMessage.trim()}`;
+                }
+                smsResult = await sendTwilioSms({ to: customer.phone, message: smsBody });
+            } catch (err) {
+                console.error('Twilio SMS error:', err);
+                errors.push(`SMS error: ${err.message}`);
+            }
+        }
+
+        if (emailResult || smsResult) {
+            const now = new Date().toISOString();
+            if (invoice.status === 'Draft') {
+                workshopDb.prepare('UPDATE invoices SET status=?,updatedAt=? WHERE id=?').run('Sent', now, invoiceId);
+            }
+        }
+
+        const updatedInvoice = workshopDb.prepare(
+            `SELECT id,customerId,type,status,issueDate,dueDate,items,subtotal,tax,discount,total,stripeInvoiceId,hostedInvoiceUrl,notes,createdAt,updatedAt,
+                    (bikeImage IS NOT NULL AND bikeImage != '') AS hasBikeImage
+             FROM invoices WHERE id = ?`
+        ).get(invoiceId);
+
+        if (updatedInvoice) {
+            updatedInvoice.hasBikeImage = !!updatedInvoice.hasBikeImage;
+            updatedInvoice.items = updatedInvoice.items ? JSON.parse(updatedInvoice.items) : [];
+        }
+
+        if (errors.length > 0 && !emailResult && !smsResult) {
+            return res.status(500).json({ error: errors.join('; ') });
+        }
+
+        res.json({
+            success: true,
+            emailSent: !!emailResult,
+            smsSent: !!smsResult,
+            isMockSms: smsResult?.isMock || false,
+            errors: errors.length > 0 ? errors : undefined,
+            invoice: updatedInvoice
+        });
+    } catch (err) {
+        console.error('Send invoice error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST /api/webhooks/stripe - Public Webhook for Stripe Events (e.g. invoice.paid)
+app.post('/api/webhooks/stripe', async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    const { secretKey, webhookSecret, isMock } = getStripeConfig();
+
+    if (isMock || !secretKey) {
+        return res.status(400).send('Stripe is not configured in live mode.');
+    }
+
+    const stripe = require('stripe')(secretKey);
+    let event;
+
+    if (!webhookSecret) {
+        // Without signature verification anyone could POST a fake invoice.paid event.
+        console.error('Stripe webhook rejected: STRIPE_WEBHOOK_SECRET is not set.');
+        return res.status(400).send('Webhook secret not configured.');
+    }
+
+    try {
+        event = stripe.webhooks.constructEvent(req.rawBody, sig, webhookSecret);
+    } catch (err) {
+        console.error('Stripe Webhook signature error:', err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    if (event.type === 'invoice.paid' || event.type === 'invoice.payment_succeeded') {
+        const stripeInvoice = event.data.object;
+        console.log(`[Stripe Webhook] Invoice ${stripeInvoice.id} paid successfully.`);
+        const now = new Date().toISOString();
+        try {
+            workshopDb.prepare('UPDATE invoices SET status=?,updatedAt=? WHERE stripeInvoiceId=?').run('Paid', now, stripeInvoice.id);
+            res.json({ received: true });
+        } catch (dbErr) {
+            console.error('Error updating invoice status from Stripe webhook:', dbErr);
+            res.status(500).send('Database error');
+        }
+    } else {
+        res.json({ received: true });
+    }
+});
+
+// POST /api/public/mock-stripe-pay - Simulator Payment Helper
+app.post('/api/public/mock-stripe-pay', (req, res) => {
+    const { stripeInvoiceId } = req.body;
+    if (!stripeInvoiceId) return res.status(400).json({ error: 'Missing stripeInvoiceId' });
+    // Public endpoint: only simulator invoices may be marked paid here, never real Stripe ones.
+    if (!String(stripeInvoiceId).startsWith('in_mock_')) return res.status(403).json({ error: 'Only simulator invoices can be paid here.' });
+    const now = new Date().toISOString();
+    try {
+        workshopDb.prepare('UPDATE invoices SET status=?,updatedAt=? WHERE stripeInvoiceId=?').run('Paid', now, stripeInvoiceId);
+        res.json({ success: true, stripeInvoiceId, status: 'Paid', updatedAt: now });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // REST API Endpoints for Manual Parts Costs (Protected by requireMechanicAuth)
