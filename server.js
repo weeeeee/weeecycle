@@ -367,51 +367,12 @@ app.delete('/api/invoices/:id', requireMechanicAuth, (req, res) => {
     catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Stripe & Twilio API Helpers & Endpoints
+// Stripe API Helpers & Endpoints
 function getStripeConfig() {
     const secretKey = (process.env.STRIPE_SECRET_KEY || '').trim();
     const webhookSecret = (process.env.STRIPE_WEBHOOK_SECRET || '').trim();
     const isMock = !secretKey || secretKey.startsWith('sk_live_...') || secretKey.startsWith('sk_test_...') || secretKey.includes('placeholder');
     return { secretKey, webhookSecret, isMock };
-}
-
-function getTwilioConfig() {
-    const accountSid = (process.env.TWILIO_ACCOUNT_SID || '').trim();
-    const authToken = (process.env.TWILIO_AUTH_TOKEN || '').trim();
-    const fromNumber = (process.env.TWILIO_PHONE_NUMBER || '').trim();
-    const isMock = !accountSid || !authToken || !fromNumber || accountSid.startsWith('AC_placeholder') || accountSid.includes('...');
-    return { accountSid, authToken, fromNumber, isMock };
-}
-
-function formatPhoneE164(phone) {
-    if (!phone) return null;
-    const digits = phone.replace(/\D/g, '');
-    if (digits.length === 10) return `+1${digits}`;
-    if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
-    if (phone.trim().startsWith('+')) return phone.trim();
-    return null;
-}
-
-async function sendTwilioSms({ to, message }) {
-    const { accountSid, authToken, fromNumber, isMock } = getTwilioConfig();
-    const formattedTo = formatPhoneE164(to);
-    if (!formattedTo) {
-        throw new Error(`Invalid phone number: "${to}". Must be a valid 10-digit US phone number.`);
-    }
-
-    if (isMock) {
-        console.log(`[Twilio SMS Simulator] To: ${formattedTo} | From: ${fromNumber || 'Mock'} | Message: ${message}`);
-        return { success: true, isMock: true, sid: 'SM_mock_' + Math.random().toString(36).substring(2, 11), to: formattedTo };
-    }
-
-    const twilio = require('twilio')(accountSid, authToken);
-    const result = await twilio.messages.create({
-        body: message,
-        from: fromNumber,
-        to: formattedTo
-    });
-    console.log(`[Twilio SMS] Sent to ${formattedTo}, SID: ${result.sid}`);
-    return { success: true, isMock: false, sid: result.sid, to: formattedTo };
 }
 
 async function sendInvoiceEmail({ customer, invoice, hostedUrl, customMessage }) {
@@ -596,7 +557,8 @@ async function ensureStripeInvoice(invoice, customer) {
         customer: stripeCustomerId,
         collection_method: 'send_invoice',
         days_until_due: 30,
-        auto_advance: true,
+        // We finalize manually and email the customer ourselves, so Stripe never sends its own invoice email.
+        auto_advance: false,
         description: `Weeecycle Workshop Invoice #${invoice.id}`,
         metadata: { workshopInvoiceId: String(invoice.id), customerId: String(customer.id) }
     });
@@ -628,7 +590,7 @@ async function ensureStripeInvoice(invoice, customer) {
         });
     }
 
-    const finalizedInvoice = await stripe.invoices.sendInvoice(stripeInvoice.id);
+    const finalizedInvoice = await stripe.invoices.finalizeInvoice(stripeInvoice.id, { auto_advance: false });
     const now = new Date().toISOString();
     workshopDb.prepare('UPDATE invoices SET stripeInvoiceId=?,hostedInvoiceUrl=?,status=?,updatedAt=? WHERE id=?')
         .run(finalizedInvoice.id, finalizedInvoice.hosted_invoice_url, 'Sent', now, invoice.id);
@@ -640,58 +602,11 @@ async function ensureStripeInvoice(invoice, customer) {
     };
 }
 
-// POST /api/invoices/:id/send-stripe - Create & send official Stripe Invoice
-app.post('/api/invoices/:id/send-stripe', requireMechanicAuth, async (req, res) => {
-    try {
-        const invoiceId = req.params.id;
-        const invoice = workshopDb.prepare('SELECT * FROM invoices WHERE id = ?').get(invoiceId);
-        if (!invoice) return res.status(404).json({ error: 'Invoice not found.' });
-
-        if (invoice.status === 'Paid') {
-            return res.status(400).json({ error: 'This invoice has already been marked as Paid.' });
-        }
-
-        const customer = workshopDb.prepare('SELECT * FROM customers WHERE id = ?').get(invoice.customerId);
-        if (!customer) return res.status(404).json({ error: 'Customer not found.' });
-        if (!customer.email || !customer.email.trim()) {
-            return res.status(400).json({ error: 'Customer must have a valid email address to send via Stripe.' });
-        }
-
-        const items = invoice.items ? JSON.parse(invoice.items) : [];
-        if (!items || items.length === 0) {
-            return res.status(400).json({ error: 'Invoice has no line items.' });
-        }
-
-        const stripeInfo = await ensureStripeInvoice(invoice, customer);
-        const now = new Date().toISOString();
-
-        res.json({
-            success: true,
-            isMock: stripeInfo.isMock,
-            invoice: {
-                ...invoice,
-                items,
-                stripeInvoiceId: stripeInfo.stripeInvoiceId,
-                hostedInvoiceUrl: stripeInfo.hostedInvoiceUrl,
-                status: 'Sent',
-                updatedAt: now
-            }
-        });
-    } catch (err) {
-        console.error('Stripe invoice error:', err);
-        res.status(500).json({ error: `Stripe Error: ${err.message}` });
-    }
-});
-
-// POST /api/invoices/:id/send - Unified dispatch to Email, SMS (Twilio), or Both
+// POST /api/invoices/:id/send - Email the invoice (with Stripe pay link) to the customer
 app.post('/api/invoices/:id/send', requireMechanicAuth, async (req, res) => {
     try {
         const invoiceId = req.params.id;
-        const { sendEmail, sendSms, customMessage } = req.body;
-
-        if (!sendEmail && !sendSms) {
-            return res.status(400).json({ error: 'Please select at least one delivery channel (Email or SMS).' });
-        }
+        const { customMessage } = req.body;
 
         const invoice = workshopDb.prepare('SELECT * FROM invoices WHERE id = ?').get(invoiceId);
         if (!invoice) return res.status(404).json({ error: 'Invoice not found.' });
@@ -699,12 +614,8 @@ app.post('/api/invoices/:id/send', requireMechanicAuth, async (req, res) => {
         const customer = workshopDb.prepare('SELECT * FROM customers WHERE id = ?').get(invoice.customerId);
         if (!customer) return res.status(404).json({ error: 'Customer not found.' });
 
-        if (sendEmail && (!customer.email || !customer.email.trim())) {
+        if (!customer.email || !customer.email.trim()) {
             return res.status(400).json({ error: `Cannot send email: ${customer.firstName} ${customer.lastName} has no email address on file.` });
-        }
-
-        if (sendSms && (!customer.phone || !customer.phone.trim())) {
-            return res.status(400).json({ error: `Cannot send SMS: ${customer.firstName} ${customer.lastName} has no phone number on file.` });
         }
 
         let stripeInfo = null;
@@ -713,46 +624,10 @@ app.post('/api/invoices/:id/send', requireMechanicAuth, async (req, res) => {
         }
 
         const hostedUrl = stripeInfo?.hostedInvoiceUrl || invoice.hostedInvoiceUrl || null;
-        let emailResult = null;
-        let smsResult = null;
-        const errors = [];
+        await sendInvoiceEmail({ customer, invoice, hostedUrl, customMessage });
 
-        // 1. Send Weeecycle Branded Email
-        if (sendEmail) {
-            try {
-                await sendInvoiceEmail({ customer, invoice, hostedUrl, customMessage });
-                emailResult = { sent: true, to: customer.email.trim() };
-            } catch (err) {
-                console.error('Email dispatch error:', err);
-                errors.push(`Email error: ${err.message}`);
-            }
-        }
-
-        // 2. Send Twilio SMS
-        if (sendSms) {
-            try {
-                const totalFormatted = (parseFloat(invoice.total) || 0).toFixed(2);
-                let smsBody = `Weeecycle Workshop: Hi ${customer.firstName}, your invoice #${invoice.id} for $${totalFormatted} is ready.`;
-                if (hostedUrl) {
-                    smsBody += ` Pay online here: ${hostedUrl}`;
-                } else {
-                    smsBody += ` Contact us at steve@weeecycle.net for any questions.`;
-                }
-                if (customMessage && customMessage.trim()) {
-                    smsBody += ` Note: ${customMessage.trim()}`;
-                }
-                smsResult = await sendTwilioSms({ to: customer.phone, message: smsBody });
-            } catch (err) {
-                console.error('Twilio SMS error:', err);
-                errors.push(`SMS error: ${err.message}`);
-            }
-        }
-
-        if (emailResult || smsResult) {
-            const now = new Date().toISOString();
-            if (invoice.status === 'Draft') {
-                workshopDb.prepare('UPDATE invoices SET status=?,updatedAt=? WHERE id=?').run('Sent', now, invoiceId);
-            }
+        if (invoice.status === 'Draft') {
+            workshopDb.prepare('UPDATE invoices SET status=?,updatedAt=? WHERE id=?').run('Sent', new Date().toISOString(), invoiceId);
         }
 
         const updatedInvoice = workshopDb.prepare(
@@ -766,18 +641,7 @@ app.post('/api/invoices/:id/send', requireMechanicAuth, async (req, res) => {
             updatedInvoice.items = updatedInvoice.items ? JSON.parse(updatedInvoice.items) : [];
         }
 
-        if (errors.length > 0 && !emailResult && !smsResult) {
-            return res.status(500).json({ error: errors.join('; ') });
-        }
-
-        res.json({
-            success: true,
-            emailSent: !!emailResult,
-            smsSent: !!smsResult,
-            isMockSms: smsResult?.isMock || false,
-            errors: errors.length > 0 ? errors : undefined,
-            invoice: updatedInvoice
-        });
+        res.json({ success: true, emailSent: true, invoice: updatedInvoice });
     } catch (err) {
         console.error('Send invoice error:', err);
         res.status(500).json({ error: err.message });
