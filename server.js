@@ -354,10 +354,12 @@ app.put('/api/invoices/:id', requireMechanicAuth, (req, res) => {
     const now = new Date().toISOString();
     const itemsStr = JSON.stringify(items || []);
     try {
+        const prev = workshopDb.prepare('SELECT status FROM invoices WHERE id=?').get(req.params.id);
         workshopDb.prepare(
             `UPDATE invoices SET customerId=?,type=?,status=?,issueDate=?,dueDate=?,items=?,subtotal=?,tax=?,discount=?,total=?,stripeInvoiceId=?,hostedInvoiceUrl=?,notes=?,updatedAt=? WHERE id=?`
         ).run(customerId, type, status, issueDate, dueDate, itemsStr, subtotal, tax, discount, total, stripeInvoiceId || null, hostedInvoiceUrl || null, notes, now, req.params.id);
         if (changesPhoto) workshopDb.prepare('UPDATE invoices SET bikeImage=? WHERE id=?').run(bikeImage, req.params.id);
+        if (prev && prev.status !== 'Paid' && status === 'Paid') sendReceiptForInvoice(req.params.id, null);
         res.json({ success: true, id: req.params.id });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -375,7 +377,8 @@ function getStripeConfig() {
     return { secretKey, webhookSecret, isMock };
 }
 
-async function sendInvoiceEmail({ customer, invoice, hostedUrl, customMessage }) {
+// Pass `receipt` ({ paidAt, paidVia }) to send a payment receipt instead of the invoice.
+async function sendInvoiceEmail({ customer, invoice, hostedUrl, customMessage, receipt }) {
     if (!customer.email || !customer.email.trim()) {
         throw new Error('Customer has no email address.');
     }
@@ -385,7 +388,7 @@ async function sendInvoiceEmail({ customer, invoice, hostedUrl, customMessage })
 
     const items = invoice.items ? (typeof invoice.items === 'string' ? JSON.parse(invoice.items) : invoice.items) : [];
     const isQuote = invoice.type === 'quote';
-    const docTitle = isQuote ? 'Quote' : 'Invoice';
+    const docTitle = receipt ? 'Receipt' : (isQuote ? 'Quote' : 'Invoice');
     const totalFormatted = (parseFloat(invoice.total) || 0).toFixed(2);
     const subtotalFormatted = (parseFloat(invoice.subtotal) || 0).toFixed(2);
     const taxFormatted = (parseFloat(invoice.tax) || 0).toFixed(2);
@@ -400,7 +403,15 @@ async function sendInvoiceEmail({ customer, invoice, hostedUrl, customMessage })
         </tr>
     `).join('');
 
-    const payButtonHtml = hostedUrl ? `
+    const paidDate = receipt ? new Date(receipt.paidAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'America/New_York' }) : '';
+    const paidBannerHtml = receipt ? `
+        <div style="margin: 28px 0; text-align: center; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px;">
+            <div style="font-size: 20px; font-weight: bold; color: #059669;">✅ PAID $${totalFormatted}</div>
+            <p style="margin: 6px 0 0; font-size: 13px; color: #047857;">${paidDate}${receipt.paidVia ? ` • ${receipt.paidVia}` : ''}</p>
+        </div>
+    ` : '';
+
+    const payButtonHtml = receipt ? paidBannerHtml : hostedUrl ? `
         <div style="margin: 28px 0; text-align: center;">
             <a href="${hostedUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: #635bff; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(99, 91, 255, 0.3);">
                 💳 Pay Online ($${totalFormatted})
@@ -419,7 +430,9 @@ async function sendInvoiceEmail({ customer, invoice, hostedUrl, customMessage })
                 <div style="padding: 32px 28px;">
                     <h2 style="color: #0f172a; margin-top: 0; font-size: 20px;">Hello ${customer.firstName},</h2>
                     <p style="color: #475569; font-size: 15px; margin-top: 4px;">
-                        Here is your ${docTitle.toLowerCase()} <strong>#${invoice.id}</strong> from Weeecycle Workshop.
+                        ${receipt
+                            ? `Thank you! We've received your payment for invoice <strong>#${invoice.id}</strong>. This email is your receipt.`
+                            : `Here is your ${docTitle.toLowerCase()} <strong>#${invoice.id}</strong> from Weeecycle Workshop.`}
                     </p>
                     ${customMessage ? `<div style="background: #f1f5f9; border-left: 4px solid #FF8000; padding: 12px 16px; margin: 20px 0; border-radius: 4px; font-style: italic; color: #334155;">"${customMessage}"</div>` : ''}
                     
@@ -477,9 +490,25 @@ async function sendInvoiceEmail({ customer, invoice, hostedUrl, customMessage })
     return transporter.sendMail({
         from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
         to: customer.email.trim(),
-        subject: `Weeecycle Workshop ${docTitle} #${invoice.id} ($${totalFormatted})`,
+        subject: receipt
+            ? `Weeecycle Workshop Receipt for Invoice #${invoice.id} ($${totalFormatted} paid)`
+            : `Weeecycle Workshop ${docTitle} #${invoice.id} ($${totalFormatted})`,
         html: mailHtml
     });
+}
+
+// Email a Weeecycle receipt for a paid invoice. Never throws: a mail failure must not undo the payment update.
+async function sendReceiptForInvoice(invoiceId, paidVia) {
+    try {
+        const invoice = workshopDb.prepare('SELECT * FROM invoices WHERE id = ?').get(invoiceId);
+        if (!invoice || invoice.type !== 'invoice') return;
+        const customer = workshopDb.prepare('SELECT * FROM customers WHERE id = ?').get(invoice.customerId);
+        if (!customer?.email?.trim()) return;
+        await sendInvoiceEmail({ customer, invoice, receipt: { paidAt: new Date(), paidVia } });
+        console.log(`[Receipt] Emailed receipt for invoice #${invoiceId} to ${customer.email.trim()}`);
+    } catch (err) {
+        console.error(`Receipt email error for invoice #${invoiceId}:`, err.message);
+    }
 }
 
 async function ensureStripeInvoice(invoice, customer) {
@@ -678,7 +707,10 @@ app.post('/api/webhooks/stripe', async (req, res) => {
         console.log(`[Stripe Webhook] Invoice ${stripeInvoice.id} paid successfully.`);
         const now = new Date().toISOString();
         try {
+            const row = workshopDb.prepare('SELECT id,status FROM invoices WHERE stripeInvoiceId=?').get(stripeInvoice.id);
             workshopDb.prepare('UPDATE invoices SET status=?,updatedAt=? WHERE stripeInvoiceId=?').run('Paid', now, stripeInvoice.id);
+            // Stripe may deliver the same event more than once; only send the receipt on the first transition to Paid.
+            if (row && row.status !== 'Paid') sendReceiptForInvoice(row.id, 'Paid online');
             res.json({ received: true });
         } catch (dbErr) {
             console.error('Error updating invoice status from Stripe webhook:', dbErr);
