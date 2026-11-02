@@ -82,7 +82,7 @@
       "image": "https://weeecycle.net/images/hero_gravel_realistic.png",
       "logo": "https://weeecycle.net/images/logo/gradient-bike.png",
       "priceRange": "$$",
-      "telephone": "+18596932176",
+      "telephone": "+18594231806",
       "email": "steve@weeecycle.net",
       "address": {
         "@type": "PostalAddress",
@@ -152,6 +152,8 @@
                 </div>
                 <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
                     href="mechanic-login.html">Shop Mechanic</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide"
+                    href="#contact">Contact Us</a>
                 <a class="bg-brand-orange hover:bg-orange-600 text-white font-display font-bold uppercase tracking-wider py-2 px-6 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50"
                     href="#services">Book Service</a>
                 <a class="bg-[#00b67a] hover:bg-[#00a067] text-white font-display font-bold uppercase tracking-wider py-2 px-6 rounded transition transform hover:-translate-y-1 shadow-lg" href="donate.html">Donate a Bike</a>
@@ -196,6 +198,12 @@
                 <a class="text-xl font-display uppercase tracking-wide text-gray-200"
                     href="mechanic-login.html"
                     onclick="this.closest('#mobile-menu').classList.add('hidden')">Shop Mechanic</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200 hover:text-brand-orange transition"
+                    href="#contact"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')">Contact Us</a>
+                <a class="text-xl font-display uppercase tracking-wide text-brand-orange flex items-center gap-2"
+                    href="tel:859-423-1806"
+                    onclick="this.closest('#mobile-menu').classList.add('hidden')"><i class="fa-solid fa-phone text-base"></i> Call 859-423-1806</a>
                 <a class="text-brand-orange text-xl font-display font-bold uppercase tracking-wide" href="#services"
                     onclick="this.closest('#mobile-menu').classList.add('hidden')">Book Now</a>
                 <a class="text-[#00b67a] text-xl font-display font-bold uppercase tracking-wide" href="donate.html" onclick="this.closest(\'#mobile-menu\').classList.add(\'hidden\')">Donate a Bike</a>
@@ -579,6 +587,138 @@
         </div>
     </section>
 
+    <!-- Contact Us Section -->
+    <section class="py-24 bg-brand-dark relative border-t border-gray-900 scroll-mt-20" id="contact">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <div class="text-center mb-14">
+                <span class="text-brand-orange uppercase font-display font-bold tracking-widest text-xl">Get In Touch</span>
+                <h2 class="font-display font-bold text-6xl text-white uppercase tracking-tight leading-none mt-1 mb-4">
+                    Contact <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-orange-300">Us</span>
+                </h2>
+                <p class="text-gray-300 text-xl font-light max-w-2xl mx-auto">
+                    Have a question about a repair, custom build, or want to schedule a service? Send a message below or give us a call directly.
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-8 items-start">
+                <!-- Left: Web Contact Form -->
+                <div class="lg:col-span-2 bg-[#0B0B2B] border border-gray-800 rounded-2xl p-8 md:p-10 shadow-2xl">
+                    <h3 class="font-display font-bold text-3xl text-white uppercase tracking-wide mb-6">Send a Message</h3>
+                    <form id="mainContactForm" name="contact" method="POST" data-netlify="true" class="space-y-6">
+                        <input type="hidden" name="form-name" value="contact" />
+                        <input type="hidden" name="subject" value="Website Contact Inquiry - Weeecycle.net" />
+
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="main-fullname" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Full Name <span class="text-brand-orange">*</span></label>
+                                <input type="text" id="main-fullname" name="fullname" required
+                                    class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
+                                    placeholder="Your Name" />
+                            </div>
+                            <div>
+                                <label for="main-phone" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Phone Number <span class="text-brand-orange">*</span></label>
+                                <input type="tel" id="main-phone" name="phone" required
+                                    class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
+                                    placeholder="Your Phone Number" />
+                            </div>
+                            <div>
+                                <label for="main-email" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Email Address <span class="text-brand-orange">*</span></label>
+                                <input type="email" id="main-email" name="email" required
+                                    class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
+                                    placeholder="your@email.com" />
+                            </div>
+                            <div>
+                                <label for="main-service" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">How Can We Help?</label>
+                                <select id="main-service" name="service-menu"
+                                    class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition">
+                                    <option value="General Inquiry">General Question / Inquiry</option>
+                                    <option value="Safety Check">Safety Check ($20)</option>
+                                    <option value="The Tune-Up">The Tune-Up ($90)</option>
+                                    <option value="Overhaul">Tune Up - Overhaul ($150)</option>
+                                    <option value="Dream Build">Custom / Dream Build</option>
+                                    <option value="A La Carte">A La Carte Repair</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="main-bike" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Bike Make / Model <span class="text-gray-500 text-xs font-normal">(Optional)</span></label>
+                            <input type="text" id="main-bike" name="bike-model"
+                                class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
+                                placeholder="e.g. Specialized Diverge, Canyon Grail, Trek Domane" />
+                        </div>
+
+                        <div>
+                            <label for="main-message" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-2">Message / Details <span class="text-brand-orange">*</span></label>
+                            <textarea id="main-message" name="description" rows="4" required
+                                class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition"
+                                placeholder="Tell us how we can help or what your bike needs..."></textarea>
+                        </div>
+
+                        <button type="submit"
+                            class="w-full bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-2xl uppercase tracking-wider py-4 rounded transition transform hover:-translate-y-1 shadow-lg shadow-orange-900/50">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Right: Direct Call & Contact Info -->
+                <div class="space-y-6">
+                    <!-- Direct Call Card -->
+                    <div class="bg-gradient-to-br from-[#0B0B2B] to-brand-dark border-2 border-brand-orange rounded-2xl p-8 shadow-2xl text-center">
+                        <div class="w-16 h-16 bg-brand-orange/20 border border-brand-orange/40 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fa-solid fa-phone-volume text-brand-orange text-2xl"></i>
+                        </div>
+                        <h3 class="font-display font-bold text-3xl text-white uppercase tracking-wide mb-2">Call or Text Directly</h3>
+                        <p class="text-gray-400 text-sm font-light mb-6">Prefer to talk through your bike issue directly? Reach out anytime during shop hours.</p>
+                        <a href="tel:859-423-1806"
+                            class="w-full inline-flex items-center justify-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-3xl uppercase tracking-wider py-4 px-6 rounded-xl transition transform hover:scale-105 shadow-lg shadow-orange-900/50">
+                            <i class="fa-solid fa-phone text-xl"></i> 859-423-1806
+                        </a>
+                    </div>
+
+                    <!-- Service Hub Details -->
+                    <div class="bg-[#0B0B2B] border border-gray-800 rounded-2xl p-8 shadow-2xl">
+                        <h3 class="font-display font-bold text-3xl text-white uppercase mb-6 tracking-wider">Service Hub</h3>
+                        <div class="space-y-5 text-gray-300 font-light">
+                            <div class="flex items-start gap-4">
+                                <span class="material-symbols-outlined text-brand-orange text-2xl mt-0.5">call</span>
+                                <div>
+                                    <h4 class="font-bold text-white uppercase text-sm tracking-wider mb-1">Phone</h4>
+                                    <a href="tel:859-423-1806" class="text-brand-orange hover:text-orange-400 transition-colors text-lg font-medium">859-423-1806</a>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <span class="material-symbols-outlined text-brand-orange text-2xl mt-0.5">mail</span>
+                                <div>
+                                    <h4 class="font-bold text-white uppercase text-sm tracking-wider mb-1">Email</h4>
+                                    <a href="mailto:steve@weeecycle.net" class="text-brand-orange hover:text-orange-400 transition-colors text-base font-medium">steve@weeecycle.net</a>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <span class="material-symbols-outlined text-brand-orange text-2xl mt-0.5">location_on</span>
+                                <div>
+                                    <h4 class="font-bold text-white uppercase text-sm tracking-wider mb-1">Location Hub</h4>
+                                    <p class="text-base text-gray-200">Lexington, Kentucky</p>
+                                    <p class="text-xs text-gray-500 mt-1">Serving Lexington &amp; surrounding areas.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <span class="material-symbols-outlined text-brand-orange text-2xl mt-0.5">schedule</span>
+                                <div>
+                                    <h4 class="font-bold text-white uppercase text-sm tracking-wider mb-1">Service Hours</h4>
+                                    <p class="text-base text-gray-200">Monday &ndash; Saturday</p>
+                                    <p class="text-sm text-gray-400">9:00 AM &ndash; 6:00 PM</p>
+                                    <p class="text-xs text-gray-500 mt-1">Sunday: Closed</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Trustpilot Review Strip -->
     <section class="py-16 bg-black border-t border-gray-900">
         <div class="container mx-auto px-4 max-w-3xl text-center">
@@ -611,15 +751,86 @@
                 <span class="text-gray-500 text-xs uppercase tracking-[0.2em] mt-2">Building Speed. Fixing Fun.</span>
             </div>
             <div class="flex flex-col items-center md:items-end gap-2">
-                <a href="https://www.trustpilot.com/review/weeecycle.net" target="_blank" rel="noopener noreferrer"
-                    class="inline-flex items-center gap-2 text-[#00b67a] hover:text-white transition text-sm font-display uppercase tracking-wider">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-                    Review us on Trustpilot
-                </a>
+                <div class="flex flex-wrap items-center justify-center md:justify-end gap-4 text-sm font-display uppercase tracking-wider mb-1">
+                    <a href="tel:859-423-1806" class="inline-flex items-center gap-2 text-brand-orange hover:text-white transition">
+                        <i class="fa-solid fa-phone text-xs"></i> 859-423-1806
+                    </a>
+                    <span class="text-gray-700">&middot;</span>
+                    <a href="#contact" class="text-gray-400 hover:text-brand-orange transition">Contact Us</a>
+                    <span class="text-gray-700">&middot;</span>
+                    <a href="https://www.trustpilot.com/review/weeecycle.net" target="_blank" rel="noopener noreferrer"
+                        class="inline-flex items-center gap-2 text-[#00b67a] hover:text-white transition">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+                        Review us on Trustpilot
+                    </a>
+                </div>
                 <span class="text-gray-600 text-xs uppercase tracking-wider">&copy; 2026 Weeecycle | Lexington, KY. All rights reserved. &nbsp;&middot;&nbsp; <a href="/privacy.html" class="hover:text-brand-orange transition-colors">Privacy Policy</a></span>
             </div>
         </div>
     </footer>
+
+    <script>
+        document.getElementById('mainContactForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const submitBtn = document.querySelector('#mainContactForm button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending…';
+
+            const fullname = document.getElementById('main-fullname').value.trim();
+            const nameParts = fullname.split(' ');
+            const firstName = nameParts[0] || 'Website';
+            const lastName = nameParts.slice(1).join(' ') || 'Visitor';
+            const serviceValue = document.getElementById('main-service').value;
+
+            const payload = {
+                firstName,
+                lastName,
+                phone: document.getElementById('main-phone').value.trim(),
+                email: document.getElementById('main-email').value.trim(),
+                address: '',
+                city: '',
+                state: '',
+                zipCode: '',
+                requestedService: serviceValue,
+                bikeModel: document.getElementById('main-bike').value.trim(),
+                description: document.getElementById('main-message').value.trim(),
+            };
+
+            try {
+                await fetch('/api/public/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+            } catch (err) {
+                console.warn('CMS sync skipped (server unreachable):', err.message);
+            }
+
+            try {
+                const formData = new FormData(document.getElementById('mainContactForm'));
+                await fetch('/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams(formData).toString(),
+                });
+            } catch (err) {
+                console.warn('Netlify form submission failed:', err.message);
+            }
+
+            const formContainer = document.getElementById('mainContactForm');
+            formContainer.innerHTML = `
+                <div class="text-center py-10 px-4">
+                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-brand-orange/10 border-2 border-brand-orange mb-6">
+                        <span class="material-symbols-outlined text-brand-orange text-5xl">check_circle</span>
+                    </div>
+                    <h3 class="font-display font-bold text-4xl text-white uppercase mb-3">Message Sent!</h3>
+                    <p class="text-gray-400 text-lg mb-4">Thanks, <span class="text-brand-orange font-semibold">${fullname}</span>. We'll get back to you soon.</p>
+                    <p class="text-gray-400 text-base">Need immediate help? Call <a href="tel:859-423-1806" class="text-brand-orange font-bold hover:underline">859-423-1806</a></p>
+                </div>
+            `;
+        });
+    </script>
 
 </body>
 
