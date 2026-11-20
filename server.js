@@ -1429,9 +1429,10 @@ app.post('/api/public/book', async (req, res) => {
                         <p style="color:#fff;margin:6px 0 0;font-size:15px;">Drop-off: <strong>${escapeHtml(dateLabel)}, ${windowLabel}</strong></p>
                     </div>
                     <div style="background:#fff;padding:24px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px;">
+                        <p style="font-size:14px;margin-top:0;">Thank you for booking online with us. I look forward to servicing your bike. If you need to arrange a pick-up of your bike, it can be picked up for free from Lexington and the surrounding counties, including Richmond, Lawrenceburg and Frankfort.</p>
                         ${itemsTable}
-                        <p style="font-size:13px;color:#64748b;margin-top:16px;">This is an estimate. Parts are extra, and we'll check with you before doing any work beyond what you booked.${priced.needsQuote ? ' We\'ll reach out to talk through your Dream Build and send a quote.' : ''}</p>
-                        <p style="font-size:14px;margin-top:16px;">Need to reschedule? Call or text <a href="tel:859-423-1806" style="color:#FF8000;">859-423-1806</a> or reply to this email.</p>
+                        <p style="font-size:13px;color:#64748b;margin-top:16px;">The service price is an estimate. Parts are extra (inner tubes, tires, etc.) in the final quote. We will check with you before doing any work beyond what you booked.${priced.needsQuote ? ' We\'ll reach out to talk through your Dream Build and send a quote.' : ''}</p>
+                        <p style="font-size:14px;margin-top:16px;">Need to reschedule or have any additional questions? Call or text me at <a href="tel:859-423-1806" style="color:#FF8000;">859-423-1806</a>.</p>
                         <p style="font-size:14px;margin-top:16px;">See you soon,<br><strong>Steve @ Weeecycle</strong></p>
                     </div>
                 </div>`
