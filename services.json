@@ -1,0 +1,20 @@
+{
+  "_note": "Single price list for book.html and the booking API. Keep in sync with services.html.",
+  "packages": [
+    { "id": "safety-check", "name": "Safety Check", "price": 20, "blurb": "Wash, air, safety inspection, bolt torque, chain lube." },
+    { "id": "tune-up", "name": "The Tune-Up", "price": 90, "blurb": "Safety Check + gear indexing, brake service, wheel true." },
+    { "id": "overhaul", "name": "Tune Up - Overhaul", "price": 150, "blurb": "Tune-Up + bearings, headset, BB, new shift & brake cables." },
+    { "id": "dream-build", "name": "Dream Build", "price": null, "blurb": "Custom build consultation. Quoted after we talk through your build." }
+  ],
+  "alacarte": [
+    { "id": "tire-install", "name": "Tire installation", "price": 10, "unit": "tire", "maxQty": 2 },
+    { "id": "tubeless-install", "name": "Tubeless tire installation", "price": 30, "unit": "tire", "maxQty": 2 },
+    { "id": "wheel-truing", "name": "Wheel truing", "price": 15, "unit": "wheel", "maxQty": 2 },
+    { "id": "wheel-bearing", "name": "Wheel bearing service", "price": 15, "unit": "wheel", "maxQty": 2 },
+    { "id": "headset", "name": "Headset service", "price": 15, "maxQty": 1 },
+    { "id": "bottom-bracket", "name": "Bottom bracket service", "price": 30, "maxQty": 1 },
+    { "id": "component-single", "name": "Component installation (single)", "price": 20, "unit": "component", "maxQty": 6 },
+    { "id": "component-groupset", "name": "Groupset installation", "price": 50, "maxQty": 1 },
+    { "id": "chain-install", "name": "Chain installation", "price": 10, "maxQty": 1 }
+  ]
+}

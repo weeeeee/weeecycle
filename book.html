@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PXE6HLHC80"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-PXE6HLHC80');
+    </script>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Book Service Online | Weeecycle.net</title>
+    <meta name="description"
+        content="Get an instant price and book your bike drop-off online. Safety Check, Tune-Up, Overhaul, A La Carte repairs, or a Dream Build consultation in Lexington, KY." />
+    <meta name="keywords"
+        content="book bike repair online, bike tune up price, bike service lexington ky, bicycle repair booking" />
+    <meta name="author" content="Weeecycle.net" />
+    <link rel="canonical" href="https://weeecycle.net/book.html" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://weeecycle.net/book.html" />
+    <meta property="og:title" content="Book Service Online | Weeecycle.net" />
+    <meta property="og:description" content="Instant price. Pick your drop-off. Done." />
+    <meta property="og:image" content="https://weeecycle.net/images/logo/gradient-bike.png" />
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content="Book Service Online | Weeecycle.net" />
+    <meta property="twitter:description" content="Instant price. Pick your drop-off. Done." />
+    <meta property="twitter:image" content="https://weeecycle.net/images/logo/gradient-bike.png" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { dark: '#050511', blue: '#0B0B3B', orange: '#FF8000', slate: '#1e293b', light: '#f8fafc' }
+                    },
+                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Roboto Condensed', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050511; }
+        ::-webkit-scrollbar-thumb { background: #FF8000; border-radius: 4px; }
+        .field { width: 100%; background: #050511; border: 1px solid #374151; border-radius: .25rem; padding: .75rem 1rem; color: #fff; transition: border-color .15s; }
+        .field:focus { outline: none; border-color: #FF8000; }
+        .pick { border: 2px solid #1f2937; transition: border-color .15s, background-color .15s, transform .15s; cursor: pointer; }
+        .pick:hover { border-color: rgba(255,128,0,.5); }
+        .pick.selected { border-color: #FF8000; background: rgba(255,128,0,.08); }
+        .slot { border: 2px solid #374151; transition: all .15s; }
+        .slot:not(:disabled):hover { border-color: #FF8000; }
+        .slot.selected { border-color: #FF8000; background: #FF8000; color: #fff; }
+        .slot:disabled { opacity: .35; cursor: not-allowed; text-decoration: line-through; }
+        .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+    </style>
+    <link rel="icon" type="image/png" href="images/logo/gradient-bike.png" />
+    <link rel="apple-touch-icon" href="images/logo/gradient-bike.png" />
+    <link rel="manifest" href="/manifest.json" />
+</head>
+
+<body class="bg-brand-dark text-gray-200 font-body antialiased selection:bg-brand-orange selection:text-white">
+
+    <nav class="fixed top-0 w-full z-50 bg-brand-dark/95 backdrop-blur border-b border-brand-orange/20 shadow-xl">
+        <div class="container mx-auto px-4 h-20 flex items-center justify-between">
+            <a class="flex items-center group" href="index.html">
+                <img src="images/logo/logo-landscape.png" alt="Weeecycle.net" class="h-10 md:h-12 w-auto object-contain drop-shadow-[0_0_8px_rgba(255,128,0,0.3)] transition transform group-hover:scale-105" />
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="services.html">Services</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="contact.html">Contact</a>
+                <a class="font-display text-lg hover:text-brand-orange transition uppercase tracking-wide" href="https://weeecycle.substack.com" target="_blank" rel="noopener noreferrer">Substack</a>
+                <a class="bg-[#00b67a] hover:bg-[#00a067] text-white font-display font-bold uppercase tracking-wider py-2 px-6 rounded transition transform hover:-translate-y-1 shadow-lg" href="donate.html">Donate a Bike</a>
+            </div>
+            <button class="md:hidden text-white hover:text-brand-orange transition" aria-label="Menu"
+                onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"><span class="material-symbols-outlined text-4xl">menu</span></button>
+        </div>
+        <div class="hidden md:hidden bg-brand-dark border-t border-brand-orange/20 absolute w-full left-0 shadow-2xl" id="mobile-menu">
+            <div class="flex flex-col p-4 space-y-4">
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="services.html">Services</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="contact.html">Contact</a>
+                <a class="text-xl font-display uppercase tracking-wide text-gray-200" href="https://weeecycle.substack.com" target="_blank" rel="noopener noreferrer">Blog</a>
+                <a class="text-[#00b67a] text-xl font-display font-bold uppercase tracking-wide" href="donate.html">Donate a Bike</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-32 pb-28 lg:pb-20 container mx-auto px-4 max-w-6xl" id="main">
+        <div class="text-center mb-10">
+            <h1 class="font-display font-bold text-6xl text-white uppercase leading-none mb-4">Book <span class="text-brand-orange">Online</span></h1>
+            <p class="text-gray-400 text-lg max-w-2xl mx-auto">Pick your services, see your price, choose a drop-off time. That's it.</p>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-8 items-start">
+            <div class="lg:col-span-2 space-y-8">
+
+                <!-- Step 1: Services -->
+                <section class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 md:p-8 shadow-2xl">
+                    <h2 class="font-display font-bold text-3xl text-white uppercase tracking-wide mb-1"><span class="text-brand-orange">1.</span> Choose your service</h2>
+                    <p class="text-gray-400 mb-6 text-sm">Pick a package, add individual repairs, or both.</p>
+                    <div id="packages" class="grid sm:grid-cols-2 gap-4 mb-8"></div>
+                    <h3 id="alacarte-heading" class="font-display font-bold text-2xl text-white uppercase tracking-wide mb-3">A La Carte</h3>
+                    <div id="alacarte" class="divide-y divide-gray-800/70"></div>
+                </section>
+
+                <!-- Step 2: Drop-off -->
+                <section class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 md:p-8 shadow-2xl">
+                    <h2 class="font-display font-bold text-3xl text-white uppercase tracking-wide mb-1"><span class="text-brand-orange">2.</span> Pick a drop-off</h2>
+                    <p class="text-gray-400 mb-6 text-sm">Drop-off &amp; pickup are evenings 6&ndash;8 PM, plus Saturdays 9 AM&ndash;12 PM. Closed Wednesdays. Questions? Call 9 AM&ndash;8 PM.</p>
+                    <div id="days" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        <p class="text-gray-500 col-span-full">Loading available times…</p>
+                    </div>
+                </section>
+
+                <!-- Step 3: Details -->
+                <section class="bg-[#0B0B2B] border border-gray-800 rounded-xl p-6 md:p-8 shadow-2xl">
+                    <h2 class="font-display font-bold text-3xl text-white uppercase tracking-wide mb-6"><span class="text-brand-orange">3.</span> Your details</h2>
+                    <form id="details" class="grid md:grid-cols-2 gap-5" autocomplete="on" novalidate>
+                        <div><label for="firstName" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-1">First Name *</label><input id="firstName" class="field" autocomplete="given-name" required></div>
+                        <div><label for="lastName" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-1">Last Name *</label><input id="lastName" class="field" autocomplete="family-name" required></div>
+                        <div><label for="phone" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-1">Mobile Phone *</label><input id="phone" type="tel" class="field" autocomplete="tel" required></div>
+                        <div><label for="email" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-1">Email *</label><input id="email" type="email" class="field" autocomplete="email" required></div>
+                        <div class="md:col-span-2"><label for="address" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-1">Street Address</label><input id="address" class="field" autocomplete="street-address"></div>
+                        <div><label for="city" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-1">City</label><input id="city" class="field" autocomplete="address-level2" value="Lexington"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label for="state" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-1">State</label><input id="state" class="field" autocomplete="address-level1" value="KY"></div>
+                            <div><label for="zip" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-1">Zip</label><input id="zip" class="field" autocomplete="postal-code" inputmode="numeric"></div>
+                        </div>
+                        <div class="md:col-span-2"><label for="bikeModel" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-1">Bike Make / Model</label><input id="bikeModel" class="field" placeholder="e.g. Specialized Diverge, Trek Domane"></div>
+                        <div class="md:col-span-2"><label for="notes" class="block text-brand-orange font-display font-bold uppercase tracking-wide mb-1">Anything we should know?</label><textarea id="notes" rows="3" class="field" placeholder="Noises, issues, parts you're bringing, Dream Build ideas…"></textarea></div>
+                        <div class="hp" aria-hidden="true"><label for="website">Website</label><input id="website" tabindex="-1" autocomplete="off"></div>
+                    </form>
+                </section>
+            </div>
+
+            <!-- Summary -->
+            <aside class="lg:sticky lg:top-28 bg-[#0B0B2B] border-2 border-brand-orange/60 rounded-xl p-6 shadow-2xl" id="summary">
+                <h2 class="font-display font-bold text-3xl text-white uppercase tracking-wide mb-4">Your Quote</h2>
+                <div id="summary-items" class="space-y-2 text-sm mb-4"><p class="text-gray-500">No services selected yet.</p></div>
+                <div class="border-t border-gray-800 pt-4 mb-4">
+                    <div class="flex justify-between items-baseline">
+                        <span class="font-display uppercase tracking-wide text-gray-400 text-xl">Estimated total</span>
+                        <span id="summary-total" class="font-display font-bold text-4xl text-brand-orange">$0</span>
+                    </div>
+                    <p id="summary-quote-note" class="text-xs text-gray-400 mt-1 hidden">+ Dream Build quoted after consultation</p>
+                    <p class="text-xs text-gray-500 mt-1">Parts extra if needed. We'll check with you before any extra work.</p>
+                </div>
+                <div class="flex items-start gap-3 mb-5 text-sm">
+                    <span class="material-symbols-outlined text-brand-orange">event</span>
+                    <span id="summary-slot" class="text-gray-400">No drop-off time selected</span>
+                </div>
+                <p id="book-error" class="hidden text-red-400 text-sm mb-3"></p>
+                <button id="book-btn" type="button"
+                    class="w-full bg-brand-orange hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-brand-orange text-white font-display font-bold text-2xl uppercase tracking-wider py-3 rounded transition shadow-lg shadow-orange-900/50">Book It</button>
+                <p class="text-xs text-gray-500 mt-3 text-center">Questions? Call or text <a href="tel:859-423-1806" class="text-brand-orange">859-423-1806</a></p>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Mobile sticky total bar -->
+    <div id="mobile-bar" class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-brand-dark/95 backdrop-blur border-t border-brand-orange/30 px-4 py-3 flex items-center justify-between">
+        <div><div class="text-xs text-gray-400 uppercase tracking-wider">Estimate</div><div id="mobile-total" class="font-display font-bold text-3xl text-brand-orange leading-none">$0</div></div>
+        <a href="#summary" class="bg-brand-orange text-white font-display font-bold text-xl uppercase tracking-wider py-2 px-6 rounded">Review &amp; Book</a>
+    </div>
+
+    <footer class="bg-black border-t border-gray-900 py-12">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex flex-col items-center md:items-start">
+                <a href="index.html" class="inline-block group">
+                    <img src="images/logo/logo-landscape.png" alt="Weeecycle.net" class="h-10 md:h-12 w-auto object-contain drop-shadow-[0_0_8px_rgba(255,128,0,0.3)] transition transform group-hover:scale-105" />
+                </a>
+                <span class="text-gray-500 text-xs uppercase tracking-[0.2em] mt-2">Building Speed. Fixing Fun.</span>
+            </div>
+            <div class="text-gray-600 text-xs uppercase tracking-wider">
+                <span>&copy; 2026 Weeecycle | Lexington, KY. All rights reserved. &nbsp;&middot;&nbsp; <a href="/privacy.html" class="hover:text-brand-orange transition-colors">Privacy Policy</a></span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    (function () {
+        const $ = (id) => document.getElementById(id);
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const money = (n) => '$' + (Number.isInteger(n) ? n : n.toFixed(2));
+
+        let catalog = { packages: [], alacarte: [] };
+        const state = { pkg: null, extras: {}, slot: null }; // extras: id -> qty
+        let days = [];
+
+        // Old contact.html?service= names map to package ids
+        const SERVICE_ALIASES = { 'Safety Check': 'safety-check', 'The Tune-Up': 'tune-up', 'Overhaul': 'overhaul', 'Dream Build': 'dream-build' };
+
+        function renderPackages() {
+            $('packages').innerHTML = catalog.packages.map(p => `
+                <button type="button" data-pkg="${p.id}" class="pick text-left rounded-xl p-5 bg-brand-dark ${state.pkg === p.id ? 'selected' : ''}">
+                    <div class="flex justify-between items-baseline gap-2">
+                        <span class="font-display font-bold text-2xl text-white uppercase tracking-wide">${esc(p.name)}</span>
+                        <span class="font-display font-bold text-2xl text-brand-orange whitespace-nowrap">${p.price == null ? 'Quote' : money(p.price)}</span>
+                    </div>
+                    <p class="text-gray-400 text-sm mt-1">${esc(p.blurb)}</p>
+                </button>`).join('');
+            $('packages').querySelectorAll('[data-pkg]').forEach(btn => btn.addEventListener('click', () => {
+                state.pkg = state.pkg === btn.dataset.pkg ? null : btn.dataset.pkg; // click again to deselect
+                renderPackages(); update();
+            }));
+        }
+
+        function renderAlacarte() {
+            $('alacarte').innerHTML = catalog.alacarte.map(a => {
+                const on = state.extras[a.id] != null;
+                const qtyOpts = Array.from({ length: a.maxQty || 1 }, (_, i) => i + 1)
+                    .map(n => `<option value="${n}" ${state.extras[a.id] === n ? 'selected' : ''}>${n} ${a.unit ? esc(a.unit) + (n > 1 ? 's' : '') : ''}</option>`).join('');
+                return `
+                <div class="flex items-center gap-3 py-3">
+                    <input type="checkbox" id="ac-${a.id}" data-extra="${a.id}" ${on ? 'checked' : ''} class="w-5 h-5 accent-[#FF8000] shrink-0">
+                    <label for="ac-${a.id}" class="flex-1 text-gray-200 cursor-pointer">${esc(a.name)} <span class="text-gray-500 text-sm">${money(a.price)}${a.unit ? ' / ' + esc(a.unit) : ''}</span></label>
+                    ${(a.maxQty || 1) > 1 ? `<select data-qty="${a.id}" class="field !w-auto !py-1 !px-2 text-sm ${on ? '' : 'invisible'}">${qtyOpts}</select>` : ''}
+                </div>`;
+            }).join('');
+            $('alacarte').querySelectorAll('[data-extra]').forEach(cb => cb.addEventListener('change', () => {
+                if (cb.checked) state.extras[cb.dataset.extra] = 1; else delete state.extras[cb.dataset.extra];
+                renderAlacarte(); update();
+            }));
+            $('alacarte').querySelectorAll('[data-qty]').forEach(sel => sel.addEventListener('change', () => {
+                state.extras[sel.dataset.qty] = Number(sel.value); update();
+            }));
+        }
+
+        function renderDays() {
+            if (!days.length) { $('days').innerHTML = '<p class="text-gray-500 col-span-full">No drop-off times available right now. Please call or text 859-423-1806.</p>'; return; }
+            $('days').innerHTML = days.map(d => {
+                const [weekday, rest] = d.label.split(', ');
+                const body = d.windows.length === 0
+                    ? '<div class="text-gray-600 text-sm py-2">Closed</div>'
+                    : d.windows.map(w => {
+                        const key = d.date + '|' + w.id;
+                        const full = w.spotsLeft <= 0;
+                        return `<button type="button" data-slot="${key}" ${full ? 'disabled' : ''} class="slot w-full rounded py-1.5 text-sm font-bold uppercase tracking-wide ${state.slot === key ? 'selected' : ''}">
+                            ${esc(w.label)}<span class="block text-[10px] font-normal normal-case tracking-normal opacity-80">${full ? 'Full' : w.spotsLeft + ' spot' + (w.spotsLeft > 1 ? 's' : '') + ' left'}</span></button>`;
+                    }).join('');
+                return `<div class="bg-brand-dark border border-gray-800 rounded-lg p-3 ${d.windows.length ? '' : 'opacity-50'}">
+                    <div class="font-display text-xl text-white uppercase leading-none">${esc(weekday)}</div>
+                    <div class="text-gray-400 text-sm mb-2">${esc(rest)}</div>
+                    <div class="space-y-2">${body}</div></div>`;
+            }).join('');
+            $('days').querySelectorAll('[data-slot]').forEach(btn => btn.addEventListener('click', () => {
+                state.slot = btn.dataset.slot; renderDays(); update();
+            }));
+        }
+
+        function selectedItems() {
+            const items = [];
+            const pkg = catalog.packages.find(p => p.id === state.pkg);
+            if (pkg) items.push({ id: pkg.id, name: pkg.name, qty: 1, lineTotal: pkg.price });
+            for (const a of catalog.alacarte) {
+                const qty = state.extras[a.id];
+                if (qty) items.push({ id: a.id, name: a.name, qty, lineTotal: a.price * qty });
+            }
+            return items;
+        }
+
+        function slotLabel() {
+            if (!state.slot) return null;
+            const [date, win] = state.slot.split('|');
+            const d = days.find(x => x.date === date);
+            const w = d?.windows.find(x => x.id === win);
+            return d && w ? `${d.label}, ${w.label} drop-off` : null;
+        }
+
+        function update() {
+            const items = selectedItems();
+            const total = items.reduce((s, i) => s + (i.lineTotal || 0), 0);
+            const needsQuote = items.some(i => i.lineTotal == null);
+            $('summary-items').innerHTML = items.length
+                ? items.map(i => `<div class="flex justify-between gap-3"><span class="text-gray-200">${esc(i.name)}${i.qty > 1 ? ' ×' + i.qty : ''}</span><span class="text-gray-300">${i.lineTotal == null ? 'Quote' : money(i.lineTotal)}</span></div>`).join('')
+                : '<p class="text-gray-500">No services selected yet.</p>';
+            $('summary-total').textContent = money(total);
+            $('mobile-total').textContent = money(total) + (needsQuote ? '+' : '');
+            $('summary-quote-note').classList.toggle('hidden', !needsQuote);
+            const sl = slotLabel();
+            $('summary-slot').textContent = sl || 'No drop-off time selected';
+            $('summary-slot').className = sl ? 'text-white font-bold' : 'text-gray-400';
+        }
+
+        function showError(msg) {
+            $('book-error').textContent = msg;
+            $('book-error').classList.toggle('hidden', !msg);
+        }
+
+        async function book() {
+            showError('');
+            const items = selectedItems();
+            const v = (id) => $(id).value.trim();
+            if (!items.length) return showError('Choose at least one service in step 1.');
+            if (!slotLabel()) return showError('Pick a drop-off time in step 2.');
+            for (const id of ['firstName', 'lastName', 'phone', 'email']) {
+                if (!v(id)) { $(id).focus(); return showError('Please fill in your name, phone, and email in step 3.'); }
+            }
+            if (!/^\S+@\S+\.\S+$/.test(v('email'))) { $('email').focus(); return showError('Please enter a valid email address.'); }
+            if (v('phone').replace(/\D/g, '').length < 10) { $('phone').focus(); return showError('Please enter a 10-digit phone number.'); }
+
+            const [date, window_] = state.slot.split('|');
+            const btn = $('book-btn');
+            btn.disabled = true; btn.textContent = 'Booking…';
+            try {
+                const res = await fetch('/api/public/book', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        services: items.map(i => ({ id: i.id, qty: i.qty })),
+                        date, window: window_,
+                        firstName: v('firstName'), lastName: v('lastName'), phone: v('phone'), email: v('email'),
+                        address: v('address'), city: v('city'), state: v('state'), zipCode: v('zip'),
+                        bikeModel: v('bikeModel'), notes: v('notes'), website: v('website'),
+                    }),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    if (res.status === 409) { state.slot = null; await loadDays(); update(); }
+                    throw new Error(data.error || 'Something went wrong. Please call or text 859-423-1806.');
+                }
+                if (typeof gtag === 'function') gtag('event', 'booking_complete', { value: data.estimate, currency: 'USD' });
+                showConfirmation(data, v('firstName'), v('email'));
+            } catch (err) {
+                showError(err.message || 'Could not reach the server. Please call or text 859-423-1806.');
+                btn.disabled = false; btn.textContent = 'Book It';
+            }
+        }
+
+        function showConfirmation(data, firstName, email) {
+            $('mobile-bar').remove();
+            const rows = (data.items || []).map(i => `<div class="flex justify-between"><span>${esc(i.name)}${i.qty > 1 ? ' ×' + i.qty : ''}</span><span>${i.lineTotal == null ? 'Quote' : money(i.lineTotal)}</span></div>`).join('');
+            $('main').innerHTML = `
+                <div class="max-w-xl mx-auto text-center bg-[#0B0B2B] border border-gray-800 rounded-xl p-8 md:p-12 shadow-2xl">
+                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-brand-orange/10 border-2 border-brand-orange mb-6">
+                        <span class="material-symbols-outlined text-brand-orange text-5xl">check_circle</span>
+                    </div>
+                    <h1 class="font-display font-bold text-5xl text-white uppercase mb-2">You're Booked!</h1>
+                    <p class="text-gray-300 text-lg mb-6">Thanks, <span class="text-brand-orange font-semibold">${esc(firstName)}</span>. Drop-off: <strong class="text-white">${esc(data.dateLabel)}, ${esc(data.windowLabel)}</strong>.</p>
+                    <div class="text-left text-gray-300 bg-brand-dark rounded-lg p-4 space-y-1 mb-4">${rows}
+                        <div class="flex justify-between border-t border-gray-800 pt-2 mt-2 font-bold text-white"><span>Estimated total</span><span class="text-brand-orange">${money(data.estimate)}${data.needsQuote ? ' + quote' : ''}</span></div>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-8">A confirmation is on its way to ${esc(email)}. Need to reschedule? Call or text <a href="tel:859-423-1806" class="text-brand-orange">859-423-1806</a>.</p>
+                    <a href="index.html" class="inline-block bg-brand-orange hover:bg-orange-600 text-white font-display font-bold text-lg uppercase tracking-wider py-3 px-8 rounded transition">Back to Home</a>
+                </div>`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function loadDays() {
+            try {
+                const res = await fetch('/api/public/availability');
+                if (!res.ok) throw new Error();
+                days = (await res.json()).days || [];
+            } catch {
+                days = [];
+            }
+            renderDays();
+        }
+
+        async function init() {
+            try {
+                catalog = await (await fetch('/services.json')).json();
+            } catch {
+                $('packages').innerHTML = '<p class="text-red-400">Could not load services. Please call or text 859-423-1806.</p>';
+                return;
+            }
+            const want = new URLSearchParams(location.search).get('service');
+            if (want) {
+                const id = SERVICE_ALIASES[want] || want;
+                if (catalog.packages.some(p => p.id === id)) state.pkg = id;
+                else if (catalog.alacarte.some(a => a.id === id)) state.extras[id] = 1;
+                else if (want === 'A La Carte') setTimeout(() => $('alacarte-heading').scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+            }
+            renderPackages(); renderAlacarte(); update();
+            $('book-btn').addEventListener('click', book);
+            loadDays();
+        }
+
+        init();
+    })();
+    </script>
+</body>
+
+</html>

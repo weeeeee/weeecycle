@@ -1138,6 +1138,20 @@ app.post('/api/builds/migrate', requireMechanicAuth, (req, res) => {
 });
 
 
+// Find a customer by phone and update them, or create a new one. Used by public signup and booking.
+function upsertPublicCustomer({ firstName, lastName, phone, email, address, city, state, zipCode }) {
+    const now = new Date().toISOString();
+    const existing = workshopDb.prepare('SELECT * FROM customers WHERE phone=?').get(phone.trim());
+    if (existing) {
+        workshopDb.prepare(`UPDATE customers SET firstName=?,lastName=?,email=?,address=?,city=?,state=?,zipCode=?,updatedAt=? WHERE id=?`)
+            .run(firstName.trim(), lastName.trim(), email?.trim() || existing.email, address?.trim(), city?.trim(), state, zipCode?.trim(), now, existing.id);
+        return { customerId: existing.id, isNewCustomer: false };
+    }
+    const info = workshopDb.prepare(`INSERT INTO customers (firstName,lastName,phone,email,address,city,state,zipCode,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?)`)
+        .run(firstName.trim(), lastName.trim(), phone.trim(), email?.trim() || null, address?.trim(), city?.trim(), state, zipCode?.trim(), now, now);
+    return { customerId: info.lastInsertRowid, isNewCustomer: true };
+}
+
 app.post('/api/public/signup', (req, res) => {
     const { firstName, lastName, phone, email, address, city, state, zipCode, requestedService, bikeModel, description } = req.body;
     if (!firstName || !lastName || !phone) {
@@ -1145,18 +1159,7 @@ app.post('/api/public/signup', (req, res) => {
     }
     const now = new Date().toISOString();
     try {
-        const existing = workshopDb.prepare('SELECT * FROM customers WHERE phone=?').get(phone.trim());
-        let customerId;
-        const isNewCustomer = !existing;
-        if (existing) {
-            workshopDb.prepare(`UPDATE customers SET firstName=?,lastName=?,email=?,address=?,city=?,state=?,zipCode=?,updatedAt=? WHERE id=?`)
-                .run(firstName.trim(), lastName.trim(), email?.trim() || existing.email, address?.trim(), city?.trim(), state, zipCode?.trim(), now, existing.id);
-            customerId = existing.id;
-        } else {
-            const info = workshopDb.prepare(`INSERT INTO customers (firstName,lastName,phone,email,address,city,state,zipCode,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?)`)
-                .run(firstName.trim(), lastName.trim(), phone.trim(), email?.trim() || null, address?.trim(), city?.trim(), state, zipCode?.trim(), now, now);
-            customerId = info.lastInsertRowid;
-        }
+        const { customerId, isNewCustomer } = upsertPublicCustomer({ firstName, lastName, phone, email, address, city, state, zipCode });
         let jobId = null;
         const serviceNotes = ['Customer self-service intake request.', description ? `Issue described: ${description.trim()}` : ''].filter(Boolean).join(' ');
         if (requestedService && requestedService.trim() !== '') {
@@ -1233,6 +1236,210 @@ app.post('/api/public/donate', (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+
+// ─── Instant Quote & Booking ──────────────────────────────────────────────────
+// Drop-off windows per weekday (0 = Sunday). Wednesday is off.
+const BOOKING_SCHEDULE = {
+    0: ['evening'],             // Sunday
+    1: ['evening'],             // Monday
+    2: ['evening'],             // Tuesday
+    3: [],                      // Wednesday: closed
+    4: ['evening'],             // Thursday
+    5: ['evening'],             // Friday
+    6: ['morning', 'evening'],  // Saturday
+};
+const BOOKING_CAPACITY = 2;      // bikes per window
+const BOOKING_DAYS_AHEAD = 14;   // how far out customers can book (starting tomorrow)
+const BOOKING_TZ = 'America/New_York';
+const BOOKING_WINDOW_LABELS = { morning: 'Morning 9 AM–12 PM', evening: 'Evening 6–8 PM' };
+const SERVICE_CATALOG = JSON.parse(fs.readFileSync(path.join(__dirname, 'services.json'), 'utf8'));
+
+try {
+    workshopDb?.exec(`
+        CREATE TABLE IF NOT EXISTS bookings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            customerId INTEGER, jobId INTEGER,
+            date TEXT NOT NULL, dropWindow TEXT NOT NULL,
+            items TEXT, estimate REAL, needsQuote INTEGER DEFAULT 0,
+            bikeModel TEXT, notes TEXT, createdAt TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_bookings_slot ON bookings(date, dropWindow);
+    `);
+} catch (err) { console.error('Bookings table setup failed:', err.message); }
+
+const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function bookingTodayISO() {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: BOOKING_TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+}
+
+function bookingDateLabel(iso) {
+    return new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' });
+}
+
+// A booked slot only counts while its tracker job still exists, so deleting the job frees the slot.
+function bookingSlotCount(date, window) {
+    return workshopDb.prepare(
+        `SELECT COUNT(*) AS n FROM bookings b JOIN jobs j ON j.id = b.jobId WHERE b.date=? AND b.dropWindow=?`
+    ).get(date, window).n;
+}
+
+function bookingAvailability() {
+    const blocked = new Set(JSON.parse(workshopDb.prepare(`SELECT value FROM settings WHERE key='booking_blocked_dates'`).get()?.value || '[]'));
+    const today = new Date(`${bookingTodayISO()}T12:00:00Z`);
+    const days = [];
+    for (let i = 1; i <= BOOKING_DAYS_AHEAD; i++) {
+        const d = new Date(today);
+        d.setUTCDate(d.getUTCDate() + i);
+        const date = d.toISOString().slice(0, 10);
+        const windows = (BOOKING_SCHEDULE[d.getUTCDay()] || []).map(w => {
+            const left = blocked.has(date) ? 0 : Math.max(0, BOOKING_CAPACITY - bookingSlotCount(date, w));
+            return { id: w, label: BOOKING_WINDOW_LABELS[w], spotsLeft: left };
+        });
+        days.push({ date, label: bookingDateLabel(date), windows });
+    }
+    return days;
+}
+
+// Recalculate prices from services.json; never trust totals sent by the browser.
+function priceBookingItems(selected) {
+    if (!Array.isArray(selected) || selected.length === 0) throw new Error('Please choose at least one service.');
+    const byId = new Map([...SERVICE_CATALOG.packages.map(p => [p.id, { ...p, isPackage: true }]), ...SERVICE_CATALOG.alacarte.map(a => [a.id, a])]);
+    const items = [];
+    const seen = new Set();
+    for (const sel of selected) {
+        const svc = byId.get(sel?.id);
+        if (!svc || seen.has(svc.id)) throw new Error('Invalid service selection.');
+        seen.add(svc.id);
+        const qty = svc.isPackage ? 1 : Math.floor(Number(sel.qty) || 1);
+        if (qty < 1 || qty > (svc.maxQty || 1)) throw new Error(`Invalid quantity for ${svc.name}.`);
+        items.push({ id: svc.id, name: svc.name, qty, price: svc.price, lineTotal: svc.price == null ? null : svc.price * qty });
+    }
+    if (items.filter(i => byId.get(i.id).isPackage).length > 1) throw new Error('Please choose only one package.');
+    const estimate = items.reduce((sum, i) => sum + (i.lineTotal || 0), 0);
+    const needsQuote = items.some(i => i.price == null);
+    return { items, estimate, needsQuote };
+}
+
+const bookingRateLimit = new Map(); // ip -> [timestamps]
+function bookingRateLimited(ip) {
+    const hourAgo = Date.now() - 60 * 60 * 1000;
+    const recent = (bookingRateLimit.get(ip) || []).filter(t => t > hourAgo);
+    recent.push(Date.now());
+    bookingRateLimit.set(ip, recent);
+    return recent.length > 8;
+}
+
+app.get('/api/public/availability', (_req, res) => {
+    try { res.json({ capacity: BOOKING_CAPACITY, days: bookingAvailability() }); }
+    catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/public/book', async (req, res) => {
+    const { firstName, lastName, phone, email, address, city, state, zipCode, bikeModel, notes, date, window, services, website } = req.body || {};
+    if (website) return res.json({ success: true }); // honeypot: silently drop bots
+    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip;
+    if (bookingRateLimited(ip)) return res.status(429).json({ error: 'Too many booking attempts. Please call or text 859-423-1806.' });
+    if (!firstName?.trim() || !lastName?.trim() || !phone?.trim() || !email?.trim()) {
+        return res.status(400).json({ error: 'Name, phone, and email are required.' });
+    }
+
+    let priced;
+    try { priced = priceBookingItems(services); }
+    catch (err) { return res.status(400).json({ error: err.message }); }
+
+    const day = bookingAvailability().find(d => d.date === date);
+    const slot = day?.windows.find(w => w.id === window);
+    if (!slot) return res.status(400).json({ error: 'Please choose an available drop-off day and time.' });
+
+    const now = new Date().toISOString();
+    const dateLabel = bookingDateLabel(date);
+    const windowLabel = BOOKING_WINDOW_LABELS[window];
+    const serviceSummary = priced.items.map(i => i.qty > 1 ? `${i.name} ×${i.qty}` : i.name).join(' + ');
+
+    let booking;
+    try {
+        // Check capacity and insert in one transaction so two people can't grab the last spot.
+        booking = workshopDb.transaction(() => {
+            if (bookingSlotCount(date, window) >= BOOKING_CAPACITY) throw Object.assign(new Error('Sorry, that drop-off time just filled up. Please pick another.'), { status: 409 });
+            const { customerId, isNewCustomer } = upsertPublicCustomer({ firstName, lastName, phone, email, address, city, state, zipCode });
+            const shortDate = new Date(`${date}T12:00:00Z`).toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short', month: 'numeric', day: 'numeric' });
+            const jobNotes = [
+                `Online booking: drop-off ${dateLabel}, ${windowLabel}.`,
+                `Estimate: $${priced.estimate.toFixed(2)}${priced.needsQuote ? ' + Dream Build quote' : ''}.`,
+                notes?.trim() ? `Customer notes: ${notes.trim()}` : '',
+            ].filter(Boolean).join(' ');
+            const jobId = workshopDb.prepare(`INSERT INTO jobs (customerId,title,stage,bikeModel,estimatedCost,notes,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?)`)
+                .run(customerId, `Drop-off ${shortDate} ${windowLabel}: ${serviceSummary}`, 'In the shop', bikeModel?.trim() || 'Customer Bike',
+                    priced.estimate ? priced.estimate.toFixed(2) : '', jobNotes, now, now).lastInsertRowid;
+            const id = workshopDb.prepare(`INSERT INTO bookings (customerId,jobId,date,dropWindow,items,estimate,needsQuote,bikeModel,notes,createdAt) VALUES (?,?,?,?,?,?,?,?,?,?)`)
+                .run(customerId, jobId, date, window, JSON.stringify(priced.items), priced.estimate, priced.needsQuote ? 1 : 0, bikeModel?.trim() || '', notes?.trim() || '', now).lastInsertRowid;
+            return { id, customerId, jobId, isNewCustomer };
+        })();
+    } catch (err) {
+        return res.status(err.status || 500).json({ error: err.message });
+    }
+
+    // Emails: shop notification to Steve, confirmation to the customer.
+    const fullName = `${firstName.trim()} ${lastName.trim()}`;
+    const totalText = `$${priced.estimate.toFixed(2)}${priced.needsQuote ? ' + Dream Build (quoted separately)' : ''}`;
+    const itemRows = priced.items.map(i => `<tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;">${escapeHtml(i.name)}${i.qty > 1 ? ` ×${i.qty}` : ''}</td><td style="padding:8px 4px;text-align:right;">${i.lineTotal == null ? 'Quote' : `$${i.lineTotal.toFixed(2)}`}</td></tr>`).join('');
+    const itemsTable = `<table style="width:100%;border-collapse:collapse;font-size:14px;">${itemRows}<tr><td style="padding:10px 4px;font-weight:bold;">Estimated total</td><td style="padding:10px 4px;text-align:right;font-weight:bold;color:#FF8000;">${escapeHtml(totalText)}</td></tr></table>`;
+    const from = process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>';
+
+    if (transporter) {
+        transporter.sendMail({
+            from,
+            to: process.env.ADMIN_EMAIL || 'steve@weeecycle.net',
+            replyTo: email.trim(),
+            subject: `📅 Booking Confirmed: ${fullName}, ${dateLabel} (${windowLabel})`,
+            html: `
+                <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+                    <div style="background:#FF8000;padding:20px;border-radius:8px 8px 0 0;">
+                        <h2 style="color:#fff;margin:0;font-size:20px;">📅 New Online Booking</h2>
+                        <p style="color:#fff;margin:6px 0 0;font-size:15px;font-weight:bold;">${escapeHtml(dateLabel)}, ${windowLabel} drop-off</p>
+                    </div>
+                    <div style="background:#fff;padding:24px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px;">
+                        <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:16px;">
+                            <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;width:40%;">Customer</td><td style="padding:8px 4px;font-weight:bold;">${escapeHtml(fullName)}</td></tr>
+                            <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Phone</td><td style="padding:8px 4px;">${escapeHtml(phone.trim())}</td></tr>
+                            <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Email</td><td style="padding:8px 4px;">${escapeHtml(email.trim())}</td></tr>
+                            <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Address</td><td style="padding:8px 4px;">${escapeHtml([address, city, state, zipCode].filter(Boolean).join(', ') || '—')}</td></tr>
+                            <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Bike</td><td style="padding:8px 4px;">${escapeHtml(bikeModel?.trim() || '—')}</td></tr>
+                            <tr><td style="padding:8px 4px;color:#64748b;">Notes</td><td style="padding:8px 4px;">${escapeHtml(notes?.trim() || '—')}</td></tr>
+                        </table>
+                        ${itemsTable}
+                        <div style="margin-top:20px;padding:12px;background:#f8fafc;border-radius:6px;font-size:12px;color:#64748b;">
+                            ${booking.isNewCustomer ? '🆕 <strong>New customer</strong> added to CMS.' : '🔄 <strong>Returning customer</strong>, CMS record updated.'}
+                            Job #${booking.jobId} is on the Service Board. Delete the job to cancel and free the slot.
+                        </div>
+                    </div>
+                </div>`
+        }).catch(err => console.error('Booking shop email failed:', err.message));
+
+        transporter.sendMail({
+            from,
+            to: email.trim(),
+            replyTo: 'steve@weeecycle.net',
+            subject: `You're booked: ${dateLabel} (${windowLabel} drop-off) | Weeecycle`,
+            html: `
+                <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+                    <div style="background:#050511;padding:20px;border-radius:8px 8px 0 0;">
+                        <h2 style="color:#FF8000;margin:0;font-size:22px;">You're booked, ${escapeHtml(firstName.trim())}!</h2>
+                        <p style="color:#fff;margin:6px 0 0;font-size:15px;">Drop-off: <strong>${escapeHtml(dateLabel)}, ${windowLabel}</strong></p>
+                    </div>
+                    <div style="background:#fff;padding:24px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px;">
+                        ${itemsTable}
+                        <p style="font-size:13px;color:#64748b;margin-top:16px;">This is an estimate. Parts are extra, and we'll check with you before doing any work beyond what you booked.${priced.needsQuote ? ' We\'ll reach out to talk through your Dream Build and send a quote.' : ''}</p>
+                        <p style="font-size:14px;margin-top:16px;">Need to reschedule? Call or text <a href="tel:859-423-1806" style="color:#FF8000;">859-423-1806</a> or reply to this email.</p>
+                        <p style="font-size:14px;margin-top:16px;">See you soon,<br><strong>Steve @ Weeecycle</strong></p>
+                    </div>
+                </div>`
+        }).catch(err => console.error('Booking customer email failed:', err.message));
+    }
+
+    res.json({ success: true, bookingId: booking.id, dateLabel, windowLabel, items: priced.items, estimate: priced.estimate, needsQuote: priced.needsQuote });
+});
 
 // ─── Blog Comments ─────────────────────────────────────────────────────────────
 
