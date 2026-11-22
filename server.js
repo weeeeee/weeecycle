@@ -1442,6 +1442,62 @@ app.post('/api/public/book', async (req, res) => {
     res.json({ success: true, bookingId: booking.id, dateLabel, windowLabel, items: priced.items, estimate: priced.estimate, needsQuote: priced.needsQuote });
 });
 
+// ─── Christmas Bike Build Special ($60: pickup, assembly, tune-up) ───────────
+const CHRISTMAS_BIKE_TYPES = ['Mountain Bike', 'Kids Bike', 'Road Bike', 'Gravel Bike'];
+app.post('/api/public/christmas-build', (req, res) => {
+    const { name, address, phone, bikeType, website } = req.body || {};
+    if (website) return res.json({ success: true }); // honeypot
+    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip;
+    if (bookingRateLimited(ip)) return res.status(429).json({ error: 'Too many requests.' });
+    if (!name?.trim() || !address?.trim() || !phone?.trim()) {
+        return res.status(400).json({ error: 'Name, pickup address, and phone number are required.' });
+    }
+    if (!CHRISTMAS_BIKE_TYPES.includes(bikeType)) return res.status(400).json({ error: 'Please choose a bike type.' });
+    if (name.length > 100 || address.length > 250 || phone.length > 30) return res.status(400).json({ error: 'Input too long.' });
+
+    const [firstName, ...rest] = name.trim().split(/\s+/);
+    const lastName = rest.join(' ') || '-';
+    const now = new Date().toISOString();
+    let result;
+    try {
+        result = workshopDb.transaction(() => {
+            const { customerId, isNewCustomer } = upsertPublicCustomer({ firstName, lastName, phone, address });
+            const jobId = workshopDb.prepare(`INSERT INTO jobs (customerId,title,stage,bikeModel,estimatedCost,notes,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?)`)
+                .run(customerId, `Christmas Bike Build ($60): ${bikeType}`, 'Intake', bikeType, '60.00',
+                    `Christmas Bike Build special: pickup, assembly and thorough tune-up. Pickup address: ${address.trim()}`, now, now).lastInsertRowid;
+            return { customerId, jobId, isNewCustomer };
+        })();
+    } catch (err) { return res.status(500).json({ error: err.message }); }
+
+    if (transporter) {
+        transporter.sendMail({
+            from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
+            to: process.env.ADMIN_EMAIL || 'steve@weeecycle.net',
+            subject: `🎄 Christmas Bike Build: ${name.trim()} (${bikeType})`,
+            html: `
+                <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+                    <div style="background:#c8102e;padding:20px;border-radius:8px 8px 0 0;">
+                        <h2 style="color:#fff;margin:0;font-size:20px;">🎄 Christmas Bike Build Request ($60)</h2>
+                        <p style="color:#fff;margin:6px 0 0;font-size:13px;opacity:0.85;">Pickup, assembly &amp; tune-up. Call or text to schedule pickup.</p>
+                    </div>
+                    <div style="background:#fff;padding:24px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px;">
+                        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                            <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;width:40%;">Name</td><td style="padding:8px 4px;font-weight:bold;">${escapeHtml(name.trim())}</td></tr>
+                            <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Phone</td><td style="padding:8px 4px;"><a href="tel:${escapeHtml(phone.trim())}">${escapeHtml(phone.trim())}</a></td></tr>
+                            <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Pickup Address</td><td style="padding:8px 4px;">${escapeHtml(address.trim())}</td></tr>
+                            <tr><td style="padding:8px 4px;color:#64748b;">Bike Type</td><td style="padding:8px 4px;font-weight:bold;color:#c8102e;">${escapeHtml(bikeType)}</td></tr>
+                        </table>
+                        <div style="margin-top:20px;padding:12px;background:#f8fafc;border-radius:6px;font-size:12px;color:#64748b;">
+                            ${result.isNewCustomer ? '🆕 <strong>New customer</strong> added to CMS.' : '🔄 <strong>Returning customer</strong>, CMS record updated.'}
+                            Job #${result.jobId} created in Intake.
+                        </div>
+                    </div>
+                </div>`
+        }).catch(err => console.error('Christmas build email failed:', err.message));
+    }
+    res.json({ success: true, jobId: result.jobId });
+});
+
 // ─── Blog Comments ─────────────────────────────────────────────────────────────
 
 // GET /api/comments?post=slug — public, returns approved comments
