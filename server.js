@@ -1497,6 +1497,32 @@ app.post('/api/public/christmas-build', (req, res) => {
                     </div>
                 </div>`
         }).catch(err => console.error('Christmas build email failed:', err.message));
+
+        // Confirmation to the customer
+        transporter.sendMail({
+            from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
+            to: email.trim(),
+            replyTo: 'steve@weeecycle.net',
+            subject: `We got your Christmas Bike Build request | Weeecycle`,
+            html: `
+                <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+                    <div style="background:#c8102e;padding:20px;border-radius:8px 8px 0 0;">
+                        <h2 style="color:#fff;margin:0;font-size:22px;">🎄 Thanks, ${escapeHtml(firstName)}! We got your request.</h2>
+                        <p style="color:#fff;margin:6px 0 0;font-size:15px;">Christmas Bike Build Special: <strong>$60</strong></p>
+                    </div>
+                    <div style="background:#fff;padding:24px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px;">
+                        <p style="font-size:14px;margin-top:0;">Weeecycle has received your Christmas Bike Build request. We'll be in contact soon to make arrangements to pick up your bike. If you'd prefer to drop it off instead, just let us know and we'll set up a time.</p>
+                        <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:12px;">
+                            <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;width:40%;">Bike Type</td><td style="padding:8px 4px;font-weight:bold;">${escapeHtml(bikeType)}</td></tr>
+                            <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Pickup Address</td><td style="padding:8px 4px;">${escapeHtml(address.trim())}</td></tr>
+                            <tr><td style="padding:8px 4px;color:#64748b;">Phone</td><td style="padding:8px 4px;">${escapeHtml(phone.trim())}</td></tr>
+                        </table>
+                        <p style="font-size:14px;margin-top:16px;">Your $60 build includes pickup, full assembly and installation, and a thorough tune-up so it's ready to ride on Christmas morning.</p>
+                        <p style="font-size:14px;margin-top:16px;">Questions, or want to set a time now? Call or text me at <a href="tel:859-423-1806" style="color:#FF8000;">859-423-1806</a>, or just reply to this email.</p>
+                        <p style="font-size:14px;margin-top:16px;">Merry Christmas,<br><strong>Steve @ Weeecycle</strong></p>
+                    </div>
+                </div>`
+        }).catch(err => console.error('Christmas build customer email failed:', err.message));
     }
     res.json({ success: true, jobId: result.jobId });
 });
