@@ -1445,15 +1445,16 @@ app.post('/api/public/book', async (req, res) => {
 // ─── Christmas Bike Build Special ($60: pickup, assembly, tune-up) ───────────
 const CHRISTMAS_BIKE_TYPES = ['Mountain Bike', 'Kids Bike', 'Road Bike', 'Gravel Bike'];
 app.post('/api/public/christmas-build', (req, res) => {
-    const { name, address, phone, bikeType, website } = req.body || {};
+    const { name, address, phone, email, bikeType, website } = req.body || {};
     if (website) return res.json({ success: true }); // honeypot
     const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip;
     if (bookingRateLimited(ip)) return res.status(429).json({ error: 'Too many requests.' });
-    if (!name?.trim() || !address?.trim() || !phone?.trim()) {
-        return res.status(400).json({ error: 'Name, pickup address, and phone number are required.' });
+    if (!name?.trim() || !address?.trim() || !phone?.trim() || !email?.trim()) {
+        return res.status(400).json({ error: 'Name, pickup address, phone number, and email are required.' });
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return res.status(400).json({ error: 'Please enter a valid email address.' });
     if (!CHRISTMAS_BIKE_TYPES.includes(bikeType)) return res.status(400).json({ error: 'Please choose a bike type.' });
-    if (name.length > 100 || address.length > 250 || phone.length > 30) return res.status(400).json({ error: 'Input too long.' });
+    if (name.length > 100 || address.length > 250 || phone.length > 30 || email.length > 150) return res.status(400).json({ error: 'Input too long.' });
 
     const [firstName, ...rest] = name.trim().split(/\s+/);
     const lastName = rest.join(' ') || '-';
@@ -1461,7 +1462,7 @@ app.post('/api/public/christmas-build', (req, res) => {
     let result;
     try {
         result = workshopDb.transaction(() => {
-            const { customerId, isNewCustomer } = upsertPublicCustomer({ firstName, lastName, phone, address });
+            const { customerId, isNewCustomer } = upsertPublicCustomer({ firstName, lastName, phone, email, address });
             const jobId = workshopDb.prepare(`INSERT INTO jobs (customerId,title,stage,bikeModel,estimatedCost,notes,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?)`)
                 .run(customerId, `Christmas Bike Build ($60): ${bikeType}`, 'Intake', bikeType, '60.00',
                     `Christmas Bike Build special: pickup, assembly and thorough tune-up. Pickup address: ${address.trim()}`, now, now).lastInsertRowid;
@@ -1472,7 +1473,8 @@ app.post('/api/public/christmas-build', (req, res) => {
     if (transporter) {
         transporter.sendMail({
             from: process.env.SMTP_FROM || '"Weeecycle" <steve@weeecycle.net>',
-            to: process.env.ADMIN_EMAIL || 'steve@weeecycle.net',
+            to: 'steve@weeecycle.net',
+            replyTo: email.trim(),
             subject: `🎄 Christmas Bike Build: ${name.trim()} (${bikeType})`,
             html: `
                 <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
@@ -1484,6 +1486,7 @@ app.post('/api/public/christmas-build', (req, res) => {
                         <table style="width:100%;border-collapse:collapse;font-size:14px;">
                             <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;width:40%;">Name</td><td style="padding:8px 4px;font-weight:bold;">${escapeHtml(name.trim())}</td></tr>
                             <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Phone</td><td style="padding:8px 4px;"><a href="tel:${escapeHtml(phone.trim())}">${escapeHtml(phone.trim())}</a></td></tr>
+                            <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Email</td><td style="padding:8px 4px;"><a href="mailto:${escapeHtml(email.trim())}">${escapeHtml(email.trim())}</a></td></tr>
                             <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px 4px;color:#64748b;">Pickup Address</td><td style="padding:8px 4px;">${escapeHtml(address.trim())}</td></tr>
                             <tr><td style="padding:8px 4px;color:#64748b;">Bike Type</td><td style="padding:8px 4px;font-weight:bold;color:#c8102e;">${escapeHtml(bikeType)}</td></tr>
                         </table>

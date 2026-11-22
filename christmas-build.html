@@ -118,6 +118,12 @@
                                 class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition" placeholder="(859) 555-1234">
                         </div>
 
+                        <div>
+                            <label for="email" class="block text-brand-orange font-display font-bold text-lg uppercase tracking-wide mb-2">Email <span class="text-[#ff2d4a]">*</span></label>
+                            <input type="email" id="email" name="email" required autocomplete="email" maxlength="150"
+                                class="w-full bg-brand-dark border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-brand-orange transition" placeholder="you@example.com">
+                        </div>
+
                         <fieldset>
                             <legend class="block text-brand-orange font-display font-bold text-lg uppercase tracking-wide mb-2">Type of Bike <span class="text-[#ff2d4a]">*</span></legend>
                             <div class="grid grid-cols-2 gap-3">
@@ -176,7 +182,8 @@
             e.preventDefault();
             errorBox.classList.add('hidden');
             const data = Object.fromEntries(new FormData(form));
-            if (!data.name?.trim() || !data.address?.trim() || !data.phone?.trim()) return showError('Please fill in your name, pickup address, and phone number.');
+            if (!data.name?.trim() || !data.address?.trim() || !data.phone?.trim() || !data.email?.trim()) return showError('Please fill in your name, pickup address, phone number, and email.');
+            if (!form.email.checkValidity()) return showError('Please enter a valid email address.');
             if (!data.bikeType) return showError('Please choose the type of bike.');
 
             const btn = form.querySelector('button[type="submit"]');
